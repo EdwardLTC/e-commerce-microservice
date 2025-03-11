@@ -4,3 +4,11 @@
     build:
       context: .
       dockerfile: asp-user/Dockerfile
+  
+  nest-api-gateway-auth:
+    image: nest-api-gateway-auth
+    build:
+      context: .
+      dockerfile: nest-api-gateway-auth/Dockerfile
+    ports:
+      - "3000:3000"
