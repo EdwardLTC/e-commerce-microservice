@@ -1,0 +1,6 @@
+﻿services:
+  asp-user:
+    image: asp-user
+    build:
+      context: .
+      dockerfile: asp-user/Dockerfile
