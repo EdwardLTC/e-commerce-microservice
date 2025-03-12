@@ -2,6 +2,7 @@ using System.Reflection;
 using asp_user.Contexts;
 using asp_user.exceptions;
 using asp_user.Extensions;
+using asp_user.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -11,19 +12,21 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddAutoRegisteredServices(Assembly.GetExecutingAssembly());
+
+builder.Services.AddKafkaHandlers(Assembly.GetExecutingAssembly());
+builder.Services.AddHostedService<KafkaConsumerService>();
+
+builder.Services.AddControllers(options => options.Filters.Add<GlobalExceptionFilter>());
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
-});
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<GlobalExceptionFilter>();
 });
 builder.Services.AddSwaggerGen(options =>
 {
@@ -31,7 +34,7 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
+        Type = SecuritySchemeType.Http
     });
 });
 
