@@ -5,7 +5,7 @@ namespace asp_user.Extensions;
 
 public static class ServiceRegistrationExtensions
 {
-    public static void AddAutoRegisteredServices(this IServiceCollection services, Assembly assembly)
+    public static IServiceCollection AddAutoRegisteredServices(this IServiceCollection services, Assembly assembly)
     {
         var typesWithAttribute = assembly.GetTypes()
             .Where(t => t.GetCustomAttribute<RegisterServiceAttribute>() != null);
@@ -16,5 +16,7 @@ public static class ServiceRegistrationExtensions
 
             if (attribute != null) services.Add(new ServiceDescriptor(type, type, attribute.Lifetime));
         }
+
+        return services;
     }
 }
