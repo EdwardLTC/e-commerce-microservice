@@ -2,13 +2,14 @@
 using asp_user.Attributes;
 using asp_user.Contexts;
 using asp_user.exceptions;
+using asp_user.Kafka;
 using asp_user.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace asp_user.Users;
 
 [RegisterService]
-public class UsersService(AppDbContext dbContext)
+public class UsersService(AppDbContext dbContext, KafkaProducerService kafkaProducerService)
 {
     public async Task<UserProfileDto> GetUserById(int id)
     {

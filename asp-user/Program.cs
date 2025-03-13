@@ -3,6 +3,7 @@ using asp_user.Contexts;
 using asp_user.exceptions;
 using asp_user.Extensions;
 using asp_user.Kafka;
+using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -12,6 +13,9 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.Configure<ProducerConfig>(builder.Configuration.GetSection("Kafka:Producer"));
+builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection("Kafka:Consumer"));
 
 builder.Services.AddAutoRegisteredServices(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers(options => options.Filters.Add<GlobalExceptionFilter>());

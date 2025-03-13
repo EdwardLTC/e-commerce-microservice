@@ -2,132 +2,126 @@
 using System.Text.Json;
 using asp_user.Attributes;
 using Confluent.Kafka;
+using Microsoft.Extensions.Options;
 
 namespace asp_user.Kafka;
 
-public class KafkaConsumerService(
-    IConfiguration configuration,
+public sealed class KafkaConsumerService(
+    IOptions<ConsumerConfig> consumerConfig,
     ILogger<KafkaConsumerService> logger,
-    IServiceScopeFactory serviceScopeFactory)
+    IServiceProvider serviceProvider)
     : BackgroundService
 {
-    private readonly IConsumer<Ignore, string> consumer = new ConsumerBuilder<Ignore, string>(
-        new ConsumerConfig
-        {
-            BootstrapServers = configuration["Kafka:BootstrapServers"],
-            GroupId = "asp-user-group",
-            AutoOffsetReset = AutoOffsetReset.Earliest,
-            EnableAutoCommit = false,
-            SessionTimeoutMs = 30000,
-            MaxPollIntervalMs = 60000,
-            HeartbeatIntervalMs = 10000,
-            SocketTimeoutMs = 10000,
-            MetadataMaxAgeMs = 300000
-        }).SetErrorHandler((_, error) => logger.LogError($"Kafka Consumer Error: {error.Reason}")).Build();
+    private static readonly JsonSerializerOptions jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true
+    };
+
+    private readonly IConsumer<Ignore, string> consumer =
+        new ConsumerBuilder<Ignore, string>(new ConsumerConfig(consumerConfig.Value))
+            .SetErrorHandler((_, e) => logger.LogError($"Kafka Consumer Error: {e.Reason}"))
+            .SetLogHandler((_, _) => { })
+            .Build();
+
+    private readonly Dictionary<string, List<HandlerInfo>> topicHandlers = [];
+
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = serviceScopeFactory.CreateScope();
+        DiscoverHandlers();
 
-        var handlerMethods = DiscoverHandlerMethods(scope.ServiceProvider);
+        consumer.Subscribe(topicHandlers.Keys);
 
-        if (handlerMethods.Count == 0)
-        {
-            logger.LogWarning("No Kafka handler found. Consumer will not subscribe.");
-            return;
-        }
+        logger.LogInformation("Kafka consumer service is running. Listening to topics: {Topics}",
+            string.Join(", ", topicHandlers.Keys));
 
-        var topics = handlerMethods.Select(m => m.Topic).Distinct().ToList();
+        _ = Task.Run(() => StartConsumptionLoop(stoppingToken), stoppingToken);
 
-        if (topics.Count == 0)
-        {
-            logger.LogWarning("No Kafka topics found. Consumer will not subscribe.");
-            return;
-        }
-
-        logger.LogInformation($"Subscribed to topics: {string.Join(", ", topics)}");
-        consumer.Subscribe(topics);
-
-        while (!stoppingToken.IsCancellationRequested)
-            try
-            {
-                var consumeResult = consumer.Consume(stoppingToken);
-                if (consumeResult == null) continue;
-
-                logger.LogInformation($"Received message from {consumeResult.Topic}: {consumeResult.Message.Value}");
-                await HandleMessage(consumeResult.Topic, consumeResult.Message.Value, handlerMethods);
-            }
-            catch (OperationCanceledException)
-            {
-                logger.LogInformation("Kafka consumer is shutting down...");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Error consuming message: {ex.Message}");
-            }
+        while (!stoppingToken.IsCancellationRequested) await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
-    private List<(Type HandlerType, MethodInfo Method, string Topic)> DiscoverHandlerMethods(
-        IServiceProvider serviceProvider)
+    private async Task StartConsumptionLoop(CancellationToken stoppingToken)
     {
-        var handlers = serviceProvider.GetServices<object>()
-            .Where(h => h.GetType().GetCustomAttribute<KafkaHandlerAttribute>() != null)
-            .ToList();
-
-        var handlerMethods = new List<(Type, MethodInfo, string)>();
-
-        foreach (var handler in handlers)
+        try
         {
-            var methods = handler.GetType().GetMethods()
-                .Select(m => (Method: m, Attribute: m.GetCustomAttribute<KafkaMessageHandlerAttribute>()))
-                .Where(m => m.Attribute != null);
-
-            foreach (var (method, attribute) in methods)
-                handlerMethods.Add((handler.GetType(), method, attribute!.Topic));
-        }
-
-        return handlerMethods;
-    }
-
-    private async Task HandleMessage(string topic, string message,
-        List<(Type HandlerType, MethodInfo Method, string Topic)> handlerMethods)
-    {
-        using var scope = serviceScopeFactory.CreateScope();
-
-        foreach (var (handlerType, method, handlerTopic) in handlerMethods)
-        {
-            if (handlerTopic != topic) continue;
-
-            var handler = scope.ServiceProvider.GetRequiredService(handlerType);
-
-            var parameters = method.GetParameters();
-            if (parameters.Length != 1)
-            {
-                logger.LogWarning($"Handler method {method.Name} must have exactly one parameter.");
-                continue;
-            }
-
-            try
-            {
-                var paramType = parameters[0].ParameterType;
-                var deserializedMessage = JsonSerializer.Deserialize(message, paramType);
-
-                if (deserializedMessage == null)
+            while (!stoppingToken.IsCancellationRequested)
+                try
                 {
-                    logger.LogWarning($"Failed to deserialize message for handler {method.Name}.");
-                    continue;
+                    var consumeResult = consumer.Consume(stoppingToken);
+                    await ProcessMessageAsync(consumeResult);
                 }
+                catch (ConsumeException ex)
+                {
+                    logger.LogError(ex, "Kafka consume error");
+                }
+        }
+        finally
+        {
+            consumer.Close();
+        }
+    }
 
-                var result = method.Invoke(handler, [deserializedMessage]);
+    private async Task ProcessMessageAsync(ConsumeResult<Ignore, string> consumeResult)
+    {
+        var topic = consumeResult.Topic;
 
-                if (result is Task task) await task;
+        if (!topicHandlers.TryGetValue(topic, out var handlers)) return;
+
+        foreach (var handlerInfo in handlers)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var handler = scope.ServiceProvider.GetRequiredService(handlerInfo.Method.DeclaringType!);
+
+            try
+            {
+                var message = JsonSerializer.Deserialize(
+                    consumeResult.Message.Value,
+                    handlerInfo.MessageType,
+                    jsonOptions
+                ) ?? throw new InvalidOperationException("Deserialization returned null");
+
+                var result = handlerInfo.Method.Invoke(handler, [message]);
+                if (result is Task task)
+                    await task.ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                logger.LogError($"Error invoking handler {method.Name}: {ex.Message}");
+                logger.LogError(ex, "Error processing message for topic {Topic}", topic);
             }
         }
     }
+
+    private void DiscoverHandlers()
+    {
+        var assembly = Assembly.GetEntryAssembly()!;
+        foreach (var type in assembly.GetTypes())
+        foreach (var method in type.GetMethods())
+        {
+            var attribute = method.GetCustomAttribute<KafkaMessageHandlerAttribute>();
+            if (attribute == null) continue;
+
+            ValidateMethodSignature(method, attribute.MessageType);
+
+            if (!topicHandlers.TryGetValue(attribute.Topic, out var handlers))
+            {
+                handlers = [];
+                topicHandlers[attribute.Topic] = handlers;
+            }
+
+            handlers.Add(new HandlerInfo(method, attribute.MessageType));
+        }
+    }
+
+    private static void ValidateMethodSignature(MethodInfo method, Type messageType)
+    {
+        var parameters = method.GetParameters();
+
+        if (parameters.Length != 1 || parameters[0].ParameterType != messageType)
+            throw new InvalidOperationException(
+                $"Method {method.Name} must have a single parameter of type {messageType.Name}.");
+    }
+
 
     public override void Dispose()
     {
@@ -135,4 +129,6 @@ public class KafkaConsumerService(
         consumer.Dispose();
         base.Dispose();
     }
+
+    private sealed record HandlerInfo(MethodInfo Method, Type MessageType);
 }

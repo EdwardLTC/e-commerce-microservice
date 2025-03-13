@@ -1,22 +1,18 @@
 ﻿using System.Text.Json;
 using asp_user.Attributes;
 using Confluent.Kafka;
+using Microsoft.Extensions.Options;
 
 namespace asp_user.Kafka;
 
 [RegisterService(ServiceLifetime.Singleton)]
-public class KafkaProducerService(IConfiguration configuration, ILogger<KafkaProducerService> logger)
+public class KafkaProducerService(IOptions<ProducerConfig> producerConfig, ILogger<KafkaProducerService> logger)
 {
-    private readonly IProducer<string, string> producer = new ProducerBuilder<string, string>(new ProducerConfig
-    {
-        BootstrapServers = configuration["Kafka:BootstrapServers"],
-        Acks = Acks.All,
-        MessageTimeoutMs = 10000,
-        SocketTimeoutMs = 10000,
-        RetryBackoffMs = 500,
-        EnableIdempotence = true,
-        MaxInFlight = 5
-    }).SetErrorHandler((_, e) => logger.LogError($"kafka Producer Error: {e.Reason}")).Build();
+    private readonly IProducer<string, string> producer =
+        new ProducerBuilder<string, string>(new ProducerConfig(producerConfig.Value))
+            .SetErrorHandler((_, e) => logger.LogError($"Kafka Producer Error: {e.Reason}"))
+            .SetLogHandler((_, _) => { })
+            .Build();
 
     public async Task<DeliveryResult<string, string>> ProduceAsync<T>(string topic, string key, T message)
     {
