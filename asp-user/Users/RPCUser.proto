@@ -1,0 +1,22 @@
+﻿syntax = "proto3";
+
+service IUserService {
+  rpc GetUserById(GetUserByIdRequest) returns (UserProfile);
+  rpc CreateUser(CreateUserRequest) returns (UserProfile);
+}
+
+message GetUserByIdRequest {
+  int64 id = 1;
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message UserProfile {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+}

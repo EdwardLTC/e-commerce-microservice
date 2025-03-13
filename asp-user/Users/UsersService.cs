@@ -1,68 +1,42 @@
-﻿using System.Net;
-using asp_user.Attributes;
+﻿using asp_user.Attributes;
 using asp_user.Contexts;
-using asp_user.exceptions;
-using asp_user.Kafka;
 using asp_user.Models;
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace asp_user.Users;
 
-[RegisterService]
-public class UsersService(AppDbContext dbContext, KafkaProducerService kafkaProducerService)
+[GrpcService]
+public class UsersService(AppDbContext dbContext) : IUserService.IUserServiceBase
 {
-    public async Task<UserProfileDto> GetUserById(int id)
+    public override async Task<UserProfile> GetUserById(GetUserByIdRequest request, ServerCallContext context)
     {
-        return await dbContext.Users
-                   .Where(u => u.Id == id)
-                   .Select(u => new UserProfileDto
-                   {
-                       Id = u.Id,
-                       Name = u.Name,
-                       Email = u.Email
-                   })
-                   .FirstOrDefaultAsync()
-               ?? throw new HttpException(HttpStatusCode.BadRequest, "User not found");
+        return await dbContext.Users.Where(u => u.Id == request.Id).Select(u => new UserProfile
+               {
+                   Id = u.Id,
+                   Email = u.Email,
+                   Name = u.Name
+               }).FirstOrDefaultAsync() ??
+               throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
     }
 
-    public async Task<User> CreateUser(User user)
+    public override async Task<UserProfile> CreateUser(CreateUserRequest request, ServerCallContext context)
     {
-        var existingUser = await dbContext.Users.Where(u => u.Email == user.Email).Select(u => new
+        var user = new User
         {
-            u.Id
-        }).FirstOrDefaultAsync();
+            Email = request.Email,
+            Name = request.Name,
+            Password = BCrypt.Net.BCrypt.HashPassword(request.Password)
+        };
 
-        if (existingUser != null) throw new HttpException(HttpStatusCode.BadRequest, "Email already exists");
-
-        var CreatedUser = dbContext.Users.Add(user);
-        await dbContext.SaveChangesAsync();
-        return CreatedUser.Entity;
-    }
-
-    public async Task<UserProfileDto> UpdateUser(int id, UpdateUserDto user)
-    {
-        var entity = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (entity == null) throw new HttpException(HttpStatusCode.BadRequest, "Users not found");
-
-
-        entity.Name = user.Name ?? entity.Name;
-        entity.Email = user.Email ?? entity.Email;
-
-        if (user.Password != null)
-        {
-            if (!BCrypt.Net.BCrypt.Verify(user.OldPassword, entity.Password))
-                throw new HttpException(HttpStatusCode.BadRequest, "Invalid password");
-
-            entity.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-        }
-
+        dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync();
 
-        return new UserProfileDto
+        return new UserProfile
         {
-            Id = entity.Id,
-            Name = entity.Name,
-            Email = entity.Email
+            Id = user.Id,
+            Email = user.Email,
+            Name = user.Name
         };
     }
 }

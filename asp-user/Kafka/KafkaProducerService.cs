@@ -1,11 +1,9 @@
 ﻿using System.Text.Json;
-using asp_user.Attributes;
 using Confluent.Kafka;
 using Microsoft.Extensions.Options;
 
 namespace asp_user.Kafka;
 
-[RegisterService(ServiceLifetime.Singleton)]
 public class KafkaProducerService(IOptions<ProducerConfig> producerConfig, ILogger<KafkaProducerService> logger)
 {
     private readonly IProducer<string, string> producer =

@@ -1,4 +1,3 @@
-using System.Reflection;
 using asp_user.Contexts;
 using asp_user.exceptions;
 using asp_user.Extensions;
@@ -17,14 +16,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<ProducerConfig>(builder.Configuration.GetSection("Kafka:Producer"));
 builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection("Kafka:Consumer"));
 
-builder.Services.AddAutoRegisteredServices(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers(options => options.Filters.Add<GlobalExceptionFilter>());
 
-builder.Services.AddKafkaHandlers(Assembly.GetExecutingAssembly());
+// builder.Services.AddSingleton<KafkaProducerService>();
+// builder.Services.AddKafkaHandlers(Assembly.GetExecutingAssembly());
 builder.Services.AddHostedService<KafkaConsumerService>();
+
+builder.Services.AddGrpc();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddGrpcServices();
 
 builder.Services.AddRouting(options =>
 {
@@ -48,7 +51,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
 app.MapControllers();
+app.MapGrpcServices();
 
 app.Run();

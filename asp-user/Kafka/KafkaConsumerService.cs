@@ -31,6 +31,12 @@ public sealed class KafkaConsumerService(
     {
         DiscoverHandlers();
 
+        if (topicHandlers.Count == 0)
+        {
+            logger.LogWarning("No Kafka message handlers found. Kafka consumer service will not start.");
+            return;
+        }
+
         consumer.Subscribe(topicHandlers.Keys);
 
         logger.LogInformation("Kafka consumer service is running. Listening to topics: {Topics}",
