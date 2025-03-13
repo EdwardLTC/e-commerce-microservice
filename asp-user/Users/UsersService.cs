@@ -22,21 +22,26 @@ public class UsersService(AppDbContext dbContext) : IUserService.IUserServiceBas
 
     public override async Task<UserProfile> CreateUser(CreateUserRequest request, ServerCallContext context)
     {
-        var user = new User
+        var existingUser = await dbContext.Users.Where(u => u.Email == request.Email).Select(u => new
+        {
+            u.Id
+        }).FirstOrDefaultAsync();
+
+        if (existingUser != null) throw new RpcException(new Status(StatusCode.AlreadyExists, "User already exists"));
+
+        var CreatedUser = dbContext.Users.Add(new User
         {
             Email = request.Email,
-            Name = request.Name,
-            Password = BCrypt.Net.BCrypt.HashPassword(request.Password)
-        };
+            Name = request.Name
+        });
 
-        dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync();
 
         return new UserProfile
         {
-            Id = user.Id,
-            Email = user.Email,
-            Name = user.Name
+            Id = CreatedUser.Entity.Id,
+            Email = CreatedUser.Entity.Email,
+            Name = CreatedUser.Entity.Name
         };
     }
 }

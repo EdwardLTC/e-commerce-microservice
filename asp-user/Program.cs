@@ -1,12 +1,16 @@
 using asp_user.Contexts;
 using asp_user.exceptions;
 using asp_user.Extensions;
-using asp_user.Kafka;
 using Confluent.Kafka;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5232, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
+});
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -20,36 +24,22 @@ builder.Services.AddControllers(options => options.Filters.Add<GlobalExceptionFi
 
 // builder.Services.AddSingleton<KafkaProducerService>();
 // builder.Services.AddKafkaHandlers(Assembly.GetExecutingAssembly());
-builder.Services.AddHostedService<KafkaConsumerService>();
+// builder.Services.AddHostedService<KafkaConsumerService>();
 
-builder.Services.AddGrpc();
+builder.Services.AddGrpc(options =>
+{
+    options.MaxReceiveMessageSize = 50 * 1024 * 1024; // 50MB
+    options.MaxSendMessageSize = 50 * 1024 * 1024; // 50MB
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddGrpcServices();
 
-builder.Services.AddRouting(options =>
-{
-    options.LowercaseUrls = true;
-    options.LowercaseQueryStrings = true;
-});
-
-builder.Services.AddSwaggerGen(options =>
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }));
-
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-        c.RoutePrefix = string.Empty;
-    });
-}
+if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 app.MapControllers();
 app.MapGrpcServices();

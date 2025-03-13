@@ -30,7 +30,7 @@ public static class GrpcServiceRegistrationExtensions
                 .GetMethod(nameof(GrpcEndpointRouteBuilderExtensions.MapGrpcService))
                 ?.MakeGenericMethod(grpcService);
 
-            mapGrpcServiceMethod?.Invoke(null, new object[] { endpoints });
+            mapGrpcServiceMethod?.Invoke(null, [endpoints]);
         }
 
         return endpoints;

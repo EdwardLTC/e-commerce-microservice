@@ -6,7 +6,7 @@ service IUserService {
 }
 
 message GetUserByIdRequest {
-  int64 id = 1;
+  int32 id = 1;
 }
 
 message CreateUserRequest {
@@ -16,7 +16,7 @@ message CreateUserRequest {
 }
 
 message UserProfile {
-  int64 id = 1;
+  int32 id = 1;
   string name = 2;
   string email = 3;
 }
