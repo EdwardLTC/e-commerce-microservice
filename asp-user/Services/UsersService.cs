@@ -4,7 +4,7 @@ using asp_user.Models;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
-namespace asp_user.Users;
+namespace asp_user.Services;
 
 [GrpcService]
 public class UsersService(AppDbContext dbContext) : IUserService.IUserServiceBase
