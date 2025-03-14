@@ -20,6 +20,30 @@ public class UsersService(AppDbContext dbContext) : IUserService.IUserServiceBas
                throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
     }
 
+    public override async Task<UserProfile> GetUserByEmailAndPassword(GetUserByEmailAndPasswordRequest request,
+        ServerCallContext context)
+    {
+        var user = await dbContext.Users.Where(u => u.Email == request.Email).Select(u => new
+        {
+            u.Password,
+            u.Id,
+            u.Email,
+            u.Name
+        }).FirstOrDefaultAsync();
+
+        if (user == null) throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
+
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid password"));
+
+        return new UserProfile
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Name = user.Name
+        };
+    }
+
     public override async Task<UserProfile> CreateUser(CreateUserRequest request, ServerCallContext context)
     {
         var existingUser = await dbContext.Users.Where(u => u.Email == request.Email).Select(u => new
