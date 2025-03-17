@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace asp_user.Services;
 
 [GrpcService]
-public class UsersService(AppDbContext dbContext) : IUserService.IUserServiceBase
+public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 {
     public override async Task<UserProfile> GetUserById(GetUserByIdRequest request, ServerCallContext context)
     {

@@ -15,16 +15,18 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "gen:resource": "nest g resource  --no-spec",
-    "proto:gen": "tsproto --path src/protos --output src/generated --clean && npm run lint"
+    "proto:gen": "tsproto --path src/protos --output src/generated --clean && eslint src/generated --fix"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.0",
     "@grpc/proto-loader": "^0.7.13",
     "@nestjs/common": "^11.0.11",
+    "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.11",
     "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^11.0.11",
     "@nestjs/platform-express": "^11.0.11",
+    "@nestjs/swagger": "^11.0.6",
     "nestjs-proto-gen-ts": "^1.0.21",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",

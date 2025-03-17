@@ -5,7 +5,7 @@
 import { Observable } from 'rxjs';
 import { Metadata } from '@grpc/grpc-js';
 
-export interface IUserService {
+export interface UserService {
   getUserById(data: GetUserByIdRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
   createUser(data: CreateUserRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
   getUserByEmailAndPassword(data: GetUserByEmailAndPasswordRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;

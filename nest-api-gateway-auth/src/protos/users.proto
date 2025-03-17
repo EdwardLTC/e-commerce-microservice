@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-service IUserService {
+service UserService {
   rpc GetUserById(GetUserByIdRequest) returns (UserProfile);
   rpc CreateUser(CreateUserRequest) returns (UserProfile);
   rpc GetUserByEmailAndPassword(GetUserByEmailAndPasswordRequest) returns (UserProfile);
