@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@grpc/grpc-js": "^1.13.0",
-    "@protobuf-ts/plugin": "^2.9.5"
-  }
-}

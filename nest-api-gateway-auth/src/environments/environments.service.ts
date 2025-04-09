@@ -9,6 +9,7 @@ export class EnvironmentsService {
   public readonly jwt: JWTConfig = {
     secret: this.configService.get<string>('JWT_SECRET'),
   };
+  public readonly isDevelopment = this.environment === 'development';
   public readonly microservice: MicroserviceConfig = {
     userServiceURL: this.configService.get<string>('USER_SERVICE_URL'),
   };

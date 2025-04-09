@@ -1,5 +1,9 @@
 ﻿syntax = "proto3";
 
+package GrpcUserClient;
+
+import "google/protobuf/wrappers.proto";
+
 service UserService {
   rpc GetUserById(GetUserByIdRequest) returns (UserProfile);
   rpc CreateUser(CreateUserRequest) returns (UserProfile);
@@ -7,22 +11,22 @@ service UserService {
 }
 
 message GetUserByIdRequest {
-  int32 id = 1;
+  google.protobuf.Int32Value id = 1;
 }
 
 message GetUserByEmailAndPasswordRequest {
-  string email = 1;
-  string password = 2;
+  google.protobuf.StringValue email = 1;
+  google.protobuf.StringValue password = 2;
 }
 
 message CreateUserRequest {
-  string name = 1;
-  string email = 2;
-  string password = 3;
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue email = 2;
+  google.protobuf.StringValue password = 3;
 }
 
 message UserProfile {
-  int32 id = 1;
-  string name = 2;
-  string email = 3;
+  google.protobuf.Int32Value id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue email = 3;
 }

@@ -1,0 +1,30 @@
+import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto, Public, RegisterDto, RequestWithToken } from './auth.model';
+import { ApiBearerAuth } from '@nestjs/swagger';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('login')
+  public async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.CREATED)
+  @Post('register')
+  public async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @Post('logout')
+  public async logout(@Req() req: RequestWithToken) {
+    return this.authService.logout(req.token.jti);
+  }
+}

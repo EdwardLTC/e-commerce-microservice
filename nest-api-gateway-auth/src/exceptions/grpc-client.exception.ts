@@ -4,7 +4,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 export const HTTP_CODE_FROM_GRPC: Record<number, number> = {
   [Status.OK]: HttpStatus.OK,
   [Status.CANCELLED]: HttpStatus.METHOD_NOT_ALLOWED,
-  [Status.UNKNOWN]: HttpStatus.BAD_GATEWAY,
+  [Status.UNKNOWN]: HttpStatus.INTERNAL_SERVER_ERROR,
   [Status.INVALID_ARGUMENT]: HttpStatus.UNPROCESSABLE_ENTITY,
   [Status.DEADLINE_EXCEEDED]: HttpStatus.REQUEST_TIMEOUT,
   [Status.NOT_FOUND]: HttpStatus.NOT_FOUND,

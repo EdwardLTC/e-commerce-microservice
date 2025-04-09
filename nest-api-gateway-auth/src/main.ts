@@ -8,8 +8,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const envService = app.get<EnvironmentsService>(EnvironmentsService);
 
-  if (envService.environment === 'development') {
-    const config = new DocumentBuilder().setTitle('API Gateway').setDescription('Ecommerce API Gateway').build();
+  if (envService.isDevelopment) {
+    const config = new DocumentBuilder().setTitle('API Gateway').setDescription('Ecommerce API Gateway').addBearerAuth().build();
     const documentFactory = () => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('docs', app, documentFactory);
     Logger.debug(`Swagger is running on: http://localhost:${envService.port}/docs`, 'Bootstrap');

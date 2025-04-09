@@ -7,20 +7,21 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5232, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
-});
+builder.Configuration
+    .AddJsonFile("appsettings.json", false, true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true)
+    .AddEnvironmentVariables();
+
+builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(5232, o => o.Protocols = HttpProtocols.Http2); });
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddControllers(options => options.Filters.Add<GlobalExceptionFilter>());
 
 builder.Services.Configure<ProducerConfig>(builder.Configuration.GetSection("Kafka:Producer"));
 builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection("Kafka:Consumer"));
-
-builder.Services.AddControllers(options => options.Filters.Add<GlobalExceptionFilter>());
 
 // builder.Services.AddSingleton<KafkaProducerService>();
 // builder.Services.AddKafkaHandlers(Assembly.GetExecutingAssembly());

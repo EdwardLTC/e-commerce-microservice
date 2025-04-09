@@ -2,6 +2,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY nest-api-gateway-auth/package*.json ./
+RUN npm install
 
 COPY nest-api-gateway-auth ./
 RUN npm run build

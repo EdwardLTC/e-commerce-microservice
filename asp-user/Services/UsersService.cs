@@ -2,6 +2,7 @@
 using asp_user.Contexts;
 using asp_user.Models;
 using Grpc.Core;
+using GrpcUserClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace asp_user.Services;
@@ -56,6 +57,7 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
         var CreatedUser = dbContext.Users.Add(new User
         {
             Email = request.Email,
+            Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Name = request.Name
         });
 

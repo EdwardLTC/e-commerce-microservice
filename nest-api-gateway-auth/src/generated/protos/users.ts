@@ -5,25 +5,58 @@
 import { Observable } from 'rxjs';
 import { Metadata } from '@grpc/grpc-js';
 
-export interface UserService {
-  getUserById(data: GetUserByIdRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
-  createUser(data: CreateUserRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
-  getUserByEmailAndPassword(data: GetUserByEmailAndPasswordRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+export namespace GrpcUserClient {
+  export interface UserService {
+    getUserById(data: GetUserByIdRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+    createUser(data: CreateUserRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+    getUserByEmailAndPassword(data: GetUserByEmailAndPasswordRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+  }
+  export interface GetUserByIdRequest {
+    id?: google.protobuf.Int32Value;
+  }
+  export interface GetUserByEmailAndPasswordRequest {
+    email?: google.protobuf.StringValue;
+    password?: google.protobuf.StringValue;
+  }
+  export interface CreateUserRequest {
+    name?: google.protobuf.StringValue;
+    email?: google.protobuf.StringValue;
+    password?: google.protobuf.StringValue;
+  }
+  export interface UserProfile {
+    id?: google.protobuf.Int32Value;
+    name?: google.protobuf.StringValue;
+    email?: google.protobuf.StringValue;
+  }
 }
-export interface GetUserByIdRequest {
-  id?: number;
-}
-export interface GetUserByEmailAndPasswordRequest {
-  email?: string;
-  password?: string;
-}
-export interface CreateUserRequest {
-  name?: string;
-  email?: string;
-  password?: string;
-}
-export interface UserProfile {
-  id?: number;
-  name?: string;
-  email?: string;
+export namespace google {
+  export namespace protobuf {
+    export interface DoubleValue {
+      value?: number;
+    }
+    export interface FloatValue {
+      value?: number;
+    }
+    export interface Int64Value {
+      value?: number;
+    }
+    export interface UInt64Value {
+      value?: number;
+    }
+    export interface Int32Value {
+      value?: number;
+    }
+    export interface UInt32Value {
+      value?: number;
+    }
+    export interface BoolValue {
+      value?: boolean;
+    }
+    export interface StringValue {
+      value?: string;
+    }
+    export interface BytesValue {
+      value?: Uint8Array;
+    }
+  }
 }
