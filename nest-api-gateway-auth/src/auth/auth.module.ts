@@ -6,30 +6,40 @@ import { JwtModule } from '@nestjs/jwt';
 import { EnvironmentsService } from '../environments/environments.service';
 import { EnvironmentsModule } from '../environments/environments.module';
 import { UsersModule } from '../users/users.module';
-import { createKeyv, Keyv } from '@keyv/redis';
+import { createClient, createKeyv, Keyv, RedisClientType } from '@keyv/redis';
 
 @Module({
   imports: [
     CacheModule.registerAsync({
       useFactory: async () => {
         return {
-          stores: [new Keyv(), createKeyv('redis://localhost:6379')],
+          stores: [new Keyv(), createKeyv('redis://localhost:6379', { namespace: 'auth' })],
         };
       },
     }),
     JwtModule.registerAsync({
       global: true,
       imports: [EnvironmentsModule],
+      inject: [EnvironmentsService],
       useFactory: async (env: EnvironmentsService) => ({
         secret: env.jwt.secret,
         signOptions: { expiresIn: '7d' },
       }),
-      inject: [EnvironmentsService],
     }),
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [
+    AuthService,
+    {
+      provide: 'REDIS_CLIENT',
+      useFactory: async (): Promise<RedisClientType> => {
+        const client: RedisClientType = createClient({ url: 'redis://localhost:6379' });
+        await client.connect();
+        return client;
+      },
+    },
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

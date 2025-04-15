@@ -4,32 +4,54 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { Cache } from 'cache-manager';
 import { LoginDto, LoginSessionStatus, RegisterDto } from './auth.model';
+import { Request } from 'express';
+import { RedisClientType } from '@keyv/redis';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject('REDIS_CLIENT') private redisClient: RedisClientType,
     private userService: UsersService,
     private jwtService: JwtService,
   ) {}
 
-  public async login(loginDto: LoginDto) {
+  public async login(loginDto: LoginDto, request: Request) {
     const user = await this.userService.getUserByEmailAndPassword(loginDto.email, loginDto.password);
 
-    const jti = crypto.randomUUID();
+    const jti = randomUUID();
 
-    const assessToken = this.jwtService.sign({ id: user.id, email: user.email, jti: jti });
+    const assessToken = this.jwtService.sign({ id: user.id.value, email: user.email.value, jti: jti });
 
     const session = {
       jti: jti,
+      userId: user.id.value,
       status: LoginSessionStatus.ACTIVE,
+      ip: request.ip,
+      userAgent: request.headers['user-agent'],
+      createdAt: new Date(),
+      expiredAt: new Date(Date.now() + 60 * 60 * 24 * 7 * 1000),
     };
 
-    await this.cacheManager.set(`session_${jti}`, session, 60 * 60 * 24 * 7);
+    await this.cacheManager.set(`auth:session:${jti}`, session, 60 * 60 * 24 * 7);
+
+    await this.redisClient.sAdd(`user:sessions:${user.id.value}`, `auth:session:${jti}`);
+
+    await this.redisClient.expire(`user:sessions:${user.id.value}`, 60 * 60 * 24 * 7);
 
     return {
       access_token: assessToken,
     };
+  }
+
+  public async changePassword(userId: string) {
+    // TODO: implement change password
+    const sessions = await this.redisClient.sMembers(`user_sessions:${userId}`);
+
+    await this.cacheManager.mdel(sessions);
+
+    await this.redisClient.del(`user:sessions:${userId}`);
   }
 
   public async register(registerDto: RegisterDto) {
@@ -40,10 +62,10 @@ export class AuthService {
     return this.cacheManager.get<{
       jti: string;
       status: LoginSessionStatus;
-    }>(`session_${jti}`);
+    }>(`auth:session:${jti}`);
   }
 
   public async logout(jit: string) {
-    await this.cacheManager.del(`session_${jit}`);
+    await this.cacheManager.del(`auth:session:${jit}`);
   }
 }

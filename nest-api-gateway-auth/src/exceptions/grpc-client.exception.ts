@@ -1,7 +1,7 @@
 import { Status } from '@grpc/grpc-js/build/src/constants';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-export const HTTP_CODE_FROM_GRPC: Record<number, number> = {
+export const HTTP_CODE_FROM_GRPC: Record<Status, HttpStatus> = {
   [Status.OK]: HttpStatus.OK,
   [Status.CANCELLED]: HttpStatus.METHOD_NOT_ALLOWED,
   [Status.UNKNOWN]: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -40,7 +40,7 @@ export class GrpcClientException extends Error {
     public readonly metadata: Record<string, any>,
   ) {
     super(details);
-    this.name = 'GrpcClientException';
+    this.name = GrpcClientException.name;
   }
 
   public toHttpException(): HttpException {

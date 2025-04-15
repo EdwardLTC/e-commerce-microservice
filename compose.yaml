@@ -19,6 +19,14 @@
     depends_on:
       - redis
       - asp-user
+
+  spring-boot-post:
+    image: spring-boot-post
+    build:
+      context: .
+      dockerfile: spring-boot-post/Dockerfile
+    ports:
+      - "2003:2003"
     
   redis:
     image: redis:6.2-alpine

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package GrpcUserClient;
+package com.ecommerce.aspnet.user;
 
 import "google/protobuf/wrappers.proto";
 

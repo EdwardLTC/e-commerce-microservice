@@ -1,5 +1,4 @@
 using asp_user.Contexts;
-using asp_user.exceptions;
 using asp_user.Extensions;
 using Confluent.Kafka;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -18,7 +17,6 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddControllers(options => options.Filters.Add<GlobalExceptionFilter>());
 
 builder.Services.Configure<ProducerConfig>(builder.Configuration.GetSection("Kafka:Producer"));
 builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection("Kafka:Consumer"));
@@ -34,7 +32,8 @@ builder.Services.AddGrpc(options =>
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "users")));
 
 builder.Services.AddGrpcServices();
 

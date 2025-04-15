@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs';
 @Injectable()
 export class UsersService {
   private readonly clientGrpc = this.client.getService<GrpcUserClient.UserService>('UserService');
+
   constructor(@Inject('USER_SERVICE') private client: ClientGrpc) {}
 
   public async getUserById(id: number) {
