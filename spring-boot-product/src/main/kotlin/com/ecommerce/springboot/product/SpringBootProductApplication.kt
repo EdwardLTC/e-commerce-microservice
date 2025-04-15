@@ -1,4 +1,4 @@
-package com.ecommerce.springboot.post
+package com.ecommerce.springboot.product
 
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -7,8 +7,8 @@ import org.springframework.boot.runApplication
 
 @SpringBootApplication
 @ImportAutoConfiguration(ExposedAutoConfiguration::class)
-class SpringBootPostApplication
+class SpringBootProductApplication
 
 fun main(args: Array<String>) {
-    runApplication<SpringBootPostApplication>(*args)
+    runApplication<SpringBootProductApplication>(*args)
 }

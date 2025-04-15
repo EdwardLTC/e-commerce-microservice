@@ -1,10 +1,10 @@
-package com.ecommerce.springboot.post
+package com.ecommerce.springboot.product
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class SpringBootPostApplicationTests {
+class SpringBootProductApplicationTests {
 
     @Test
     fun contextLoads() {
