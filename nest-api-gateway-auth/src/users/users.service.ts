@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { GrpcUserClient } from '../generated/protos/users';
 import { lastValueFrom } from 'rxjs';
+import { com } from '../generated/protos/users';
 
 @Injectable()
 export class UsersService {
-  private readonly clientGrpc = this.client.getService<GrpcUserClient.UserService>('UserService');
+  private readonly clientGrpc = this.client.getService<com.ecommerce.aspnet.user.UserService>('UserService');
 
   constructor(@Inject('USER_SERVICE') private client: ClientGrpc) {}
 

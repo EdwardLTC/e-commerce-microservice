@@ -1,8 +1,8 @@
 ﻿using asp_user.Attributes;
 using asp_user.Contexts;
 using asp_user.Models;
+using Com.Ecommerce.Aspnet.User;
 using Grpc.Core;
-using GrpcUserClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace asp_user.Services;

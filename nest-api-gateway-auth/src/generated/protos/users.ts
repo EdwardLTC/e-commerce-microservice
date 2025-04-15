@@ -5,28 +5,34 @@
 import { Observable } from 'rxjs';
 import { Metadata } from '@grpc/grpc-js';
 
-export namespace GrpcUserClient {
-  export interface UserService {
-    getUserById(data: GetUserByIdRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
-    createUser(data: CreateUserRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
-    getUserByEmailAndPassword(data: GetUserByEmailAndPasswordRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
-  }
-  export interface GetUserByIdRequest {
-    id?: google.protobuf.Int32Value;
-  }
-  export interface GetUserByEmailAndPasswordRequest {
-    email?: google.protobuf.StringValue;
-    password?: google.protobuf.StringValue;
-  }
-  export interface CreateUserRequest {
-    name?: google.protobuf.StringValue;
-    email?: google.protobuf.StringValue;
-    password?: google.protobuf.StringValue;
-  }
-  export interface UserProfile {
-    id?: google.protobuf.Int32Value;
-    name?: google.protobuf.StringValue;
-    email?: google.protobuf.StringValue;
+export namespace com {
+  export namespace ecommerce {
+    export namespace aspnet {
+      export namespace user {
+        export interface UserService {
+          getUserById(data: GetUserByIdRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+          createUser(data: CreateUserRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+          getUserByEmailAndPassword(data: GetUserByEmailAndPasswordRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+        }
+        export interface GetUserByIdRequest {
+          id?: google.protobuf.Int32Value;
+        }
+        export interface GetUserByEmailAndPasswordRequest {
+          email?: google.protobuf.StringValue;
+          password?: google.protobuf.StringValue;
+        }
+        export interface CreateUserRequest {
+          name?: google.protobuf.StringValue;
+          email?: google.protobuf.StringValue;
+          password?: google.protobuf.StringValue;
+        }
+        export interface UserProfile {
+          id?: google.protobuf.Int32Value;
+          name?: google.protobuf.StringValue;
+          email?: google.protobuf.StringValue;
+        }
+      }
+    }
   }
 }
 export namespace google {
