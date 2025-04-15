@@ -28,6 +28,7 @@ repositories {
 }
 
 extra["springGrpcVersion"] = "0.6.0"
+extra["exposedVersion"] = "0.60.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -43,6 +44,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.springframework.grpc:spring-grpc-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    implementation("org.jetbrains.exposed:exposed-spring-boot-starter:${property("exposedVersion")}")
+    implementation("org.jetbrains.exposed:exposed-core:${property("exposedVersion")}")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:${property("exposedVersion")}")
 }
 
 dependencyManagement {
