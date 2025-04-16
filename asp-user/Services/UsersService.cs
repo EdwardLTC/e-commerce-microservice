@@ -12,9 +12,12 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 {
     public override async Task<UserProfile> GetUserById(GetUserByIdRequest request, ServerCallContext context)
     {
-        return await dbContext.Users.Where(u => u.Id == request.Id).Select(u => new UserProfile
+        if (!Guid.TryParse(request.Id, out var userId))
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid user ID format"));
+
+        return await dbContext.Users.Where(u => u.Id.Equals(userId)).Select(u => new UserProfile
                {
-                   Id = u.Id,
+                   Id = u.Id.ToString(),
                    Email = u.Email,
                    Name = u.Name
                }).FirstOrDefaultAsync() ??
@@ -39,7 +42,7 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 
         return new UserProfile
         {
-            Id = user.Id,
+            Id = user.Id.ToString(),
             Email = user.Email,
             Name = user.Name
         };
@@ -65,7 +68,7 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 
         return new UserProfile
         {
-            Id = CreatedUser.Entity.Id,
+            Id = CreatedUser.Entity.Id.ToString(),
             Email = CreatedUser.Entity.Email,
             Name = CreatedUser.Entity.Name
         };

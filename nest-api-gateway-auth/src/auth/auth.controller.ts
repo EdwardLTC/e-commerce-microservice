@@ -2,6 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/commo
 import { AuthService } from './auth.service';
 import { LoginDto, Public, RegisterDto, RequestWithToken } from './auth.model';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -10,8 +11,8 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  public async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  public async login(@Body() loginDto: LoginDto, @Req() req: Request) {
+    return this.authService.login(loginDto, req);
   }
 
   @Public()

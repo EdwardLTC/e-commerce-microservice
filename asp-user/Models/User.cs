@@ -6,7 +6,7 @@ namespace asp_user.Models;
 
 [Table("users")]
 [Index(nameof(Email), IsUnique = true)]
-public class User : BaseModel
+public class User : BaseModel<Guid>
 {
     [Required]
     [MaxLength(50)]
@@ -17,5 +17,4 @@ public class User : BaseModel
     [Required] [Column("password")] public string Password { get; set; } = null!;
 
     [MaxLength(50)] [Column("name")] public string Name { get; set; } = string.Empty;
-    
 }

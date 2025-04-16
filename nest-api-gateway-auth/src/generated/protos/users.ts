@@ -15,7 +15,7 @@ export namespace com {
           getUserByEmailAndPassword(data: GetUserByEmailAndPasswordRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
         }
         export interface GetUserByIdRequest {
-          id?: google.protobuf.Int32Value;
+          id?: google.protobuf.StringValue;
         }
         export interface GetUserByEmailAndPasswordRequest {
           email?: google.protobuf.StringValue;
@@ -27,7 +27,7 @@ export namespace com {
           password?: google.protobuf.StringValue;
         }
         export interface UserProfile {
-          id?: google.protobuf.Int32Value;
+          id?: google.protobuf.StringValue;
           name?: google.protobuf.StringValue;
           email?: google.protobuf.StringValue;
         }

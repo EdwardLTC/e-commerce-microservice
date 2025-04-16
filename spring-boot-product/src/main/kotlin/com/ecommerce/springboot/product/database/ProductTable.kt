@@ -1,7 +1,8 @@
 package com.ecommerce.springboot.product.database
 
 import org.jetbrains.exposed.dao.id.UUIDTable
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
+import org.jetbrains.exposed.sql.kotlin.datetime.CurrentDateTime
+import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -14,15 +15,27 @@ object ProductTable : UUIDTable("products") {
     val description = text("description")
     val price = decimal("price", 12, 2)
     val quantity = integer("quantity")
-    val stockStatus = enumerationByName<StockStatus>("stock_status", 20)
     val categoryIds = array<UUID>("category_ids")
     val mediaUrls = array<String>("media_urls")
-    val status = enumerationByName<ProductStatus>("status", 20)
     val totalSales = integer("total_sales")
     val rating = decimal("rating", 3, 2).default(BigDecimal(0.0))
     val version = integer("version").default(0)
 
-    val createdAt = timestamp("created_at")
-    val updatedAt = timestamp("updated_at")
-    val deletedAt = timestamp("deleted_at").nullable()
+    val status = customEnumeration(
+        name = "status",
+        fromDb = { value -> ProductStatus.valueOf(value as String) },
+        toDb = { PGEnum("product_status", it) },
+        sql = "product_status"
+    )
+
+    val stockStatus = customEnumeration(
+        name = "stock_status",
+        fromDb = { value -> StockStatus.valueOf(value as String) },
+        toDb = { PGEnum("stock_status", it) },
+        sql = "stock_status"
+    )
+
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
+    val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
+    val deletedAt = datetime("deleted_at").nullable()
 }

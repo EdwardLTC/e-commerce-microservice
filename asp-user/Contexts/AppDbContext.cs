@@ -22,13 +22,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("users");
-        
+
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Id)
+            .HasDefaultValueSql("gen_random_uuid()");
     }
 
     private void ApplyChangeTrackerHook()
     {
-        foreach (var entry in ChangeTracker.Entries<BaseModel>())
+        foreach (var entry in ChangeTracker.Entries<IHasTimestamps>())
             switch (entry.State)
             {
             case EntityState.Added:

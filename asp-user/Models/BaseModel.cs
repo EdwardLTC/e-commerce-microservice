@@ -3,9 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace asp_user.Models;
 
-public class BaseModel
+public interface IHasTimestamps
 {
-    [Key] [Column("id")] public int Id { get; set; }
+    DateTime CreatedAt { get; set; }
+    DateTime UpdatedAt { get; set; }
+}
+
+public class BaseModel<T> : IHasTimestamps
+{
+    [Key] [Column("id")] public T Id { get; set; } = default!;
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Column("createdAt")]

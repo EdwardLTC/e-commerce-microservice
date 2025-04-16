@@ -1,13 +1,12 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace asp_user.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDB : Migration
+    public partial class AddUserTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,8 +19,7 @@ namespace asp_user.Migrations
                 schema: "users",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     email = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     password = table.Column<string>(type: "text", nullable: false),
                     name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),

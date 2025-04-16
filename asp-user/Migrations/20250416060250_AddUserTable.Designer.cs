@@ -12,8 +12,8 @@ using asp_user.Contexts;
 namespace asp_user.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250311091739_InitDB")]
-    partial class InitDB
+    [Migration("20250416060250_AddUserTable")]
+    partial class AddUserTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,12 +28,11 @@ namespace asp_user.Migrations
 
             modelBuilder.Entity("asp_user.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("uuid_generate_v4()");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()

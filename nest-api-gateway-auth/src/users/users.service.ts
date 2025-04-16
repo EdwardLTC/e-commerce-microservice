@@ -9,7 +9,7 @@ export class UsersService {
 
   constructor(@Inject('USER_SERVICE') private client: ClientGrpc) {}
 
-  public async getUserById(id: number) {
+  public async getUserById(id: string) {
     return lastValueFrom(this.clientGrpc.getUserById({ id: { value: id } }));
   }
 

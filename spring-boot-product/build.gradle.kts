@@ -45,7 +45,7 @@ dependencies {
     testImplementation("org.springframework.grpc:spring-grpc-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    implementation("com.google.protobuf:protobuf-java:3.25.1")
+    implementation("com.google.protobuf:protobuf-java:4.28.2")
     implementation("io.grpc:grpc-protobuf:1.60.0")
     implementation("io.grpc:grpc-stub:1.60.0")
     implementation("io.grpc:grpc-netty:1.60.0")
@@ -53,7 +53,10 @@ dependencies {
 
     implementation("org.jetbrains.exposed:exposed-spring-boot-starter:${property("exposedVersion")}")
     implementation("org.jetbrains.exposed:exposed-core:${property("exposedVersion")}")
+    implementation("org.jetbrains.exposed:exposed-jdbc:${property("exposedVersion")}")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:${property("exposedVersion")}")
+
+    implementation("org.postgresql:postgresql:42.7.2")
 }
 
 dependencyManagement {

@@ -11,7 +11,7 @@ service UserService {
 }
 
 message GetUserByIdRequest {
-  google.protobuf.Int32Value id = 1;
+  google.protobuf.StringValue id = 1;
 }
 
 message GetUserByEmailAndPasswordRequest {
@@ -26,7 +26,7 @@ message CreateUserRequest {
 }
 
 message UserProfile {
-  google.protobuf.Int32Value id = 1;
+  google.protobuf.StringValue id = 1;
   google.protobuf.StringValue name = 2;
   google.protobuf.StringValue email = 3;
 }
