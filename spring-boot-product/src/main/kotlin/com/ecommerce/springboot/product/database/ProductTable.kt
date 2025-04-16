@@ -16,6 +16,7 @@ object ProductTable : UUIDTable("products") {
     val quantity = integer("quantity")
     val stockStatus = enumerationByName<StockStatus>("stock_status", 20)
     val categoryIds = array<UUID>("category_ids")
+    val mediaUrls = array<String>("media_urls")
     val status = enumerationByName<ProductStatus>("status", 20)
     val totalSales = integer("total_sales")
     val rating = decimal("rating", 3, 2).default(BigDecimal(0.0))

@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package com.ecommerce.springboot.product.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+service ProductService {
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+  rpc GetProduct(GetProductRequest) returns (Product);
+  rpc CreateProduct(CreateProductRequest) returns (Product);
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message GetProductsRequest {
+  google.protobuf.Int32Value skip = 1;
+  google.protobuf.Int32Value take = 2;
+  repeated string categoryIds = 3;
+}
+
+message GetProductsResponse {
+  repeated Product products = 1;
+}
+
+message Product {
+  google.protobuf.StringValue id = 1; // UUID
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue description = 3;
+  google.protobuf.DoubleValue price = 4;
+  google.protobuf.Int32Value quantity = 5;
+  StockStatus stock_status = 6;
+  ProductStatus status = 7;
+  google.protobuf.Int32Value totalSales = 8;
+  google.protobuf.DoubleValue rating = 9;
+  google.protobuf.Timestamp createdAt = 10;
+  repeated string categoryIds = 11; // UUIDs
+  repeated string mediaUrls = 12;
+}
+
+message CreateProductRequest {
+  google.protobuf.StringValue id = 1; // UUID
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue description = 3;
+  google.protobuf.DoubleValue price = 4;
+  google.protobuf.Int32Value quantity = 5;
+  StockStatus stock_status = 6;
+  ProductStatus status = 7;
+  google.protobuf.Int32Value totalSales = 8;
+  google.protobuf.DoubleValue rating = 9;
+  google.protobuf.Timestamp createdAt = 10;
+  repeated string categoryIds = 11; // UUIDs
+  repeated string mediaUrls = 12;
+  google.protobuf.StringValue createdBy = 13; // UUID
+}
+
+enum ProductStatus {
+  PRODUCT_STATUS_UNSPECIFIED = 0;
+  DRAFT = 1;
+  ACTIVE = 2;
+  DISCONTINUED = 3;
+  ARCHIVED = 4;
+}
+
+enum StockStatus {
+  STOCK_STATUS_UNSPECIFIED = 0;
+  IN_STOCK = 1;
+  OUT_OF_STOCK = 2;
+  BACKORDER = 3;
+  LIMITED = 4;
+}
+
+message StockStatusFilter {
+  repeated StockStatus statuses = 1;
+}
