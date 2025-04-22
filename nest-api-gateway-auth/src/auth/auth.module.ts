@@ -11,9 +11,11 @@ import { createClient, createKeyv, Keyv, RedisClientType } from '@keyv/redis';
 @Module({
   imports: [
     CacheModule.registerAsync({
-      useFactory: async () => {
+      imports: [EnvironmentsModule],
+      inject: [EnvironmentsService],
+      useFactory: async (env: EnvironmentsService) => {
         return {
-          stores: [new Keyv(), createKeyv('redis://localhost:6379', { namespace: 'auth' })],
+          stores: [new Keyv(), createKeyv(env.redis.url, { namespace: 'auth' })],
         };
       },
     }),
@@ -33,8 +35,9 @@ import { createClient, createKeyv, Keyv, RedisClientType } from '@keyv/redis';
     AuthService,
     {
       provide: 'REDIS_CLIENT',
-      useFactory: async (): Promise<RedisClientType> => {
-        const client: RedisClientType = createClient({ url: 'redis://localhost:6379' });
+      inject: [EnvironmentsService],
+      useFactory: async (env: EnvironmentsService): Promise<RedisClientType> => {
+        const client: RedisClientType = createClient({ url: env.redis.url });
         await client.connect();
         return client;
       },

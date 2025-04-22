@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JWTConfig, MicroserviceConfig } from './environments.model';
+import { JWTConfig, MicroserviceConfig, RedisConfig } from './environments.model';
 
 @Injectable()
 export class EnvironmentsService {
@@ -13,6 +13,10 @@ export class EnvironmentsService {
   public readonly microservice: MicroserviceConfig = {
     userServiceURL: this.configService.get<string>('USER_SERVICE_URL'),
   };
+  public readonly redis: RedisConfig = {
+    url: this.configService.get<string>('REDIS_CONNECTION'),
+  };
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) {
+  }
 }

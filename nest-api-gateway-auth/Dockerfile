@@ -14,6 +14,8 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY nest-api-gateway-auth/.env .
 
+ENV REDIS_CONNECTION=redis://redis:6379
+
 EXPOSE 3000
 
 CMD ["node", "dist/main.js"]
