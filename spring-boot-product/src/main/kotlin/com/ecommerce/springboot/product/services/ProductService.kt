@@ -87,8 +87,6 @@ class ProductService : ProductServiceGrpc.ProductServiceImplBase() {
             baseConditions += ProductTable.categoryIds inList listOf(request.categoryIdsList.map { UUID.fromString(it) })
         }
 
-        println("skip: ${request.skip.value}, take: ${request.take.value}, categoryIds: ${request.categoryIdsList}")
-
         ProductTable.selectAll().where { baseConditions.reduce { acc, op -> acc and op } }
             .offset(request.skip.value.toLong())
             .take(request.take.value)

@@ -16,7 +16,7 @@ import { EnvironmentsService } from '../environments/environments.service';
         useFactory: (env: EnvironmentsService) => ({
           transport: Transport.GRPC,
           options: {
-            package: 'GrpcUserClient',
+            package: 'com.ecommerce.aspnet.user',
             protoPath: join(__dirname, '../protos/users.proto'),
             url: env.microservice.userServiceURL,
           },
@@ -28,4 +28,5 @@ import { EnvironmentsService } from '../environments/environments.service';
   providers: [UsersService],
   exports: [UsersService],
 })
-export class UsersModule {}
+export class UsersModule {
+}
