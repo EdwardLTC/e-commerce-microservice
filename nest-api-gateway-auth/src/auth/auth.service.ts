@@ -34,7 +34,7 @@ export class AuthService {
       expiredAt: new Date(Date.now() + 60 * 60 * 24 * 7 * 1000),
     };
 
-    await this.cacheManager.set(`auth:session:${jti}`, session, 60 * 60 * 24 * 7);
+    await this.cacheManager.set(`session:${jti}`, session, 60 * 60 * 24 * 7);
 
     await this.redisClient.sAdd(`user:sessions:${user.id}`, `auth:session:${jti}`);
 
@@ -63,7 +63,7 @@ export class AuthService {
     return this.cacheManager.get<{
       jti: string;
       status: LoginSessionStatus;
-    }>(`auth:session:${jti}`);
+    }>(`session:${jti}`);
   }
 
   public async logout(jit: string) {

@@ -19,22 +19,30 @@ export type RequestWithToken = {
 };
 
 export class LoginDto {
-  @ApiProperty()
+  @ApiProperty({
+    example: 'lethanhcong@gmail.com',
+  })
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: '123456789',
+  })
   @IsString()
   @IsNotEmpty()
   password: string;
 }
 
 export class RegisterDto {
-  @ApiProperty()
+  @ApiProperty({
+    example: 'lethanhcong@gmail.com',
+  })
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: '123456789',
+  })
   @IsString()
   @IsNotEmpty()
   password: string;
@@ -46,13 +54,17 @@ export class RegisterDto {
 }
 
 export class ChangePasswordDto {
-  @ApiProperty()
+  @ApiProperty({
+    example: '123456789',
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
   oldPassword: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: '123456789',
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
