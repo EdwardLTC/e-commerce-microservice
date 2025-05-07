@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { SetMetadata } from '@nestjs/common';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -43,4 +43,18 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+}
+
+export class ChangePasswordDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(6)
+  oldPassword: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(6)
+  newPassword: string;
 }

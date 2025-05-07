@@ -8,9 +8,7 @@ services:
       dockerfile: asp-user/Dockerfile
     ports:
       - "5232:5232"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Docker
-      
+
   cache:
     image: redis:6.2-alpine
     restart: always

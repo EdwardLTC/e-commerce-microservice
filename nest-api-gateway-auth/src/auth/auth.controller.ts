@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, Public, RegisterDto, RequestWithToken } from './auth.model';
+import { ChangePasswordDto, LoginDto, Public, RegisterDto, RequestWithToken } from './auth.model';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 
@@ -27,5 +27,12 @@ export class AuthController {
   @Post('logout')
   public async logout(@Req() req: RequestWithToken) {
     return this.authService.logout(req.token.jti);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @Post('change-password')
+  public async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() req: RequestWithToken) {
+    return this.authService.changePassword(req.token.id, changePasswordDto);
   }
 }

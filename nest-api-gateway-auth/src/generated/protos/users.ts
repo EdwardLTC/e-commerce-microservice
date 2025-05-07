@@ -13,6 +13,12 @@ export namespace com {
           getUserById(data: GetUserByIdRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
           createUser(data: CreateUserRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
           getUserByEmailAndPassword(data: GetUserByEmailAndPasswordRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+          changePassword(data: ChangePasswordRequest, metadata?: Metadata, ...rest: any[]): Observable<UserProfile>;
+        }
+        export interface ChangePasswordRequest {
+          id?: google.protobuf.StringValue;
+          oldPassword?: google.protobuf.StringValue;
+          newPassword?: google.protobuf.StringValue;
         }
         export interface GetUserByIdRequest {
           id?: google.protobuf.StringValue;
@@ -27,9 +33,9 @@ export namespace com {
           password?: google.protobuf.StringValue;
         }
         export interface UserProfile {
-          id?: google.protobuf.StringValue;
-          name?: google.protobuf.StringValue;
-          email?: google.protobuf.StringValue;
+          id?: string;
+          name?: string;
+          email?: string;
         }
       }
     }

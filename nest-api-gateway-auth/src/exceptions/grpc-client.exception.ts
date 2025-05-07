@@ -55,7 +55,6 @@ export class GrpcClientException extends Error {
         details: this.details,
       },
       httpCode,
-      { cause: this.metadata },
     );
   }
 }

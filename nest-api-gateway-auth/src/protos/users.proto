@@ -8,6 +8,13 @@ service UserService {
   rpc GetUserById(GetUserByIdRequest) returns (UserProfile);
   rpc CreateUser(CreateUserRequest) returns (UserProfile);
   rpc GetUserByEmailAndPassword(GetUserByEmailAndPasswordRequest) returns (UserProfile);
+  rpc changePassword(ChangePasswordRequest) returns (UserProfile);
+}
+
+message ChangePasswordRequest {
+  google.protobuf.StringValue id = 1;
+  google.protobuf.StringValue oldPassword = 2;
+  google.protobuf.StringValue newPassword = 3;
 }
 
 message GetUserByIdRequest {
@@ -26,7 +33,7 @@ message CreateUserRequest {
 }
 
 message UserProfile {
-  google.protobuf.StringValue id = 1;
-  google.protobuf.StringValue name = 2;
-  google.protobuf.StringValue email = 3;
+  string id = 1;
+  string name= 2;
+  string email = 3;
 }

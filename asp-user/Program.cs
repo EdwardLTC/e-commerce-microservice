@@ -1,5 +1,7 @@
+using System.Reflection;
 using asp_user.Contexts;
 using asp_user.Extensions;
+using asp_user.Interceptors;
 using Confluent.Kafka;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
@@ -29,13 +31,17 @@ builder.Services.AddGrpc(options =>
 {
     options.MaxReceiveMessageSize = 50 * 1024 * 1024; // 50MB
     options.MaxSendMessageSize = 50 * 1024 * 1024; // 50MB
+    options.Interceptors.Add<ValidationInterceptor>();
 });
+
+builder.Services.AddScoped<ValidationInterceptor>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "users")));
 
 builder.Services.AddGrpcServices();
+builder.Services.AddAttributedValidators(Assembly.GetExecutingAssembly());
 
 var app = builder.Build();
 

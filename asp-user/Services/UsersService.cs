@@ -12,10 +12,8 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 {
     public override async Task<UserProfile> GetUserById(GetUserByIdRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var userId))
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid user ID format"));
-
-        return await dbContext.Users.Where(u => u.Id.Equals(userId)).Select(u => new UserProfile
+        Console.WriteLine(request);
+        return await dbContext.Users.Where(u => u.Id.Equals(Guid.Parse(request.Id))).Select(u => new UserProfile
                {
                    Id = u.Id.ToString(),
                    Email = u.Email,
@@ -71,6 +69,39 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
             Id = CreatedUser.Entity.Id.ToString(),
             Email = CreatedUser.Entity.Email,
             Name = CreatedUser.Entity.Name
+        };
+    }
+
+    public override async Task<UserProfile> changePassword(ChangePasswordRequest request, ServerCallContext context)
+    {
+        var user = await dbContext.Users.Where(u => u.Id.Equals(request.Id)).Select(u => new
+        {
+            u.Password,
+            u.Id,
+            u.Email,
+            u.Name
+        }).FirstOrDefaultAsync();
+
+        if (user == null) throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
+
+        if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user.Password))
+            throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid password"));
+
+        var updatedUser = dbContext.Users.Update(new User
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword),
+            Name = user.Name
+        });
+
+        await dbContext.SaveChangesAsync();
+
+        return new UserProfile
+        {
+            Id = updatedUser.Entity.Id.ToString(),
+            Email = updatedUser.Entity.Email,
+            Name = updatedUser.Entity.Name
         };
     }
 }

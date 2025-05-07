@@ -8,20 +8,21 @@ import { AuthModule } from '../auth/auth.module';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Module({
-  imports: [EnvironmentsModule, UsersModule, AuthModule],
-  providers: [
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: GrpcInterceptor,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: GlobalExceptionsFilter,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-  ],
+    imports: [EnvironmentsModule, UsersModule, AuthModule],
+    providers: [
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: GrpcInterceptor,
+        },
+        {
+            provide: APP_FILTER,
+            useClass: GlobalExceptionsFilter,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: AuthGuard,
+        },
+    ],
 })
-export class AppModule {}
+export class AppModule {
+}

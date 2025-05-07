@@ -20,4 +20,10 @@ export class UsersService {
   public async createUser(email: string, password: string, name: string) {
     return lastValueFrom(this.clientGrpc.createUser({ email: { value: email }, password: { value: password }, name: { value: name } }));
   }
+
+  public async changePassword(id: string, oldPassword: string, newPassword: string) {
+    return lastValueFrom(
+      this.clientGrpc.changePassword({ id: { value: id }, oldPassword: { value: oldPassword }, newPassword: { value: newPassword } }),
+    );
+  }
 }

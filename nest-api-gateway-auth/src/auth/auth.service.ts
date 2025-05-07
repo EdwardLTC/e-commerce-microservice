@@ -3,7 +3,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { Cache } from 'cache-manager';
-import { LoginDto, LoginSessionStatus, RegisterDto } from './auth.model';
+import { ChangePasswordDto, LoginDto, LoginSessionStatus, RegisterDto } from './auth.model';
 import { Request } from 'express';
 import { RedisClientType } from '@keyv/redis';
 import { randomUUID } from 'crypto';
@@ -22,11 +22,11 @@ export class AuthService {
 
     const jti = randomUUID();
 
-    const assessToken = this.jwtService.sign({ id: user.id.value, email: user.email.value, jti: jti });
+    const assessToken = this.jwtService.sign({ id: user.id, email: user.email, jti: jti });
 
     const session = {
       jti: jti,
-      userId: user.id.value,
+      userId: user.id,
       status: LoginSessionStatus.ACTIVE,
       ip: request.ip,
       userAgent: request.headers['user-agent'],
@@ -36,17 +36,18 @@ export class AuthService {
 
     await this.cacheManager.set(`auth:session:${jti}`, session, 60 * 60 * 24 * 7);
 
-    await this.redisClient.sAdd(`user:sessions:${user.id.value}`, `auth:session:${jti}`);
+    await this.redisClient.sAdd(`user:sessions:${user.id}`, `auth:session:${jti}`);
 
-    await this.redisClient.expire(`user:sessions:${user.id.value}`, 60 * 60 * 24 * 7);
+    await this.redisClient.expire(`user:sessions:${user.id}`, 60 * 60 * 24 * 7);
 
     return {
       access_token: assessToken,
     };
   }
 
-  public async changePassword(userId: string) {
-    // TODO: implement change password
+  public async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    await this.userService.changePassword(userId, changePasswordDto.oldPassword, changePasswordDto.newPassword);
+
     const sessions = await this.redisClient.sMembers(`user_sessions:${userId}`);
 
     await this.cacheManager.mdel(sessions);
