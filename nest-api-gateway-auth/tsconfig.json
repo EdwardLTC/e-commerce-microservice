@@ -16,6 +16,10 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "google-protobuf/*": ["node_modules/google-protobuf/*"],
+      "@bufbuild/protobuf": ["node_modules/@bufbuild/protobuf"]
+    }
   }
 }
