@@ -34,7 +34,7 @@ export class AuthService {
       expiredAt: new Date(Date.now() + 60 * 60 * 24 * 7 * 1000),
     };
 
-    await this.cacheManager.set(`session:${jti}`, session, 60 * 60 * 24 * 7);
+    await this.cacheManager.set(`auth:session:${jti}`, session, 60 * 60 * 24 * 7);
 
     await this.redisClient.sAdd(`user:sessions:${user.id}`, `auth:session:${jti}`);
 
@@ -48,7 +48,7 @@ export class AuthService {
   public async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     await this.userService.changePassword(userId, changePasswordDto.oldPassword, changePasswordDto.newPassword);
 
-    const sessions = await this.redisClient.sMembers(`user_sessions:${userId}`);
+    const sessions = await this.redisClient.sMembers(`user:sessions:${userId}`);
 
     await this.cacheManager.mdel(sessions);
 
@@ -63,7 +63,7 @@ export class AuthService {
     return this.cacheManager.get<{
       jti: string;
       status: LoginSessionStatus;
-    }>(`session:${jti}`);
+    }>(`auth:session:${jti}`);
   }
 
   public async logout(jit: string) {

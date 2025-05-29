@@ -5,19 +5,17 @@ import com.ecommerce.springboot.product.database.ProductTable
 import com.ecommerce.springboot.product.database.StockStatus
 import com.ecommerce.springboot.product.v1.ProductOuterClass
 import com.ecommerce.springboot.product.v1.ProductServiceGrpc
-import com.google.protobuf.*
-import io.grpc.Status
 import io.grpc.stub.StreamObserver
+import net.devh.boot.grpc.server.service.GrpcService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
-import org.springframework.grpc.server.service.GrpcService
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-@GrpcService
+@GrpcService()
 @Component
 @Transactional
 class ProductService : ProductServiceGrpc.ProductServiceImplBase() {
@@ -47,23 +45,11 @@ class ProductService : ProductServiceGrpc.ProductServiceImplBase() {
         val baseConditions = mutableListOf<Op<Boolean>>()
         baseConditions += ProductTable.deletedAt.isNull()
         baseConditions += ProductTable.id eq runCatching { UUID.fromString(request.id) }.getOrElse {
-            responseObserver.onError(
-                Status.INVALID_ARGUMENT
-                    .withDescription("Invalid product ID format: ${request.id}")
-                    .asRuntimeException()
-            )
-            return
+            throw IllegalArgumentException("Invalid UUID format: ${request.id}")
         }
 
         ProductTable.selectAll().where { baseConditions.reduce { acc, op -> acc and op } }.firstOrNull().let {
-            if (it == null) {
-                responseObserver.onError(
-                    Status.INVALID_ARGUMENT
-                        .withDescription("Product with ID ${request.id} not found")
-                        .asRuntimeException()
-                )
-                return
-            }
+            if (it == null) throw IllegalArgumentException("Product not found with ID: ${request.id}")
 
             responseObserver.onNext(it.toProductProto())
         }
@@ -117,12 +103,7 @@ class ProductService : ProductServiceGrpc.ProductServiceImplBase() {
                 it[categoryIds] = request.categoryIdsList.map { UUID.fromString(it) }
             }
         }.getOrElse {
-            responseObserver.onError(
-                Status.INTERNAL
-                    .withDescription("Failed to create product due to: ${it.message}")
-                    .asRuntimeException()
-            )
-            return
+            throw IllegalArgumentException("Failed to create product: ${it.message}")
         }
 
         //TODO: Push this post after creation to Kafka for analytics, recommendations, search, etc... services

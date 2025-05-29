@@ -4,6 +4,7 @@ export type JWTConfig = {
 
 export type MicroserviceConfig = {
   userServiceURL: string;
+  productServiceURL: string;
 };
 
 export type RedisConfig = {

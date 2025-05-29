@@ -1,31 +1,30 @@
 import { Module } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { UsersController } from './users.controller';
+import { ProductsService } from './products.service';
+import { ProductsController } from './products.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { join } from 'path';
 import { EnvironmentsModule } from '../environments/environments.module';
 import { EnvironmentsService } from '../environments/environments.service';
+import { join } from 'path';
 
 @Module({
   imports: [
     ClientsModule.registerAsync([
       {
-        name: 'USER_SERVICE',
+        name: 'PRODUCT_SERVICE',
         imports: [EnvironmentsModule],
         inject: [EnvironmentsService],
         useFactory: (env: EnvironmentsService) => ({
           transport: Transport.GRPC,
           options: {
-            package: 'com.ecommerce.aspnet.user',
-            protoPath: join(__dirname, '../users/users.proto'),
-            url: env.microservice.userServiceURL,
+            package: 'com.ecommerce.springboot.product.v1',
+            protoPath: join(__dirname, '../products/products.proto'),
+            url: env.microservice.productServiceURL,
           },
         }),
       },
     ]),
   ],
-  controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService],
+  controllers: [ProductsController],
+  providers: [ProductsService],
 })
-export class UsersModule {}
+export class ProductsModule {}

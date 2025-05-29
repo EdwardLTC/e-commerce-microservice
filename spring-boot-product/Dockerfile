@@ -14,5 +14,5 @@ ENV SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/e_commerce
 
 COPY --from=build /app/build/libs/*.jar app.jar
 
-EXPOSE 2003
-ENTRYPOINT ["java", "-Dserver.port=2003", "-jar", "app.jar"]
+EXPOSE 9090
+ENTRYPOINT ["java", "-Dserver.port=9090", "-jar", "app.jar"]

@@ -8,6 +8,14 @@ services:
       dockerfile: asp-user/Dockerfile
     ports:
       - "5232:5232"
+  
+  spring-boot-product:
+    image: spring-boot-product
+    build:
+      context: ../
+      dockerfile: spring-boot-product/Dockerfile
+    ports:
+      - "2003:9090"
 
   cache:
     image: redis:6.2-alpine

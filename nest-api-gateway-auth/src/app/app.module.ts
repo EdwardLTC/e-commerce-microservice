@@ -6,9 +6,10 @@ import { GrpcInterceptor } from '../interceptors/grpc.interceptor';
 import { GlobalExceptionsFilter } from '../exceptions/global-exceptions.filter';
 import { AuthModule } from '../auth/auth.module';
 import { AuthGuard } from '../auth/auth.guard';
+import { ProductsModule } from '../products/products.module';
 
 @Module({
-  imports: [EnvironmentsModule, UsersModule, AuthModule],
+  imports: [EnvironmentsModule, UsersModule, AuthModule, ProductsModule],
   providers: [
     {
       provide: APP_INTERCEPTOR,

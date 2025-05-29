@@ -10,15 +10,20 @@ namespace asp_user.Services;
 [GrpcService]
 public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 {
+    public async Task<UserProfile?> GetUserById(Guid id)
+    {
+        return await dbContext.Users.Where(u => u.Id.Equals(id)).Select(u => new UserProfile
+        {
+            Id = u.Id.ToString(),
+            Email = u.Email,
+            Name = u.Name
+        }).FirstOrDefaultAsync();
+    }
+
+
     public override async Task<UserProfile> GetUserById(GetUserByIdRequest request, ServerCallContext context)
     {
-        Console.WriteLine(request);
-        return await dbContext.Users.Where(u => u.Id.Equals(Guid.Parse(request.Id))).Select(u => new UserProfile
-               {
-                   Id = u.Id.ToString(),
-                   Email = u.Email,
-                   Name = u.Name
-               }).FirstOrDefaultAsync() ??
+        return await GetUserById(Guid.Parse(request.Id)) ??
                throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
     }
 

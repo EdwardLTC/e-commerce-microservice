@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package com.ecommerce.springboot.product.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+service ProductService {
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+  rpc GetProduct(GetProductRequest) returns (Product);
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message GetProductsRequest {
+  google.protobuf.Int32Value skip = 1;
+  google.protobuf.Int32Value take = 2;
+  repeated string categoryIds = 3;
+}
+
+message GetProductsResponse {
+  repeated Product products = 1;
+}
+
+message CreateProductResponse {
+  string id = 1; // UUID
+}
+
+message Product {
+  string id = 1; // UUID
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  int32 quantity = 5;
+  StockStatus stock_status = 6;
+  ProductStatus status = 7;
+  int32 totalSales = 8;
+  double rating = 9;
+  string createdAt = 10;
+  repeated string categoryIds = 11; // UUIDs
+  repeated string mediaUrls = 12;
+}
+
+message CreateProductRequest {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue description = 2;
+  google.protobuf.DoubleValue price = 3;
+  google.protobuf.Int32Value quantity = 4;
+  google.protobuf.StringValue sellerId = 5; // UUID
+  repeated string categoryIds = 6; // UUIDs
+  repeated string mediaUrls = 7;
+}
+
+enum ProductStatus {
+  DRAFT = 0;
+  ACTIVE = 1;
+  DISCONTINUED = 2;
+  ARCHIVED = 3;
+}
+
+enum StockStatus {
+  IN_STOCK = 0;
+  OUT_OF_STOCK = 1;
+  BACKORDER = 2;
+  LIMITED = 3;
+}
+
+message StockStatusFilter {
+  repeated StockStatus statuses = 1;
+}

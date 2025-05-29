@@ -6,17 +6,17 @@ import { JWTConfig, MicroserviceConfig, RedisConfig } from './environments.model
 export class EnvironmentsService {
   public readonly environment = this.configService.get<string>('NODE_ENV');
   public readonly port = this.configService.get<number>('PORT');
+  public readonly isDevelopment = this.environment === 'development';
   public readonly jwt: JWTConfig = {
     secret: this.configService.get<string>('JWT_SECRET'),
   };
-  public readonly isDevelopment = this.environment === 'development';
   public readonly microservice: MicroserviceConfig = {
     userServiceURL: this.configService.get<string>('USER_SERVICE_URL'),
+    productServiceURL: this.configService.get<string>('PRODUCT_SERVICE_URL'),
   };
   public readonly redis: RedisConfig = {
     url: this.configService.get<string>('REDIS_CONNECTION'),
   };
 
-  constructor(private configService: ConfigService) {
-  }
+  constructor(private configService: ConfigService) {}
 }

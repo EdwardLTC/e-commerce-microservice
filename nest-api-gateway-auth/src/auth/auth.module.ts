@@ -15,7 +15,7 @@ import { createClient, createKeyv, Keyv, RedisClientType } from '@keyv/redis';
       inject: [EnvironmentsService],
       useFactory: async (env: EnvironmentsService) => {
         return {
-          stores: [new Keyv(), createKeyv(env.redis.url, { namespace: 'auth' })],
+          stores: [new Keyv(), createKeyv(env.redis.url)],
         };
       },
     }),
