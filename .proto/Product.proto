@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package com.ecommerce.springboot.product.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+service ProductService {
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+}
+
+message GetProductsRequest {
+  google.protobuf.Int32Value skip = 1;
+  google.protobuf.Int32Value take = 2;
+}
+
+message GetProductsResponse {
+  repeated Product products = 1;
+}
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string brand = 4;
+  double minPrice = 5;
+  double maxPrice = 6;
+  int32 totalSaleCount = 7;
+  double rating = 8;
+  repeated string mediaUrls = 9;
+}
+
+
+

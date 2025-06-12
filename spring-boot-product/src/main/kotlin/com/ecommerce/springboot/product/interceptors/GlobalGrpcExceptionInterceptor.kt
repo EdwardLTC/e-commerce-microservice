@@ -1,16 +1,9 @@
 package com.ecommerce.springboot.product.interceptors
 
-import io.grpc.ForwardingServerCallListener
-import io.grpc.Metadata
-import io.grpc.ServerCall
-import io.grpc.ServerCallHandler
-import io.grpc.ServerInterceptor
-import io.grpc.Status
+import io.grpc.*
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 
-@Component
 @GrpcGlobalServerInterceptor
 class GlobalGrpcExceptionInterceptor : ServerInterceptor {
 
@@ -21,44 +14,49 @@ class GlobalGrpcExceptionInterceptor : ServerInterceptor {
         headers: Metadata,
         next: ServerCallHandler<ReqT, RespT>
     ): ServerCall.Listener<ReqT> {
-
         val listener = next.startCall(call, headers)
+        return ExceptionHandlingListener(listener, call, headers)
+    }
 
-        return object : ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT>(listener) {
-            var requestBody: ReqT? = null
-            override fun onMessage(message: ReqT) {
-                requestBody = message
-                super.onMessage(message)
-            }
+    private inner class ExceptionHandlingListener<ReqT, RespT>(
+        delegate: ServerCall.Listener<ReqT>,
+        private val call: ServerCall<ReqT, RespT>,
+        private val headers: Metadata
+    ) : ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT>(delegate) {
 
-            override fun onHalfClose() {
-                try {
-                    super.onHalfClose()
-                } catch (e: Exception) {
-                    val status = when (e) {
-                        is IllegalArgumentException -> Status.INVALID_ARGUMENT
-                        else -> Status.INTERNAL
-                    }.withDescription(e.message).withCause(e)
+        private var requestBody: ReqT? = null
 
-                    if (status == Status.INTERNAL) {
-                        val logBuilder = StringBuilder()
-                        logBuilder.appendLine("⚠️ gRPC Exception Interceptor")
-                        logBuilder.appendLine("Exception  : ${e::class.qualifiedName}")
-                        logBuilder.appendLine("Message    : ${e.message}")
-                        logBuilder.appendLine("Metadata   : ")
-                        headers.keys().forEach { it ->
-                            val key = Metadata.Key.of(it, Metadata.ASCII_STRING_MARSHALLER)
-                            logBuilder.appendLine("  - $it: ${headers[key]}")
-                        }
-                        logBuilder.appendLine("Request    : ${requestBody.toString()}")
+        override fun onMessage(message: ReqT) {
+            requestBody = message
+            super.onMessage(message)
+        }
 
-                        logger.error(logBuilder.toString(), e)
+        override fun onHalfClose() {
+            try {
+                super.onHalfClose()
+            } catch (e: Exception) {
+                val status = when (e) {
+                    is IllegalArgumentException -> Status.INVALID_ARGUMENT
+                    else -> Status.INTERNAL
+                }.withDescription(e.message).withCause(e)
+
+                if (status.code == Status.INTERNAL.code) {
+                    val logBuilder = StringBuilder()
+                    logBuilder.appendLine("⚠️ gRPC Exception Interceptor")
+                    logBuilder.appendLine("Exception  : ${e::class.qualifiedName}")
+                    logBuilder.appendLine("Message    : ${e.message}")
+                    logBuilder.appendLine("Metadata   : ")
+                    headers.keys().forEach {
+                        val key = Metadata.Key.of(it, Metadata.ASCII_STRING_MARSHALLER)
+                        logBuilder.appendLine("  - $it: ${headers[key]}")
                     }
+                    logBuilder.appendLine("Request    : $requestBody")
 
-                    call.close(status, Metadata())
+                    logger.error(logBuilder.toString(), e)
                 }
+
+                call.close(status, Metadata())
             }
         }
     }
-
 }

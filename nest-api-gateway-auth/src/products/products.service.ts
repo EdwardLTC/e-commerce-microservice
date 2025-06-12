@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { com } from '../../generated/products/products';
 import { CreateProductRequest, GetProductsRequest, GetProductsResponse } from './products.model';
 import { lastValueFrom } from 'rxjs';
+import { com } from '../../generated/.proto/Product';
 
 @Injectable()
 export class ProductsService {

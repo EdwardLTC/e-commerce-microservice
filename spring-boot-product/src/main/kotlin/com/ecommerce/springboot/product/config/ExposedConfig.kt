@@ -1,7 +1,7 @@
 package com.ecommerce.springboot.product.config
 
-import org.jetbrains.exposed.spring.autoconfigure.ExposedAutoConfiguration
-import org.jetbrains.exposed.sql.DatabaseConfig
+import org.jetbrains.exposed.v1.core.DatabaseConfig
+import org.jetbrains.exposed.v1.spring.boot.autoconfigure.ExposedAutoConfiguration
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
 import org.springframework.context.annotation.Bean

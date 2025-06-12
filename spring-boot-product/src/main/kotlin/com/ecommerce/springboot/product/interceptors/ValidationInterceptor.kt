@@ -1,14 +1,9 @@
 package com.ecommerce.springboot.product.interceptors
 
 import io.grpc.*
-import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor
-import org.springframework.stereotype.Component
 import java.lang.reflect.Method
 
-@Component
-@GrpcGlobalServerInterceptor
 class ValidationInterceptor : ServerInterceptor {
-
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
         call: ServerCall<ReqT, RespT>,
         headers: Metadata,

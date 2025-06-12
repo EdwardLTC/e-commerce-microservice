@@ -13,7 +13,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(19)
     }
 }
 
@@ -28,7 +28,7 @@ repositories {
 }
 
 extra["springGrpcVersion"] = "0.6.0"
-extra["exposedVersion"] = "0.60.0"
+extra["exposedVersion"] = "1.0.0-beta-2"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -94,4 +94,12 @@ protobuf {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir("../.proto")
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package com.ecommerce.springboot.product.database
+package com.ecommerce.springboot.product.database.utilities
 
 import org.postgresql.util.PGobject
 

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { com } from '../../generated/users/users';
+import { com } from '../../generated/.proto/User';
 
 @Injectable()
 export class UsersService {
