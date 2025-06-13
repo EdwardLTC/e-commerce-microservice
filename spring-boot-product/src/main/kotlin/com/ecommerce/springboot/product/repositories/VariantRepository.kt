@@ -4,7 +4,7 @@ import com.ecommerce.springboot.product.database.VariantOptionValuesTable
 import com.ecommerce.springboot.product.database.VariantOptionValuesTable.optionValue
 import com.ecommerce.springboot.product.database.VariantOptionValuesTable.variant
 import com.ecommerce.springboot.product.database.VariantsTable
-import com.ecommerce.springboot.product.models.CreateVariantRequest
+import com.ecommerce.springboot.product.dto.CreateVariantRequestDto
 import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -19,7 +19,7 @@ class VariantRepository(
     private val optionTypeRepository: OptionTypeRepository
 ) {
 
-    fun create(productId: UUID, request: CreateVariantRequest): UUID {
+    fun create(productId: UUID, request: CreateVariantRequestDto): UUID {
         productRepository.getById(productId) ?: throw IllegalArgumentException("Product with ID $productId not found")
         val optionValues = optionTypeRepository.getOptionValuesByIds(request.options)
 
@@ -50,6 +50,6 @@ class VariantRepository(
 
             return@transaction variantId
         }
-        
+
     }
 }

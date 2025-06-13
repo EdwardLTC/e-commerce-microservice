@@ -1,10 +1,9 @@
 package com.ecommerce.springboot.product.repositories
 
+import com.ecommerce.springboot.product.clients.UserServiceClient
 import com.ecommerce.springboot.product.database.ProductsTable
 import com.ecommerce.springboot.product.database.VariantsTable
-import com.ecommerce.springboot.product.models.CreateProductRequest
-import com.ecommerce.springboot.product.models.GetProductByIdResponse
-import com.ecommerce.springboot.product.models.GetProductResponse
+import com.ecommerce.springboot.product.dto.CreateProductRequestDto
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.max
 import org.jetbrains.exposed.v1.core.min
@@ -18,10 +17,36 @@ import java.util.*
 
 @Repository
 @Transactional
-class ProductRepository() {
+class ProductRepository(private val userServiceClient: UserServiceClient) {
 
-    fun create(createProduct: CreateProductRequest): UUID {
+    companion object {
+        data class GetProductByIdResponse(
+            val id: UUID,
+            val name: String,
+            val description: String?,
+            val brand: String?,
+            val mediaUrls: List<String>,
+            val isActive: Boolean
+        )
+
+        data class GetProductResponse(
+            val id: UUID,
+            val name: String,
+            val description: String?,
+            val brand: String?,
+            val mediaUrls: List<String>,
+            val minPrice: BigDecimal,
+            val maxPrice: BigDecimal,
+            val rating: Double,
+            val totalSaleCount: Int,
+        )
+    }
+
+    fun create(createProduct: CreateProductRequestDto): UUID {
+        userServiceClient.get(createProduct.sellerId.toString())
+        
         return ProductsTable.insertAndGetId { row ->
+            row[sellerId] = createProduct.sellerId.toString()
             row[name] = createProduct.name
             row[description] = createProduct.description
             row[brand] = createProduct.brand
@@ -43,14 +68,12 @@ class ProductRepository() {
         ).where { ProductsTable.id eq id }.singleOrNull() ?: return null
 
         return GetProductByIdResponse(
-            id = row[ProductsTable.id].toString(),
+            id = row[ProductsTable.id].value,
             name = row[ProductsTable.name],
             description = row[ProductsTable.description],
             brand = row[ProductsTable.brand],
             mediaUrls = row[ProductsTable.mediaUrls],
             isActive = row[ProductsTable.isActive],
-            createdAt = row[ProductsTable.createdAt],
-            updatedAt = row[ProductsTable.updatedAt]
         )
     }
 
@@ -77,7 +100,7 @@ class ProductRepository() {
             .groupBy(ProductsTable.id)
             .offset(skip.toLong()).limit(take).toList().map { row ->
                 GetProductResponse(
-                    id = row[ProductsTable.id].toString(),
+                    id = row[ProductsTable.id].value,
                     name = row[ProductsTable.name],
                     description = row[ProductsTable.description],
                     brand = row[ProductsTable.brand],

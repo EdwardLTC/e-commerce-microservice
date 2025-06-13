@@ -14,7 +14,7 @@ service UserService {
 message ChangePasswordRequest {
   google.protobuf.StringValue id = 1;
   google.protobuf.StringValue oldPassword = 2;
-  google.protobuf.StringValue newPassword = 3; 
+  google.protobuf.StringValue newPassword = 3;
 }
 
 message GetUserByIdRequest {
@@ -34,6 +34,6 @@ message CreateUserRequest {
 
 message UserProfile {
   string id = 1;
-  string name= 2;
+  string name = 2;
   string email = 3;
 }

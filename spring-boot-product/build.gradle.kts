@@ -46,10 +46,15 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:4.28.2")
     implementation("build.buf.protoc-gen-validate:protoc-gen-validate:1.0.2")
     implementation("io.grpc:grpc-protobuf:1.60.0")
-    implementation("io.grpc:grpc-stub:1.60.0")
-    implementation("io.grpc:grpc-netty:1.60.0")
+    implementation("io.grpc:grpc-stub:1.64.0")
+    implementation("io.grpc:grpc-netty:1.64.0")
     implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
     implementation("com.google.protobuf:protobuf-java-util:3.25.1")
+
+    implementation("io.grpc:grpc-netty-shaded:1.64.0")
+    implementation("javax.annotation:javax.annotation-api:1.3.2")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.1")
+    implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
 
     implementation("org.jetbrains.exposed:exposed-spring-boot-starter:${property("exposedVersion")}")
     implementation("org.jetbrains.exposed:exposed-core:${property("exposedVersion")}")
@@ -79,6 +84,9 @@ protobuf {
         id("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java"
         }
+        id("grpckt") {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
+        }
     }
     generateProtoTasks {
         all().forEach {
@@ -87,6 +95,7 @@ protobuf {
                     option("jakarta_omit")
                     option("@generated=omit")
                 }
+                id("grpckt")
             }
         }
     }

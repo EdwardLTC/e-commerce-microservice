@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  asp-user:
+    image: asp-user
+    build:
+      context: ../
+      dockerfile: asp-user/Dockerfile
+    ports:
+      - "5232:5232"

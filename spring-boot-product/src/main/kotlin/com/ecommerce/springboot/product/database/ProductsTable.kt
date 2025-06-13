@@ -5,6 +5,7 @@ import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
 import org.jetbrains.exposed.v1.datetime.timestamp
 
 object ProductsTable : UUIDTable("products") {
+    val sellerId = varchar("seller_id", 36)
     val name = varchar("name", 255)
     val description = text("description").nullable()
     val brand = varchar("brand", 100).nullable()

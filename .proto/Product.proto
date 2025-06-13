@@ -7,6 +7,7 @@ import "google/protobuf/wrappers.proto";
 
 service ProductService {
   rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
 }
 
 message GetProductsRequest {
@@ -16,6 +17,18 @@ message GetProductsRequest {
 
 message GetProductsResponse {
   repeated Product products = 1;
+}
+
+message CreateProductRequest {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue sellerId = 2;
+  google.protobuf.StringValue description = 3;
+  google.protobuf.StringValue brand = 4;
+  repeated string mediaUrls = 5;
+}
+
+message CreateProductResponse {
+  string id = 1;
 }
 
 message Product {
@@ -29,6 +42,3 @@ message Product {
   double rating = 8;
   repeated string mediaUrls = 9;
 }
-
-
-
