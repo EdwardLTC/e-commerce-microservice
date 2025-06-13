@@ -1,4 +1,4 @@
-package com.ecommerce.springboot.product.config
+package com.ecommerce.springboot.product.configs
 
 import org.jetbrains.exposed.v1.core.DatabaseConfig
 import org.jetbrains.exposed.v1.spring.boot.autoconfigure.ExposedAutoConfiguration
