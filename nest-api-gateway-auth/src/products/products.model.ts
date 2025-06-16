@@ -54,6 +54,14 @@ export class CreateProductRequest {
   description: string;
 
   @ApiProperty({
+    example: 'BrandName',
+    description: 'Brand of the product',
+  })
+  @IsString()
+  @IsNotEmpty()
+  brand: string;
+
+  @ApiProperty({
     example: 100,
     description: 'Stock quantity of the product',
   })

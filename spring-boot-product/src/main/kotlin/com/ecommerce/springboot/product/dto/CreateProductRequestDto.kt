@@ -28,7 +28,9 @@ data class CreateProductRequestDto(
         override fun from(request: CreateProductRequest): CreateProductRequestDto {
             return CreateProductRequestDto(
                 name = request.name.value,
-                sellerId = UUID.fromString(request.sellerId.value),
+                sellerId = UUID.fromString(
+                    request.sellerId.value ?: throw IllegalArgumentException("Seller ID must not be null")
+                ),
                 description = request.description.value.takeIf { it.isNotBlank() },
                 brand = request.brand.value.takeIf { it.isNotBlank() },
                 mediaUrls = request.mediaUrlsList.filter { it.isNotBlank() }.map { it.trim() }

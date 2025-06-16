@@ -7,7 +7,47 @@ import "google/protobuf/wrappers.proto";
 
 service ProductService {
   rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+  rpc GetProductDetail(GetProductDetailRequest) returns (GetProductDetailResponse);
   rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+
+  rpc CreateOptionType(CreateOptionTypeRequest) returns (CreateOptionTypeResponse);
+  rpc CreateOptionValue(CreateOptionValueRequest) returns (CreateOptionValueResponse);
+
+  rpc CreateVariant(CreateVariantRequest) returns (CreateVariantResponse);
+}
+
+message CreateVariantRequest {
+  google.protobuf.StringValue productId = 1;
+  google.protobuf.StringValue sku = 2;
+  google.protobuf.DoubleValue price = 3;
+  google.protobuf.Int32Value stock = 4;
+  google.protobuf.StringValue mediaUrl = 5;
+  repeated string options = 6;
+}
+
+message CreateVariantResponse {
+  string id = 1;
+}
+
+message CreateOptionTypeRequest {
+  google.protobuf.StringValue productId = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.Int32Value displayOrder = 3;
+}
+
+message CreateOptionTypeResponse {
+  string id = 1;
+}
+
+message CreateOptionValueRequest {
+  google.protobuf.StringValue optionTypeId = 1;
+  google.protobuf.StringValue value = 2;
+  google.protobuf.StringValue mediaUrl = 3;
+  google.protobuf.Int32Value displayOrder = 4;
+}
+
+message CreateOptionValueResponse {
+  string id = 1;
 }
 
 message GetProductsRequest {
@@ -17,6 +57,52 @@ message GetProductsRequest {
 
 message GetProductsResponse {
   repeated Product products = 1;
+}
+
+message GetProductDetailRequest {
+  google.protobuf.StringValue id = 1;
+}
+
+message GetProductDetailResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string brand = 4;
+  repeated string mediaUrls = 5;
+  int32  totalSaleCount = 6;
+  double averageRating = 7;
+  repeated OptionType optionTypes = 8;
+  repeated Variant variants = 9;
+}
+
+message OptionType {
+  string id = 1;
+  string name = 2;
+  int32 displayOrder = 3;
+  repeated OptionValue optionValues = 4;
+}
+
+message OptionValue {
+  string id = 1;
+  string value = 2;
+  string mediaUrl = 3;
+  int32 displayOrder = 4;
+}
+
+message Variant {
+  string id = 1;
+  string sku = 2;
+  double price = 3;
+  double salePrice = 4;
+  int32 stock = 5;
+  string status = 6;
+  string mediaUrl = 7;
+  repeated SelectedOption selectedOptions = 8;
+}
+
+message SelectedOption {
+  string optionTypeId = 1;
+  string optionValueId = 2;
 }
 
 message CreateProductRequest {

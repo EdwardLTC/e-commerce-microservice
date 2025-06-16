@@ -2,9 +2,10 @@ package com.ecommerce.springboot.product.repositories
 
 import com.ecommerce.springboot.product.database.OptionTypesTable
 import com.ecommerce.springboot.product.database.OptionValuesTable
-import com.ecommerce.springboot.product.dto.CreateOptionTypeRequestDto
+import com.ecommerce.springboot.product.dto.CreateOptionTypeDto
+import com.ecommerce.springboot.product.dto.CreateOptionValueDto
 import org.jetbrains.exposed.v1.core.JoinType
-import org.jetbrains.exposed.v1.jdbc.batchInsert
+import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.insertReturning
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -26,10 +27,10 @@ class OptionTypeRepository(private val productRepository: ProductRepository) {
 
         data class OptionType(
             val id: String,
-            val productId: UUID,
+            val productId: String,
             val name: String,
             val displayOrder: Short,
-            var optionValues: List<OptionValue> = emptyList()
+            val optionValues: List<OptionValue> = emptyList()
         )
 
         data class OptionValue(
@@ -37,42 +38,41 @@ class OptionTypeRepository(private val productRepository: ProductRepository) {
         )
     }
 
-    fun create(productId: UUID, request: CreateOptionTypeRequestDto): OptionType {
-        productRepository.getById(productId) ?: throw IllegalArgumentException("Product with ID $productId not found")
+    fun create(request: CreateOptionTypeDto): OptionType {
+        productRepository.getById(request.productId)
+            ?: throw IllegalArgumentException("Product with ID ${request.productId} not found")
 
         return transaction {
             val optionType = OptionTypesTable.insertReturning {
-                it[product] = productId
+                it[product] = request.productId
                 it[name] = request.name
                 it[displayOrder] = request.displayOrder.toShort()
             }.map {
                 OptionType(
                     id = it[OptionTypesTable.id].value.toString(),
-                    productId = it[OptionTypesTable.product].value,
+                    productId = it[OptionTypesTable.product].value.toString(),
                     name = it[OptionTypesTable.name],
                     displayOrder = it[OptionTypesTable.displayOrder],
                     optionValues = emptyList()
                 )
             }.first()
 
-            val optionValues = OptionValuesTable.batchInsert(request.optionValues) { optionValue ->
-                this[OptionValuesTable.optionType] = UUID.fromString(optionType.id)
-                this[OptionValuesTable.value] = optionValue.value
-                this[OptionValuesTable.mediaUrl] = optionValue.mediaUrl
-                this[OptionValuesTable.displayOrder] = optionValue.displayOrder.toShort()
-            }.map {
-                OptionValue(
-                    id = it[OptionValuesTable.id].value.toString(),
-                    value = it[OptionValuesTable.value],
-                    mediaUrl = it[OptionValuesTable.mediaUrl],
-                    displayOrder = it[OptionValuesTable.displayOrder]
-                )
-            }.toList()
-
-            optionType.optionValues = optionValues
-
             return@transaction optionType
         }
+    }
+
+    fun createOptionValue(request: CreateOptionValueDto): UUID {
+        OptionTypesTable.select(OptionTypesTable.id).where { OptionTypesTable.id eq request.optionTypeId }
+            .firstOrNull()
+            ?: throw IllegalArgumentException("Option type with ID ${request.optionTypeId} not found")
+
+        return OptionValuesTable.insertAndGetId {
+            it[this.optionType] = request.optionTypeId
+            it[this.value] = request.value
+            it[this.mediaUrl] = request.mediaUrl
+            it[this.displayOrder] = request.displayOrder
+        }.value
+
     }
 
     fun getByProductId(productId: UUID): List<OptionType> {
@@ -93,16 +93,14 @@ class OptionTypeRepository(private val productRepository: ProductRepository) {
             OptionTypesTable.id,
             OptionValuesTable.optionType
         ).select(selectFields).where { OptionTypesTable.product eq productId }.toList()
-            .groupBy { row ->
-                row[OptionTypesTable.id].value.toString()
-            }.map { (id, rows) ->
+            .groupBy { row -> row[OptionTypesTable.id].value.toString() }.map { (id, rows) ->
                 val optionType = rows.first()
                 OptionType(
                     id = id,
-                    productId = optionType[OptionTypesTable.product].value,
+                    productId = optionType[OptionTypesTable.product].value.toString(),
                     name = optionType[OptionTypesTable.name],
                     displayOrder = optionType[OptionTypesTable.displayOrder],
-                    optionValues = rows.map { row ->
+                    optionValues = rows.filter { it[OptionValuesTable.id] != null }.map { row ->
                         OptionValue(
                             id = row[OptionValuesTable.id].value.toString(),
                             value = row[OptionValuesTable.value],

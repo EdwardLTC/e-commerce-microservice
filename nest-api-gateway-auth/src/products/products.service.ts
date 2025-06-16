@@ -15,15 +15,10 @@ export class ProductsService {
       this.clientGrpc.getProducts({
         skip: { value: data.skip },
         take: { value: data.take },
-        categoryIds: data.categoryIds,
       }),
     );
 
     return value.products;
-  }
-
-  public async getProductById(id: string): Promise<GetProductsResponse> {
-    return await lastValueFrom(this.clientGrpc.getProduct({ id: id }));
   }
 
   public async createProduct(data: CreateProductRequest, sellerId: string): Promise<GetProductsResponse> {
@@ -31,11 +26,9 @@ export class ProductsService {
       this.clientGrpc.createProduct({
         sellerId: { value: sellerId },
         name: { value: data.name },
+        brand: { value: data.brand },
         description: { value: data.description },
-        quantity: { value: data.stock },
-        price: { value: data.price },
         mediaUrls: data.mediaUrls,
-        categoryIds: data.categoryIds,
       }),
     );
   }

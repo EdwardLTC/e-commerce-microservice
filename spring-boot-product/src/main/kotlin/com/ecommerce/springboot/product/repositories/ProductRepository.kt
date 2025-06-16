@@ -4,12 +4,15 @@ import com.ecommerce.springboot.product.clients.UserServiceClient
 import com.ecommerce.springboot.product.database.ProductsTable
 import com.ecommerce.springboot.product.database.VariantsTable
 import com.ecommerce.springboot.product.dto.CreateProductRequestDto
+import com.ecommerce.springboot.product.repositories.OptionTypeRepository.Companion.OptionType
+import com.ecommerce.springboot.product.repositories.VariantRepository.Companion.Variant
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.max
 import org.jetbrains.exposed.v1.core.min
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.update
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -17,7 +20,13 @@ import java.util.*
 
 @Repository
 @Transactional
-class ProductRepository(private val userServiceClient: UserServiceClient) {
+class ProductRepository(
+    private val userServiceClient: UserServiceClient,
+    @Lazy
+    private val optionTypeRepository: OptionTypeRepository,
+    @Lazy
+    private val variantRepository: VariantRepository,
+) {
 
     companion object {
         data class GetProductByIdResponse(
@@ -40,11 +49,23 @@ class ProductRepository(private val userServiceClient: UserServiceClient) {
             val rating: Double,
             val totalSaleCount: Int,
         )
+
+        data class GetProductDetailResponse(
+            val id: UUID,
+            val name: String,
+            val description: String?,
+            val brand: String?,
+            val mediaUrls: List<String>,
+            val totalSaleCount: Int,
+            val averageRating: Double,
+            var optionTypes: List<OptionType>,
+            val variants: List<Variant>
+        )
     }
 
     fun create(createProduct: CreateProductRequestDto): UUID {
         userServiceClient.get(createProduct.sellerId.toString())
-        
+
         return ProductsTable.insertAndGetId { row ->
             row[sellerId] = createProduct.sellerId.toString()
             row[name] = createProduct.name
@@ -62,9 +83,7 @@ class ProductRepository(private val userServiceClient: UserServiceClient) {
             ProductsTable.description,
             ProductsTable.brand,
             ProductsTable.mediaUrls,
-            ProductsTable.isActive,
-            ProductsTable.createdAt,
-            ProductsTable.updatedAt,
+            ProductsTable.isActive
         ).where { ProductsTable.id eq id }.singleOrNull() ?: return null
 
         return GetProductByIdResponse(
@@ -75,6 +94,13 @@ class ProductRepository(private val userServiceClient: UserServiceClient) {
             mediaUrls = row[ProductsTable.mediaUrls],
             isActive = row[ProductsTable.isActive],
         )
+    }
+
+    fun updateProduct(id: UUID, isActive: Boolean): Boolean {
+        val updatedRows = ProductsTable.update({ ProductsTable.id eq id }) {
+            it[this.isActive] = isActive
+        }
+        return updatedRows > 0
     }
 
     fun getProducts(skip: Int = 0, take: Int = 10): List<GetProductResponse> {
@@ -114,10 +140,32 @@ class ProductRepository(private val userServiceClient: UserServiceClient) {
 
     }
 
-    fun updateProduct(id: UUID, isActive: Boolean): Boolean {
-        val updatedRows = ProductsTable.update({ ProductsTable.id eq id }) {
-            it[this.isActive] = isActive
-        }
-        return updatedRows > 0
+    fun getProductDetail(productId: UUID): GetProductDetailResponse {
+        val product = ProductsTable.select(
+            ProductsTable.id,
+            ProductsTable.name,
+            ProductsTable.description,
+            ProductsTable.brand,
+            ProductsTable.mediaUrls,
+            ProductsTable.totalSaleCount,
+            ProductsTable.averageRating,
+        ).where { ProductsTable.id eq productId }.singleOrNull()
+            ?: throw IllegalArgumentException("Product with ID $productId not found")
+
+        val optionTypes = optionTypeRepository.getByProductId(productId)
+
+        val variants = variantRepository.getByProductId(productId)
+
+        return GetProductDetailResponse(
+            id = product[ProductsTable.id].value,
+            name = product[ProductsTable.name],
+            description = product[ProductsTable.description],
+            brand = product[ProductsTable.brand],
+            mediaUrls = product[ProductsTable.mediaUrls],
+            totalSaleCount = product[ProductsTable.totalSaleCount],
+            averageRating = product[ProductsTable.averageRating],
+            optionTypes = optionTypes,
+            variants = variants
+        )
     }
 }
