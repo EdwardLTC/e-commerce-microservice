@@ -1,21 +1,16 @@
 package com.ecommerce.springboot.product.services
 
-import com.ecommerce.springboot.product.dto.*
+import com.ecommerce.springboot.product.dto.CreateProductRequestDto
+import com.ecommerce.springboot.product.dto.GetProductDetailDto
+import com.ecommerce.springboot.product.dto.GetProductsRequestDto
 import com.ecommerce.springboot.product.helpers.safeValidatedCall
-import com.ecommerce.springboot.product.repositories.OptionTypeRepository
 import com.ecommerce.springboot.product.repositories.ProductRepository
-import com.ecommerce.springboot.product.repositories.VariantRepository
 import com.ecommerce.springboot.product.v1.ProductOuterClass.*
 import com.ecommerce.springboot.product.v1.ProductServiceGrpcKt.ProductServiceCoroutineImplBase
 import net.devh.boot.grpc.server.service.GrpcService
 
 @GrpcService()
-class ProductService(
-    private val productRepository: ProductRepository,
-    private val optionTypeRepository: OptionTypeRepository,
-    private val variantRepository: VariantRepository
-) : ProductServiceCoroutineImplBase() {
-
+class ProductService(private val productRepository: ProductRepository) : ProductServiceCoroutineImplBase() {
     override suspend fun getProducts(request: GetProductsRequest): GetProductsResponse =
         safeValidatedCall(request, GetProductsRequestDto) { dto ->
             return@safeValidatedCall GetProductsResponse.newBuilder()
@@ -97,27 +92,6 @@ class ProductService(
                             .build()
                     }
                 )
-                .build()
-        }
-
-    override suspend fun createOptionType(request: CreateOptionTypeRequest): CreateOptionTypeResponse =
-        safeValidatedCall(request, CreateOptionTypeDto) { dto ->
-            return@safeValidatedCall CreateOptionTypeResponse.newBuilder()
-                .setId(optionTypeRepository.create(dto).id.toString())
-                .build()
-        }
-
-    override suspend fun createOptionValue(request: CreateOptionValueRequest): CreateOptionValueResponse =
-        safeValidatedCall(request, CreateOptionValueDto) { dto ->
-            return@safeValidatedCall CreateOptionValueResponse.newBuilder()
-                .setId(optionTypeRepository.createOptionValue(dto).toString())
-                .build()
-        }
-
-    override suspend fun createVariant(request: CreateVariantRequest): CreateVariantResponse =
-        safeValidatedCall(request, CreateVariantDto) { dto ->
-            return@safeValidatedCall CreateVariantResponse.newBuilder()
-                .setId(variantRepository.create(dto).toString())
                 .build()
         }
 }

@@ -4,7 +4,7 @@ import com.ecommerce.springboot.product.clients.UserServiceClient
 import com.ecommerce.springboot.product.database.ProductsTable
 import com.ecommerce.springboot.product.database.VariantsTable
 import com.ecommerce.springboot.product.dto.CreateProductRequestDto
-import com.ecommerce.springboot.product.repositories.OptionTypeRepository.Companion.OptionType
+import com.ecommerce.springboot.product.repositories.OptionRepository.Companion.OptionType
 import com.ecommerce.springboot.product.repositories.VariantRepository.Companion.Variant
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.max
@@ -23,7 +23,7 @@ import java.util.*
 class ProductRepository(
     private val userServiceClient: UserServiceClient,
     @Lazy
-    private val optionTypeRepository: OptionTypeRepository,
+    private val optionTypeRepository: OptionRepository,
     @Lazy
     private val variantRepository: VariantRepository,
 ) {

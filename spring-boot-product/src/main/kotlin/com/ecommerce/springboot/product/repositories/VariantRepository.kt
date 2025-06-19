@@ -7,7 +7,7 @@ import com.ecommerce.springboot.product.database.VariantOptionValuesTable.option
 import com.ecommerce.springboot.product.database.VariantOptionValuesTable.variant
 import com.ecommerce.springboot.product.database.VariantsTable
 import com.ecommerce.springboot.product.dto.CreateVariantDto
-import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.leftJoin
 import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.select
@@ -20,7 +20,7 @@ import java.util.*
 @Transactional
 class VariantRepository(
     private val productRepository: ProductRepository,
-    private val optionTypeRepository: OptionTypeRepository
+    private val optionTypeRepository: OptionRepository
 ) {
 
     companion object {
@@ -83,14 +83,9 @@ class VariantRepository(
         val variantsMap = mutableMapOf<UUID, Variant>()
 
         VariantsTable
-            .join(VariantOptionValuesTable, JoinType.LEFT, onColumn = VariantsTable.id, otherColumn = variant)
-            .join(OptionValuesTable, JoinType.LEFT, onColumn = optionValue, otherColumn = OptionValuesTable.id)
-            .join(
-                OptionTypesTable,
-                JoinType.LEFT,
-                onColumn = OptionValuesTable.optionType,
-                otherColumn = OptionTypesTable.id
-            )
+            .leftJoin(VariantOptionValuesTable, onColumn = { id }, otherColumn = { variant })
+            .leftJoin(OptionValuesTable, onColumn = { optionValue }, otherColumn = { id })
+            .leftJoin(OptionTypesTable, onColumn = { OptionValuesTable.optionType }, otherColumn = { id })
             .select(VariantsTable.columns + listOf(optionValue, OptionValuesTable.optionType))
             .where { VariantsTable.product eq productId }
             .forEach { row ->
@@ -110,8 +105,8 @@ class VariantRepository(
                     )
                 }
 
-                val optionValueId = row[optionValue]
-                val optionTypeId = row[OptionValuesTable.optionType]
+                val optionValueId = row.getOrNull(optionValue)
+                val optionTypeId = row.getOrNull(OptionValuesTable.optionType)
 
                 if (optionValueId != null && optionTypeId != null) {
                     variant.selectedOptions.add(

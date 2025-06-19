@@ -77,7 +77,7 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
         };
     }
 
-    public override async Task<UserProfile> changePassword(ChangePasswordRequest request, ServerCallContext context)
+    public override async Task<UserProfile> ChangePassword(ChangePasswordRequest request, ServerCallContext context)
     {
         var user = await dbContext.Users.Where(u => u.Id.Equals(Guid.Parse(request.Id))).Select(u => new
         {

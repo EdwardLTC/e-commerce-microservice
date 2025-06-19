@@ -9,10 +9,6 @@ export class UsersService {
 
   constructor(@Inject('USER_SERVICE') private client: ClientGrpc) {}
 
-  public async getUserById(id: string) {
-    return lastValueFrom(this.clientGrpc.getUserById({ id: { value: id } }));
-  }
-
   public async getUserByEmailAndPassword(email: string, password: string) {
     return lastValueFrom(this.clientGrpc.getUserByEmailAndPassword({ email: { value: email }, password: { value: password } }));
   }

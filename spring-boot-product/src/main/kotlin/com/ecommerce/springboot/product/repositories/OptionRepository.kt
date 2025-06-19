@@ -4,7 +4,8 @@ import com.ecommerce.springboot.product.database.OptionTypesTable
 import com.ecommerce.springboot.product.database.OptionValuesTable
 import com.ecommerce.springboot.product.dto.CreateOptionTypeDto
 import com.ecommerce.springboot.product.dto.CreateOptionValueDto
-import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.innerJoin
+import org.jetbrains.exposed.v1.core.leftJoin
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.insertReturning
 import org.jetbrains.exposed.v1.jdbc.select
@@ -15,7 +16,7 @@ import java.util.*
 
 @Repository
 @Transactional
-class OptionTypeRepository(private val productRepository: ProductRepository) {
+class OptionRepository(private val productRepository: ProductRepository) {
     companion object {
         data class OptionValueWithProductId(
             val id: String,
@@ -87,12 +88,8 @@ class OptionTypeRepository(private val productRepository: ProductRepository) {
             OptionValuesTable.displayOrder
         )
 
-        return OptionTypesTable.join(
-            OptionValuesTable,
-            JoinType.LEFT,
-            OptionTypesTable.id,
-            OptionValuesTable.optionType
-        ).select(selectFields).where { OptionTypesTable.product eq productId }.toList()
+        return OptionTypesTable.leftJoin(OptionValuesTable, onColumn = { id }, otherColumn = { optionType })
+            .select(selectFields).where { OptionTypesTable.product eq productId }.toList()
             .groupBy { row -> row[OptionTypesTable.id].value.toString() }.map { (id, rows) ->
                 val optionType = rows.first()
                 OptionType(
@@ -100,7 +97,7 @@ class OptionTypeRepository(private val productRepository: ProductRepository) {
                     productId = optionType[OptionTypesTable.product].value.toString(),
                     name = optionType[OptionTypesTable.name],
                     displayOrder = optionType[OptionTypesTable.displayOrder],
-                    optionValues = rows.filter { it[OptionValuesTable.id] != null }.map { row ->
+                    optionValues = rows.filter { it.getOrNull(OptionValuesTable.id) != null }.map { row ->
                         OptionValue(
                             id = row[OptionValuesTable.id].value.toString(),
                             value = row[OptionValuesTable.value],
@@ -121,19 +118,15 @@ class OptionTypeRepository(private val productRepository: ProductRepository) {
             OptionTypesTable.product
         )
 
-        return OptionValuesTable.join(
-            OptionTypesTable,
-            joinType = JoinType.INNER,
-            onColumn = OptionValuesTable.optionType,
-            otherColumn = OptionTypesTable.id
-        ).select(selectFields).where { OptionValuesTable.id inList optionTypeIds.toList() }.map { row ->
-            OptionValueWithProductId(
-                id = row[OptionValuesTable.id].value.toString(),
-                value = row[OptionValuesTable.value],
-                mediaUrl = row[OptionValuesTable.mediaUrl],
-                displayOrder = row[OptionValuesTable.displayOrder],
-                productId = row[OptionTypesTable.product].value
-            )
-        }
+        return OptionValuesTable.innerJoin(OptionTypesTable, onColumn = { optionType }, otherColumn = { id })
+            .select(selectFields).where { OptionValuesTable.id inList optionTypeIds.toList() }.map { row ->
+                OptionValueWithProductId(
+                    id = row[OptionValuesTable.id].value.toString(),
+                    value = row[OptionValuesTable.value],
+                    mediaUrl = row[OptionValuesTable.mediaUrl],
+                    displayOrder = row[OptionValuesTable.displayOrder],
+                    productId = row[OptionTypesTable.product].value
+                )
+            }
     }
 }

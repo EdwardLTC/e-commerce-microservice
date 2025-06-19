@@ -17,8 +17,12 @@ import { join } from 'path';
           transport: Transport.GRPC,
           options: {
             package: 'com.ecommerce.springboot.product.v1',
-            protoPath: join(__dirname, '../products/products.proto'),
+            protoPath: join(__dirname, '../../../.proto/Product.proto'),
             url: env.microservice.productServiceURL,
+            loader: {
+              defaults: true,
+              arrays: true,
+            },
           },
         }),
       },

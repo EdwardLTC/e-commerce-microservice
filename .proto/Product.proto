@@ -9,10 +9,14 @@ service ProductService {
   rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
   rpc GetProductDetail(GetProductDetailRequest) returns (GetProductDetailResponse);
   rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+}
 
+service OptionService {
   rpc CreateOptionType(CreateOptionTypeRequest) returns (CreateOptionTypeResponse);
   rpc CreateOptionValue(CreateOptionValueRequest) returns (CreateOptionValueResponse);
+}
 
+service VariantService {
   rpc CreateVariant(CreateVariantRequest) returns (CreateVariantResponse);
 }
 
@@ -68,9 +72,9 @@ message GetProductDetailResponse {
   string name = 2;
   string description = 3;
   string brand = 4;
-  repeated string mediaUrls = 5;
-  int32  totalSaleCount = 6;
-  double averageRating = 7;
+  int32  totalSaleCount = 5;
+  double averageRating = 6;
+  repeated string mediaUrls = 7;
   repeated OptionType optionTypes = 8;
   repeated Variant variants = 9;
 }

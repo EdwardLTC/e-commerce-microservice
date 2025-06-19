@@ -34,11 +34,11 @@ export class AuthService {
       expiredAt: new Date(Date.now() + 60 * 60 * 24 * 7 * 1000),
     };
 
-    await this.cacheManager.set(`auth:session:${jti}`, session, 60 * 60 * 24 * 7);
+    await this.cacheManager.set(`auth:session:${jti}`, session, 60 * 60 * 24 * 7 * 1000);
 
     await this.redisClient.sAdd(`user:sessions:${user.id}`, `auth:session:${jti}`);
 
-    await this.redisClient.expire(`user:sessions:${user.id}`, 60 * 60 * 24 * 7);
+    await this.redisClient.expire(`user:sessions:${user.id}`, 60 * 60 * 24 * 7 * 1000);
 
     return {
       access_token: assessToken,

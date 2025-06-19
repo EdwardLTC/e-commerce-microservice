@@ -12,7 +12,43 @@ export namespace com {
         export namespace v1 {
           export interface ProductService {
             getProducts(data: GetProductsRequest, metadata?: Metadata, ...rest: any[]): Observable<GetProductsResponse>;
+            getProductDetail(data: GetProductDetailRequest, metadata?: Metadata, ...rest: any[]): Observable<GetProductDetailResponse>;
             createProduct(data: CreateProductRequest, metadata?: Metadata, ...rest: any[]): Observable<CreateProductResponse>;
+          }
+          export interface OptionService {
+            createOptionType(data: CreateOptionTypeRequest, metadata?: Metadata, ...rest: any[]): Observable<CreateOptionTypeResponse>;
+            createOptionValue(data: CreateOptionValueRequest, metadata?: Metadata, ...rest: any[]): Observable<CreateOptionValueResponse>;
+          }
+          export interface VariantService {
+            createVariant(data: CreateVariantRequest, metadata?: Metadata, ...rest: any[]): Observable<CreateVariantResponse>;
+          }
+          export interface CreateVariantRequest {
+            productId?: google.protobuf.StringValue;
+            sku?: google.protobuf.StringValue;
+            price?: google.protobuf.DoubleValue;
+            stock?: google.protobuf.Int32Value;
+            mediaUrl?: google.protobuf.StringValue;
+            options?: string[];
+          }
+          export interface CreateVariantResponse {
+            id?: string;
+          }
+          export interface CreateOptionTypeRequest {
+            productId?: google.protobuf.StringValue;
+            name?: google.protobuf.StringValue;
+            displayOrder?: google.protobuf.Int32Value;
+          }
+          export interface CreateOptionTypeResponse {
+            id?: string;
+          }
+          export interface CreateOptionValueRequest {
+            optionTypeId?: google.protobuf.StringValue;
+            value?: google.protobuf.StringValue;
+            mediaUrl?: google.protobuf.StringValue;
+            displayOrder?: google.protobuf.Int32Value;
+          }
+          export interface CreateOptionValueResponse {
+            id?: string;
           }
           export interface GetProductsRequest {
             skip?: google.protobuf.Int32Value;
@@ -20,6 +56,46 @@ export namespace com {
           }
           export interface GetProductsResponse {
             products?: v1.Product[];
+          }
+          export interface GetProductDetailRequest {
+            id?: google.protobuf.StringValue;
+          }
+          export interface GetProductDetailResponse {
+            id?: string;
+            name?: string;
+            description?: string;
+            brand?: string;
+            totalSaleCount?: number;
+            averageRating?: number;
+            mediaUrls?: string[];
+            optionTypes?: v1.OptionType[];
+            variants?: v1.Variant[];
+          }
+          export interface OptionType {
+            id?: string;
+            name?: string;
+            displayOrder?: number;
+            optionValues?: v1.OptionValue[];
+          }
+          export interface OptionValue {
+            id?: string;
+            value?: string;
+            mediaUrl?: string;
+            displayOrder?: number;
+          }
+          export interface Variant {
+            id?: string;
+            sku?: string;
+            price?: number;
+            salePrice?: number;
+            stock?: number;
+            status?: string;
+            mediaUrl?: string;
+            selectedOptions?: v1.SelectedOption[];
+          }
+          export interface SelectedOption {
+            optionTypeId?: string;
+            optionValueId?: string;
           }
           export interface CreateProductRequest {
             name?: google.protobuf.StringValue;

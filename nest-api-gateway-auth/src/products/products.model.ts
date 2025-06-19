@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID, Min } from 'class-validator';
-import { randomUUID } from 'crypto';
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from 'class-validator';
 
 export class GetProductsRequest {
   @ApiProperty({
@@ -18,14 +17,6 @@ export class GetProductsRequest {
   @IsPositive()
   @Min(1)
   take: number;
-
-  @ApiPropertyOptional({
-    example: [randomUUID(), randomUUID()],
-    description: 'List of category IDs to filter products by, uuid format',
-  })
-  @IsOptional()
-  @IsUUID('all', { each: true })
-  categoryIds?: string[];
 }
 
 export class CreateProductRequest {
@@ -76,13 +67,89 @@ export class CreateProductRequest {
   @IsOptional()
   @IsString({ each: true })
   mediaUrls?: string[];
-
-  @ApiPropertyOptional({
-    example: [randomUUID(), randomUUID()],
-    description: 'List of category IDs to associate with the product, uuid format',
-  })
-  @IsUUID('all', { each: true })
-  categoryIds?: string[];
 }
 
-export class GetProductsResponse {}
+export class CreateProductOptionTypeRequest {
+  @ApiProperty({
+    example: 'Color',
+    description: 'Name of the option type',
+  })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Display order of the option type',
+  })
+  @IsOptional()
+  @IsPositive()
+  displayOrder?: number;
+}
+
+export class CreateProductOptionValueRequest {
+  @ApiProperty({
+    example: 'Red',
+    description: 'Value of the option type',
+  })
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+
+  @ApiPropertyOptional({
+    example: 'https://example.com/red.jpg',
+    description: 'Media URL for the option value',
+  })
+  @IsOptional()
+  @IsString()
+  mediaUrl?: string;
+
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Display order of the option value',
+  })
+  @IsOptional()
+  @IsPositive()
+  displayOrder?: number;
+}
+
+export class CreateProductVariantRequest {
+  @ApiProperty({
+    example: 'SKU12345',
+    description: 'Stock Keeping Unit (SKU) of the product variant',
+  })
+  @IsString()
+  @IsNotEmpty()
+  sku: string;
+
+  @ApiProperty({
+    example: 99.99,
+    description: 'Price of the product variant in USD',
+  })
+  @IsNumber()
+  @IsPositive()
+  price: number;
+
+  @ApiProperty({
+    example: 50,
+    description: 'Stock quantity of the product variant',
+  })
+  @IsPositive()
+  stock: number;
+
+  @ApiPropertyOptional({
+    example: 'https://example.com/variant-image.jpg',
+    description: 'Media URL for the product variant',
+  })
+  @IsOptional()
+  @IsString()
+  mediaUrl?: string;
+
+  @ApiProperty({
+    type: [String],
+    description: 'List of option values associated with the product variant',
+  })
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  options: string[];
+}

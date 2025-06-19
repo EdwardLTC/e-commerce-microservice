@@ -13,7 +13,7 @@ export class GrpcInterceptor implements NestInterceptor {
       catchError(err => {
         if (!this.isValidGrpcError(err)) return throwError(() => err);
 
-        const exception = new GrpcClientException(controller, handler, err.code, err.details, err.metadata);
+        const exception = new GrpcClientException(controller, handler, err.code, err.details);
 
         return throwError(() => exception);
       }),

@@ -17,8 +17,12 @@ import { EnvironmentsService } from '../environments/environments.service';
           transport: Transport.GRPC,
           options: {
             package: 'com.ecommerce.aspnet.user',
-            protoPath: join(__dirname, '../users/users.proto'),
+            protoPath: join(__dirname, '../../../.proto/User.proto'),
             url: env.microservice.userServiceURL,
+            loader: {
+              defaults: true,
+              arrays: true,
+            },
           },
         }),
       },

@@ -37,7 +37,6 @@ export class GrpcClientException extends Error {
     public readonly handler: string,
     public readonly code: Status,
     public readonly details: string,
-    public readonly metadata: Record<string, any>,
   ) {
     super(details);
     this.name = GrpcClientException.name;

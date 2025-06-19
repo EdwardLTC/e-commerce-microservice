@@ -8,7 +8,7 @@ service UserService {
   rpc GetUserById(GetUserByIdRequest) returns (UserProfile);
   rpc CreateUser(CreateUserRequest) returns (UserProfile);
   rpc GetUserByEmailAndPassword(GetUserByEmailAndPasswordRequest) returns (UserProfile);
-  rpc changePassword(ChangePasswordRequest) returns (UserProfile);
+  rpc ChangePassword(ChangePasswordRequest) returns (UserProfile);
 }
 
 message ChangePasswordRequest {
