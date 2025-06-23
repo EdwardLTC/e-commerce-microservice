@@ -123,7 +123,7 @@ export class CreateProductVariantRequest {
   sku: string;
 
   @ApiProperty({
-    example: 99.99,
+    example: 9999.99,
     description: 'Price of the product variant in USD',
   })
   @IsNumber()

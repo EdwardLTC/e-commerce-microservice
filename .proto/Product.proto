@@ -13,6 +13,7 @@ service ProductService {
 
 service OptionService {
   rpc CreateOptionType(CreateOptionTypeRequest) returns (CreateOptionTypeResponse);
+  rpc GetOptionTypes(GetOptionTypesRequest) returns (GetOptionTypesResponse);
   rpc CreateOptionValue(CreateOptionValueRequest) returns (CreateOptionValueResponse);
 }
 
@@ -41,6 +42,14 @@ message CreateOptionTypeRequest {
 
 message CreateOptionTypeResponse {
   string id = 1;
+}
+
+message GetOptionTypesRequest {
+  google.protobuf.StringValue productId = 1;
+}
+
+message GetOptionTypesResponse {
+  repeated OptionType optionTypes = 1;
 }
 
 message CreateOptionValueRequest {

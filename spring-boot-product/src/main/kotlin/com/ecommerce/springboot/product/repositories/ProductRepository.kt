@@ -3,7 +3,7 @@ package com.ecommerce.springboot.product.repositories
 import com.ecommerce.springboot.product.clients.UserServiceClient
 import com.ecommerce.springboot.product.database.ProductsTable
 import com.ecommerce.springboot.product.database.VariantsTable
-import com.ecommerce.springboot.product.dto.CreateProductRequestDto
+import com.ecommerce.springboot.product.dto.CreateProductDto
 import com.ecommerce.springboot.product.repositories.OptionRepository.Companion.OptionType
 import com.ecommerce.springboot.product.repositories.VariantRepository.Companion.Variant
 import org.jetbrains.exposed.v1.core.JoinType
@@ -63,7 +63,7 @@ class ProductRepository(
         )
     }
 
-    fun create(createProduct: CreateProductRequestDto): UUID {
+    fun create(createProduct: CreateProductDto): UUID {
         userServiceClient.get(createProduct.sellerId.toString())
 
         return ProductsTable.insertAndGetId { row ->

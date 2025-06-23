@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import org.springframework.format.annotation.NumberFormat
 
-data class GetProductsRequestDto(
+data class GetProductsDto(
     @field:NumberFormat(style = NumberFormat.Style.NUMBER)
     @field:Min(0)
     val skip: Int,
@@ -16,9 +16,9 @@ data class GetProductsRequestDto(
     @field:Max(100)
     val take: Int
 ) {
-    companion object : FromGrpcRequest<GetProductsRequest, GetProductsRequestDto> {
-        override fun from(request: GetProductsRequest): GetProductsRequestDto {
-            return GetProductsRequestDto(
+    companion object : FromGrpcRequest<GetProductsRequest, GetProductsDto> {
+        override fun from(request: GetProductsRequest): GetProductsDto {
+            return GetProductsDto(
                 skip = request.skip.value,
                 take = request.take.value
             )

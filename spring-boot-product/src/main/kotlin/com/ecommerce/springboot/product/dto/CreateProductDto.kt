@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import java.util.*
 
-data class CreateProductRequestDto(
+data class CreateProductDto(
     @field:NotBlank
     @field:NotNull
     @field:Size(min = 3, max = 255)
@@ -24,9 +24,9 @@ data class CreateProductRequestDto(
 
     val mediaUrls: List<String> = emptyList(),
 ) {
-    companion object : FromGrpcRequest<CreateProductRequest, CreateProductRequestDto> {
-        override fun from(request: CreateProductRequest): CreateProductRequestDto {
-            return CreateProductRequestDto(
+    companion object : FromGrpcRequest<CreateProductRequest, CreateProductDto> {
+        override fun from(request: CreateProductRequest): CreateProductDto {
+            return CreateProductDto(
                 name = request.name.value,
                 sellerId = UUID.fromString(
                     request.sellerId.value ?: throw IllegalArgumentException("Seller ID must not be null")

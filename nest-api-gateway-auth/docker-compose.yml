@@ -17,7 +17,7 @@ services:
       context: ../
       dockerfile: spring-boot-product/Dockerfile
     ports:
-      - "2003:9090"
+      - "9090:9090"
     networks:
       - nest-api-gateway
 

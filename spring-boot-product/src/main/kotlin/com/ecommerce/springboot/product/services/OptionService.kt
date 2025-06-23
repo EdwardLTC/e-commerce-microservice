@@ -2,6 +2,7 @@ package com.ecommerce.springboot.product.services
 
 import com.ecommerce.springboot.product.dto.CreateOptionTypeDto
 import com.ecommerce.springboot.product.dto.CreateOptionValueDto
+import com.ecommerce.springboot.product.dto.GetOptionTypesDto
 import com.ecommerce.springboot.product.helpers.safeValidatedCall
 import com.ecommerce.springboot.product.repositories.OptionRepository
 import com.ecommerce.springboot.product.v1.OptionServiceGrpcKt.OptionServiceCoroutineImplBase
@@ -22,5 +23,32 @@ class OptionService(private val optionTypeRepository: OptionRepository) : Option
             return@safeValidatedCall CreateOptionValueResponse.newBuilder()
                 .setId(optionTypeRepository.createOptionValue(dto).toString())
                 .build()
+        }
+
+    override suspend fun getOptionTypes(request: GetOptionTypesRequest): GetOptionTypesResponse =
+        safeValidatedCall(request, GetOptionTypesDto) { dto ->
+            val optionTypes = optionTypeRepository.getByProductId(dto.productId)
+            return@safeValidatedCall GetOptionTypesResponse.newBuilder()
+                .addAllOptionTypes(
+                    optionTypes.map { optionType ->
+                        OptionType.newBuilder()
+                            .setId(optionType.id.toString())
+                            .setName(optionType.name)
+                            .setDisplayOrder(optionType.displayOrder.toInt())
+                            .addAllOptionValues(
+                                optionType.optionValues.map { optionValue ->
+                                    OptionValue.newBuilder()
+                                        .setId(optionValue.id.toString())
+                                        .setValue(optionValue.value)
+                                        .setDisplayOrder(optionValue.displayOrder.toInt())
+                                        .setMediaUrl(optionValue.mediaUrl ?: "")
+                                        .build()
+                                }
+                            )
+                            .build()
+                    }
+                )
+                .build()
+
         }
 }

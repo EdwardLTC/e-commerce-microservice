@@ -1,8 +1,8 @@
 package com.ecommerce.springboot.product.services
 
-import com.ecommerce.springboot.product.dto.CreateProductRequestDto
+import com.ecommerce.springboot.product.dto.CreateProductDto
 import com.ecommerce.springboot.product.dto.GetProductDetailDto
-import com.ecommerce.springboot.product.dto.GetProductsRequestDto
+import com.ecommerce.springboot.product.dto.GetProductsDto
 import com.ecommerce.springboot.product.helpers.safeValidatedCall
 import com.ecommerce.springboot.product.repositories.ProductRepository
 import com.ecommerce.springboot.product.v1.ProductOuterClass.*
@@ -12,7 +12,7 @@ import net.devh.boot.grpc.server.service.GrpcService
 @GrpcService()
 class ProductService(private val productRepository: ProductRepository) : ProductServiceCoroutineImplBase() {
     override suspend fun getProducts(request: GetProductsRequest): GetProductsResponse =
-        safeValidatedCall(request, GetProductsRequestDto) { dto ->
+        safeValidatedCall(request, GetProductsDto) { dto ->
             return@safeValidatedCall GetProductsResponse.newBuilder()
                 .addAllProducts(
                     productRepository.getProducts(dto.skip, dto.take).map { product ->
@@ -34,7 +34,7 @@ class ProductService(private val productRepository: ProductRepository) : Product
         }
 
     override suspend fun createProduct(request: CreateProductRequest): CreateProductResponse =
-        safeValidatedCall(request, CreateProductRequestDto) { dto ->
+        safeValidatedCall(request, CreateProductDto) { dto ->
             return@safeValidatedCall CreateProductResponse.newBuilder()
                 .setId(productRepository.create(dto).toString())
                 .build()

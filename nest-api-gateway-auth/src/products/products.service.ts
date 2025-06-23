@@ -9,7 +9,6 @@ import {
 } from './products.model';
 import { lastValueFrom } from 'rxjs';
 import { com } from '../../generated/.proto/Product';
-import GetProductDetailResponse = com.ecommerce.springboot.product.v1.GetProductDetailResponse;
 
 @Injectable()
 export class ProductsService {
@@ -20,17 +19,12 @@ export class ProductsService {
   constructor(@Inject('PRODUCT_SERVICE') private client: ClientGrpc) {}
 
   public async getProducts(data: GetProductsRequest) {
-    const value = await lastValueFrom(
-      this.productClient.getProducts({
-        skip: { value: data.skip },
-        take: { value: data.take },
-      }),
+    return lastValueFrom(this.productClient.getProducts({ skip: { value: data.skip }, take: { value: data.take } })).then(
+      response => response.products,
     );
-
-    return value.products;
   }
 
-  public async getProductById(id: string): Promise<GetProductDetailResponse> {
+  public async getProductById(id: string) {
     return lastValueFrom(this.productClient.getProductDetail({ id: { value: id } }));
   }
 
@@ -44,6 +38,10 @@ export class ProductsService {
         mediaUrls: data.mediaUrls,
       }),
     );
+  }
+
+  public async getOptionTypes(productId: string) {
+    return lastValueFrom(this.optionClient.getOptionTypes({ productId: { value: productId } })).then(response => response.optionTypes);
   }
 
   public async createOptionType(productId: string, data: CreateProductOptionTypeRequest) {

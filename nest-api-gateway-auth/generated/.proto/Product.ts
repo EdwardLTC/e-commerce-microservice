@@ -17,6 +17,7 @@ export namespace com {
           }
           export interface OptionService {
             createOptionType(data: CreateOptionTypeRequest, metadata?: Metadata, ...rest: any[]): Observable<CreateOptionTypeResponse>;
+            getOptionTypes(data: GetOptionTypesRequest, metadata?: Metadata, ...rest: any[]): Observable<GetOptionTypesResponse>;
             createOptionValue(data: CreateOptionValueRequest, metadata?: Metadata, ...rest: any[]): Observable<CreateOptionValueResponse>;
           }
           export interface VariantService {
@@ -40,6 +41,12 @@ export namespace com {
           }
           export interface CreateOptionTypeResponse {
             id?: string;
+          }
+          export interface GetOptionTypesRequest {
+            productId?: google.protobuf.StringValue;
+          }
+          export interface GetOptionTypesResponse {
+            optionTypes?: v1.OptionType[];
           }
           export interface CreateOptionValueRequest {
             optionTypeId?: google.protobuf.StringValue;
