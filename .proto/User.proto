@@ -2,6 +2,8 @@
 
 package com.ecommerce.aspnet.user;
 
+option go_package = "e-commerce-microservice/aspnet-user/gen;pb";
+
 import "google/protobuf/wrappers.proto";
 
 service UserService {

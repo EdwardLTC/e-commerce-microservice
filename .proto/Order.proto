@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package com.ecommerce.golang.order;
+
+option go_package = "e-commerce-microservice/golang-order/gen;pb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service OrderService {
+  // Order Management
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrder(GetOrderRequest) returns (Order);
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (Order);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+
+  // Payment Integration
+  rpc InitiatePayment(PaymentIntentRequest) returns (PaymentIntentResponse);
+  rpc HandlePaymentWebhook(PaymentWebhookRequest) returns (google.protobuf.Empty);
+
+  // Refunds
+  rpc CreateRefund(CreateRefundRequest) returns (Refund);
+  rpc ProcessRefund(ProcessRefundRequest) returns (Refund);
+}
+
+// ========== Data Structures ==========
+
+message Order {
+  string id = 1; // UUID
+  string customerId = 2; // UUID
+  OrderStatus status = 3;
+  double subtotal = 4;
+  double tax = 5;
+  double shippingCost = 6;
+  double total = 7;
+  string shippingAddress = 8;
+  string billingAddress = 9;
+  string paymentIntentId = 10; // UUID
+  google.protobuf.Timestamp createdAt = 11;
+  google.protobuf.Timestamp updatedAt = 12;
+  repeated OrderItem items = 13;
+  repeated Refund refunds = 14;
+}
+
+message OrderItem {
+  string id = 1; // UUID
+  string productId = 2; // UUID
+  string variantId = 3; // UUID
+  string productName = 4;
+  string variantDescription = 5;
+  double unitPrice = 6;
+  double salePrice = 7;
+  int32 quantity = 8;
+  double totalPrice = 9;
+  string imageUrl = 10;
+  google.protobuf.Timestamp createdAt = 11;
+  google.protobuf.Timestamp updatedAt = 12;
+}
+
+message Refund {
+  string id = 1; // UUID
+  RefundStatus status = 2;
+  double amount = 3;
+  string reason = 4;
+  string paymentRefundId = 5; // UUID
+  repeated string orderItemIds = 6; // UUIDs
+  google.protobuf.Timestamp createdAt = 7;
+  google.protobuf.Timestamp updatedAt = 8;
+}
+
+message CreateOrderResponse {
+  string id = 1;
+  OrderStatus status = 2;
+  string paymentUrl = 3;
+}
+
+// ========== Enums ==========
+
+enum OrderStatus {
+  ORDER_STATUS_DRAFT_UNSPECIFIED = 0;
+  ORDER_STATUS_PENDING_PAYMENT = 1;
+  ORDER_STATUS_PAYMENT_RECEIVED = 2;
+  ORDER_STATUS_PROCESSING = 3;
+  ORDER_STATUS_SHIPPED = 4;
+  ORDER_STATUS_DELIVERED = 5;
+  ORDER_STATUS_CANCELLED = 6;
+  ORDER_STATUS_ON_HOLD = 7;
+  ORDER_STATUS_REFUNDED = 8;
+}
+
+enum RefundStatus {
+  REFUND_STATUS_REQUESTED_UNSPECIFIED = 0;
+  REFUND_STATUS_APPROVED = 1;
+  REFUND_STATUS_REJECTED = 2;
+  REFUND_STATUS_PROCESSED = 3;
+  REFUND_STATUS_FAILED = 4;
+}
+
+enum PaymentMethod {
+  PAYMENT_METHOD_UNSPECIFIED = 0;
+  PAYMENT_METHOD_CREDIT_CARD = 1;
+  PAYMENT_METHOD_PAYPAL = 2;
+  PAYMENT_METHOD_BANK_TRANSFER = 3;
+  PAYMENT_METHOD_CRYPTO = 4;
+  PAYMENT_METHOD_CASH = 5;
+}
+
+// ========== Request/Response Messages ==========
+
+// Order Management
+message CreateOrderRequest {
+  string customerId = 1; // UUID
+  repeated OrderItemRequest items = 2;
+  string shippingAddress = 3;
+  string billingAddress = 4;
+  //  string idempotencyKey = 5; // UUID
+}
+
+message OrderItemRequest {
+  string variantId = 2; // UUID
+  int32 quantity = 3;
+}
+
+message GetOrderRequest {
+  string id = 1; // UUID
+}
+
+message UpdateOrderStatusRequest {
+  string id = 1; // UUID
+  OrderStatus status = 2;
+}
+
+message ListOrdersRequest {
+  int32 page = 1;
+  int32 pageSize = 2;
+  string customerId = 3; // Optional filter
+  OrderStatus status = 4; // Optional filter
+  google.protobuf.Timestamp createdAfter = 5;
+}
+
+message ListOrdersResponse {
+  repeated Order orders = 1;
+  int32 totalCount = 2;
+  int32 currentPage = 3;
+  int32 totalPages = 4;
+}
+
+// Payment Integration
+message PaymentIntentRequest {
+  string orderId = 1; // UUID
+  double amount = 2;
+  string currency = 3; // ISO 4217
+  PaymentMethod method = 4;
+  string customerEmail = 5;
+  map<string, string> metadata = 6;
+}
+
+message PaymentIntentResponse {
+  string paymentIntentId = 1; // UUID
+  string clientSecret = 2; // For Stripe-like integrations
+  string redirectUrl = 3;
+}
+
+message PaymentWebhookRequest {
+  string eventId = 1;
+  string eventType = 2;
+  string paymentIntentId = 3; // UUID
+  double amount = 4;
+  string currency = 5;
+  bool success = 6;
+  google.protobuf.Timestamp createdAt = 7;
+  map<string, string> metadata = 8;
+  string signature = 9; // For verification
+}
+
+// Refunds
+message CreateRefundRequest {
+  string orderId = 1; // UUID
+  repeated string orderItemIds = 2; // UUIDs
+  string reason = 3;
+  double amount = 4;
+}
+
+message ProcessRefundRequest {
+  string refundId = 1; // UUID
+  string paymentRefundId = 2; // UUID from payment service
+}

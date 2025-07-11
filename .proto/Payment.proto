@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package com.ecommerce.golang.payment;
+
+option go_package = "e-commerce-microservice/flask-payment/gen;pb";
+
+import "google/protobuf/wrappers.proto";
+
+service PaymentService {
+  rpc CreateIntent(CreateIntentRequest) returns (CreateIntentResponse);
+  rpc CancelIntent(CancelIntentRequest) returns (google.protobuf.BoolValue);
+}
+
+// ========== Data Structures ==========
+message CreateIntentRequest {
+  google.protobuf.StringValue orderId = 1;
+  google.protobuf.StringValue userId = 2; // UUID of the user making the payment
+  google.protobuf.StringValue paymentMethod = 3; // e.g., "credit_card", "paypal"
+  google.protobuf.DoubleValue amount = 4; // Amount in the smallest currency unit (e.g., cents)
+  google.protobuf.StringValue currency = 5; // e.g., "USD", "EUR"
+  google.protobuf.StringValue description = 6; // Optional description of the payment
+}
+
+message CreateIntentResponse {
+  string intentId = 1;
+  string paymentUrl = 2; // URL to redirect the user for payment
+}
+
+message CancelIntentRequest {
+  google.protobuf.StringValue intentId = 1;
+}

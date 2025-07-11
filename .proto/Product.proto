@@ -2,7 +2,8 @@ syntax = "proto3";
 
 package com.ecommerce.springboot.product.v1;
 
-import "google/protobuf/timestamp.proto";
+option go_package = "e-commerce-microservice/springboot-product/gen;pb";
+
 import "google/protobuf/wrappers.proto";
 
 service ProductService {
@@ -19,6 +20,26 @@ service OptionService {
 
 service VariantService {
   rpc CreateVariant(CreateVariantRequest) returns (CreateVariantResponse);
+  rpc ReserveStock(ReserveStockRequest) returns (ReserveStockResponse);
+  rpc ReleaseStock(ReleaseStockRequest) returns (google.protobuf.DoubleValue);
+}
+
+message VariantItem {
+  string variantId = 1;
+  int32 quantity = 2;
+}
+
+message ReserveStockRequest {
+  repeated VariantItem items = 1;
+}
+
+message ReserveStockResponse {
+  string reservationId = 1;
+  repeated VariantWithProduct variants = 2;
+}
+
+message ReleaseStockRequest {
+  string reservationId = 1;
 }
 
 message CreateVariantRequest {
@@ -32,6 +53,17 @@ message CreateVariantRequest {
 
 message CreateVariantResponse {
   string id = 1;
+}
+
+message VariantWithProduct {
+  string id = 1;
+  string sku = 2;
+  double price = 3;
+  double salePrice = 4;
+  int32 stock = 5;
+  string status = 6;
+  string mediaUrl = 7;
+  Product product = 8;
 }
 
 message CreateOptionTypeRequest {
