@@ -40,35 +40,28 @@ func (o *Orchestrator) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 		return nil, err
 	}
 
-	var subTotal float64
-	var tax float64
-	var shippingCost float64
+	var subTotal = 0.0
+	var tax = 0.0
+	var shippingCost = 0.0
 
-	items := make([]ItemInput, len(reservation.Variants))
+	items := array.Map(reservation.Variants, func(item *pb.ReserveStockResponse_VariantWithProduct) ItemInput {
 
-	for _, item := range reservation.Variants {
-		var itemRequest = array.Find(req.Items, func(element *pb.OrderItemRequest) bool {
-			return item.Id == element.VariantId
-		})
+		var itemRequest = array.Find(req.Items, func(element *pb.OrderItemRequest) bool { return item.Id == element.VariantId })
 
-		if itemRequest == nil {
-			return nil, status.Error(codes.InvalidArgument, "Item not found in request")
-		}
+		totalPrice := float64((*itemRequest).Quantity) * item.SalePrice
+		subTotal += totalPrice
 
-		items = append(items, ItemInput{
-			ProductID:          uuid.MustParse(item.Product.Id),
+		return ItemInput{
+			ProductID:          uuid.MustParse(item.ProductId),
 			VariantID:          uuid.MustParse(item.Id),
-			ProductName:        item.Product.Name,
+			ProductName:        item.ProductName,
 			VariantDescription: item.Sku,
 			UnitPrice:          item.SalePrice,
 			Quantity:           int((*itemRequest).Quantity),
 			TotalPrice:         float64((*itemRequest).Quantity) * item.SalePrice,
 			ImageURL:           item.MediaUrl,
-		})
-
-		totalPrice := float64((*itemRequest).Quantity) * item.SalePrice
-		subTotal += totalPrice
-	}
+		}
+	})
 
 	total := subTotal + tax + shippingCost
 
@@ -123,7 +116,7 @@ func (o *Orchestrator) reserveStock(ctx context.Context, items []*pb.OrderItemRe
 	})
 
 	if err != nil {
-		return nil, status.Errorf(codes.ResourceExhausted, "stock reservation failed: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "stock reservation failed: %v", err)
 	}
 
 	if len(items) != len(reservation.Variants) {

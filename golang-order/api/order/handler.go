@@ -23,6 +23,6 @@ func NewHandler(db *ent.Client) *Handler {
 	return &Handler{svc: *order.NewOrderOrchestrator(db, variantClient, nil)}
 }
 
-func (h *Handler) CreateOrder(ctx context.Context, req *pb.CreateOrderRequest) (*pb.Order, error) {
+func (h *Handler) CreateOrder(ctx context.Context, req *pb.CreateOrderRequest) (*pb.CreateOrderResponse, error) {
 	return h.svc.CreateOrder(ctx, req)
 }

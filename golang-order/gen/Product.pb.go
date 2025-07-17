@@ -119,9 +119,9 @@ func (x *ReserveStockRequest) GetItems() []*VariantItem {
 }
 
 type ReserveStockResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ReservationId string                 `protobuf:"bytes,1,opt,name=reservationId,proto3" json:"reservationId,omitempty"`
-	Variants      []*VariantWithProduct  `protobuf:"bytes,2,rep,name=variants,proto3" json:"variants,omitempty"`
+	state         protoimpl.MessageState                     `protogen:"open.v1"`
+	ReservationId string                                     `protobuf:"bytes,1,opt,name=reservationId,proto3" json:"reservationId,omitempty"`
+	Variants      []*ReserveStockResponse_VariantWithProduct `protobuf:"bytes,2,rep,name=variants,proto3" json:"variants,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -163,7 +163,7 @@ func (x *ReserveStockResponse) GetReservationId() string {
 	return ""
 }
 
-func (x *ReserveStockResponse) GetVariants() []*VariantWithProduct {
+func (x *ReserveStockResponse) GetVariants() []*ReserveStockResponse_VariantWithProduct {
 	if x != nil {
 		return x.Variants
 	}
@@ -342,106 +342,6 @@ func (x *CreateVariantResponse) GetId() string {
 	return ""
 }
 
-type VariantWithProduct struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Sku           string                 `protobuf:"bytes,2,opt,name=sku,proto3" json:"sku,omitempty"`
-	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
-	SalePrice     float64                `protobuf:"fixed64,4,opt,name=salePrice,proto3" json:"salePrice,omitempty"`
-	Stock         int32                  `protobuf:"varint,5,opt,name=stock,proto3" json:"stock,omitempty"`
-	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
-	MediaUrl      string                 `protobuf:"bytes,7,opt,name=mediaUrl,proto3" json:"mediaUrl,omitempty"`
-	Product       *Product               `protobuf:"bytes,8,opt,name=product,proto3" json:"product,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *VariantWithProduct) Reset() {
-	*x = VariantWithProduct{}
-	mi := &file_Product_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *VariantWithProduct) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VariantWithProduct) ProtoMessage() {}
-
-func (x *VariantWithProduct) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VariantWithProduct.ProtoReflect.Descriptor instead.
-func (*VariantWithProduct) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *VariantWithProduct) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *VariantWithProduct) GetSku() string {
-	if x != nil {
-		return x.Sku
-	}
-	return ""
-}
-
-func (x *VariantWithProduct) GetPrice() float64 {
-	if x != nil {
-		return x.Price
-	}
-	return 0
-}
-
-func (x *VariantWithProduct) GetSalePrice() float64 {
-	if x != nil {
-		return x.SalePrice
-	}
-	return 0
-}
-
-func (x *VariantWithProduct) GetStock() int32 {
-	if x != nil {
-		return x.Stock
-	}
-	return 0
-}
-
-func (x *VariantWithProduct) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *VariantWithProduct) GetMediaUrl() string {
-	if x != nil {
-		return x.MediaUrl
-	}
-	return ""
-}
-
-func (x *VariantWithProduct) GetProduct() *Product {
-	if x != nil {
-		return x.Product
-	}
-	return nil
-}
-
 type CreateOptionTypeRequest struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
 	ProductId     *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=productId,proto3" json:"productId,omitempty"`
@@ -453,7 +353,7 @@ type CreateOptionTypeRequest struct {
 
 func (x *CreateOptionTypeRequest) Reset() {
 	*x = CreateOptionTypeRequest{}
-	mi := &file_Product_proto_msgTypes[7]
+	mi := &file_Product_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -465,7 +365,7 @@ func (x *CreateOptionTypeRequest) String() string {
 func (*CreateOptionTypeRequest) ProtoMessage() {}
 
 func (x *CreateOptionTypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[7]
+	mi := &file_Product_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -478,7 +378,7 @@ func (x *CreateOptionTypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOptionTypeRequest.ProtoReflect.Descriptor instead.
 func (*CreateOptionTypeRequest) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{7}
+	return file_Product_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateOptionTypeRequest) GetProductId() *wrapperspb.StringValue {
@@ -511,7 +411,7 @@ type CreateOptionTypeResponse struct {
 
 func (x *CreateOptionTypeResponse) Reset() {
 	*x = CreateOptionTypeResponse{}
-	mi := &file_Product_proto_msgTypes[8]
+	mi := &file_Product_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -523,7 +423,7 @@ func (x *CreateOptionTypeResponse) String() string {
 func (*CreateOptionTypeResponse) ProtoMessage() {}
 
 func (x *CreateOptionTypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[8]
+	mi := &file_Product_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -536,7 +436,7 @@ func (x *CreateOptionTypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOptionTypeResponse.ProtoReflect.Descriptor instead.
 func (*CreateOptionTypeResponse) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{8}
+	return file_Product_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateOptionTypeResponse) GetId() string {
@@ -555,7 +455,7 @@ type GetOptionTypesRequest struct {
 
 func (x *GetOptionTypesRequest) Reset() {
 	*x = GetOptionTypesRequest{}
-	mi := &file_Product_proto_msgTypes[9]
+	mi := &file_Product_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -567,7 +467,7 @@ func (x *GetOptionTypesRequest) String() string {
 func (*GetOptionTypesRequest) ProtoMessage() {}
 
 func (x *GetOptionTypesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[9]
+	mi := &file_Product_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -580,7 +480,7 @@ func (x *GetOptionTypesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOptionTypesRequest.ProtoReflect.Descriptor instead.
 func (*GetOptionTypesRequest) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{9}
+	return file_Product_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetOptionTypesRequest) GetProductId() *wrapperspb.StringValue {
@@ -599,7 +499,7 @@ type GetOptionTypesResponse struct {
 
 func (x *GetOptionTypesResponse) Reset() {
 	*x = GetOptionTypesResponse{}
-	mi := &file_Product_proto_msgTypes[10]
+	mi := &file_Product_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -611,7 +511,7 @@ func (x *GetOptionTypesResponse) String() string {
 func (*GetOptionTypesResponse) ProtoMessage() {}
 
 func (x *GetOptionTypesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[10]
+	mi := &file_Product_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -624,7 +524,7 @@ func (x *GetOptionTypesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOptionTypesResponse.ProtoReflect.Descriptor instead.
 func (*GetOptionTypesResponse) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{10}
+	return file_Product_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetOptionTypesResponse) GetOptionTypes() []*OptionType {
@@ -646,7 +546,7 @@ type CreateOptionValueRequest struct {
 
 func (x *CreateOptionValueRequest) Reset() {
 	*x = CreateOptionValueRequest{}
-	mi := &file_Product_proto_msgTypes[11]
+	mi := &file_Product_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -658,7 +558,7 @@ func (x *CreateOptionValueRequest) String() string {
 func (*CreateOptionValueRequest) ProtoMessage() {}
 
 func (x *CreateOptionValueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[11]
+	mi := &file_Product_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -671,7 +571,7 @@ func (x *CreateOptionValueRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOptionValueRequest.ProtoReflect.Descriptor instead.
 func (*CreateOptionValueRequest) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{11}
+	return file_Product_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateOptionValueRequest) GetOptionTypeId() *wrapperspb.StringValue {
@@ -711,7 +611,7 @@ type CreateOptionValueResponse struct {
 
 func (x *CreateOptionValueResponse) Reset() {
 	*x = CreateOptionValueResponse{}
-	mi := &file_Product_proto_msgTypes[12]
+	mi := &file_Product_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -723,7 +623,7 @@ func (x *CreateOptionValueResponse) String() string {
 func (*CreateOptionValueResponse) ProtoMessage() {}
 
 func (x *CreateOptionValueResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[12]
+	mi := &file_Product_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -736,7 +636,7 @@ func (x *CreateOptionValueResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOptionValueResponse.ProtoReflect.Descriptor instead.
 func (*CreateOptionValueResponse) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{12}
+	return file_Product_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *CreateOptionValueResponse) GetId() string {
@@ -756,7 +656,7 @@ type GetProductsRequest struct {
 
 func (x *GetProductsRequest) Reset() {
 	*x = GetProductsRequest{}
-	mi := &file_Product_proto_msgTypes[13]
+	mi := &file_Product_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -768,7 +668,7 @@ func (x *GetProductsRequest) String() string {
 func (*GetProductsRequest) ProtoMessage() {}
 
 func (x *GetProductsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[13]
+	mi := &file_Product_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -781,7 +681,7 @@ func (x *GetProductsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductsRequest.ProtoReflect.Descriptor instead.
 func (*GetProductsRequest) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{13}
+	return file_Product_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetProductsRequest) GetSkip() *wrapperspb.Int32Value {
@@ -807,7 +707,7 @@ type GetProductsResponse struct {
 
 func (x *GetProductsResponse) Reset() {
 	*x = GetProductsResponse{}
-	mi := &file_Product_proto_msgTypes[14]
+	mi := &file_Product_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -819,7 +719,7 @@ func (x *GetProductsResponse) String() string {
 func (*GetProductsResponse) ProtoMessage() {}
 
 func (x *GetProductsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[14]
+	mi := &file_Product_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -832,7 +732,7 @@ func (x *GetProductsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductsResponse.ProtoReflect.Descriptor instead.
 func (*GetProductsResponse) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{14}
+	return file_Product_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetProductsResponse) GetProducts() []*Product {
@@ -851,7 +751,7 @@ type GetProductDetailRequest struct {
 
 func (x *GetProductDetailRequest) Reset() {
 	*x = GetProductDetailRequest{}
-	mi := &file_Product_proto_msgTypes[15]
+	mi := &file_Product_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -863,7 +763,7 @@ func (x *GetProductDetailRequest) String() string {
 func (*GetProductDetailRequest) ProtoMessage() {}
 
 func (x *GetProductDetailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[15]
+	mi := &file_Product_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -876,7 +776,7 @@ func (x *GetProductDetailRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductDetailRequest.ProtoReflect.Descriptor instead.
 func (*GetProductDetailRequest) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{15}
+	return file_Product_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GetProductDetailRequest) GetId() *wrapperspb.StringValue {
@@ -903,7 +803,7 @@ type GetProductDetailResponse struct {
 
 func (x *GetProductDetailResponse) Reset() {
 	*x = GetProductDetailResponse{}
-	mi := &file_Product_proto_msgTypes[16]
+	mi := &file_Product_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -915,7 +815,7 @@ func (x *GetProductDetailResponse) String() string {
 func (*GetProductDetailResponse) ProtoMessage() {}
 
 func (x *GetProductDetailResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[16]
+	mi := &file_Product_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +828,7 @@ func (x *GetProductDetailResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductDetailResponse.ProtoReflect.Descriptor instead.
 func (*GetProductDetailResponse) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{16}
+	return file_Product_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetProductDetailResponse) GetId() string {
@@ -1006,7 +906,7 @@ type OptionType struct {
 
 func (x *OptionType) Reset() {
 	*x = OptionType{}
-	mi := &file_Product_proto_msgTypes[17]
+	mi := &file_Product_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1018,7 +918,7 @@ func (x *OptionType) String() string {
 func (*OptionType) ProtoMessage() {}
 
 func (x *OptionType) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[17]
+	mi := &file_Product_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1031,7 +931,7 @@ func (x *OptionType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OptionType.ProtoReflect.Descriptor instead.
 func (*OptionType) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{17}
+	return file_Product_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *OptionType) GetId() string {
@@ -1074,7 +974,7 @@ type OptionValue struct {
 
 func (x *OptionValue) Reset() {
 	*x = OptionValue{}
-	mi := &file_Product_proto_msgTypes[18]
+	mi := &file_Product_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1086,7 +986,7 @@ func (x *OptionValue) String() string {
 func (*OptionValue) ProtoMessage() {}
 
 func (x *OptionValue) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[18]
+	mi := &file_Product_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1099,7 +999,7 @@ func (x *OptionValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OptionValue.ProtoReflect.Descriptor instead.
 func (*OptionValue) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{18}
+	return file_Product_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *OptionValue) GetId() string {
@@ -1146,7 +1046,7 @@ type Variant struct {
 
 func (x *Variant) Reset() {
 	*x = Variant{}
-	mi := &file_Product_proto_msgTypes[19]
+	mi := &file_Product_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1158,7 +1058,7 @@ func (x *Variant) String() string {
 func (*Variant) ProtoMessage() {}
 
 func (x *Variant) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[19]
+	mi := &file_Product_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1171,7 +1071,7 @@ func (x *Variant) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Variant.ProtoReflect.Descriptor instead.
 func (*Variant) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{19}
+	return file_Product_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *Variant) GetId() string {
@@ -1240,7 +1140,7 @@ type SelectedOption struct {
 
 func (x *SelectedOption) Reset() {
 	*x = SelectedOption{}
-	mi := &file_Product_proto_msgTypes[20]
+	mi := &file_Product_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1252,7 +1152,7 @@ func (x *SelectedOption) String() string {
 func (*SelectedOption) ProtoMessage() {}
 
 func (x *SelectedOption) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[20]
+	mi := &file_Product_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1265,7 +1165,7 @@ func (x *SelectedOption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SelectedOption.ProtoReflect.Descriptor instead.
 func (*SelectedOption) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{20}
+	return file_Product_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SelectedOption) GetOptionTypeId() string {
@@ -1295,7 +1195,7 @@ type CreateProductRequest struct {
 
 func (x *CreateProductRequest) Reset() {
 	*x = CreateProductRequest{}
-	mi := &file_Product_proto_msgTypes[21]
+	mi := &file_Product_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1307,7 +1207,7 @@ func (x *CreateProductRequest) String() string {
 func (*CreateProductRequest) ProtoMessage() {}
 
 func (x *CreateProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[21]
+	mi := &file_Product_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1320,7 +1220,7 @@ func (x *CreateProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateProductRequest.ProtoReflect.Descriptor instead.
 func (*CreateProductRequest) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{21}
+	return file_Product_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CreateProductRequest) GetName() *wrapperspb.StringValue {
@@ -1367,7 +1267,7 @@ type CreateProductResponse struct {
 
 func (x *CreateProductResponse) Reset() {
 	*x = CreateProductResponse{}
-	mi := &file_Product_proto_msgTypes[22]
+	mi := &file_Product_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1379,7 +1279,7 @@ func (x *CreateProductResponse) String() string {
 func (*CreateProductResponse) ProtoMessage() {}
 
 func (x *CreateProductResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[22]
+	mi := &file_Product_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1392,7 +1292,7 @@ func (x *CreateProductResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateProductResponse.ProtoReflect.Descriptor instead.
 func (*CreateProductResponse) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{22}
+	return file_Product_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CreateProductResponse) GetId() string {
@@ -1419,7 +1319,7 @@ type Product struct {
 
 func (x *Product) Reset() {
 	*x = Product{}
-	mi := &file_Product_proto_msgTypes[23]
+	mi := &file_Product_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1431,7 +1331,7 @@ func (x *Product) String() string {
 func (*Product) ProtoMessage() {}
 
 func (x *Product) ProtoReflect() protoreflect.Message {
-	mi := &file_Product_proto_msgTypes[23]
+	mi := &file_Product_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1444,7 +1344,7 @@ func (x *Product) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Product.ProtoReflect.Descriptor instead.
 func (*Product) Descriptor() ([]byte, []int) {
-	return file_Product_proto_rawDescGZIP(), []int{23}
+	return file_Product_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *Product) GetId() string {
@@ -1510,6 +1410,106 @@ func (x *Product) GetMediaUrls() []string {
 	return nil
 }
 
+type ReserveStockResponse_VariantWithProduct struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Sku           string                 `protobuf:"bytes,2,opt,name=sku,proto3" json:"sku,omitempty"`
+	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
+	SalePrice     float64                `protobuf:"fixed64,4,opt,name=salePrice,proto3" json:"salePrice,omitempty"`
+	Stock         int32                  `protobuf:"varint,5,opt,name=stock,proto3" json:"stock,omitempty"`
+	MediaUrl      string                 `protobuf:"bytes,7,opt,name=mediaUrl,proto3" json:"mediaUrl,omitempty"`
+	ProductId     string                 `protobuf:"bytes,8,opt,name=productId,proto3" json:"productId,omitempty"`
+	ProductName   string                 `protobuf:"bytes,9,opt,name=productName,proto3" json:"productName,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) Reset() {
+	*x = ReserveStockResponse_VariantWithProduct{}
+	mi := &file_Product_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReserveStockResponse_VariantWithProduct) ProtoMessage() {}
+
+func (x *ReserveStockResponse_VariantWithProduct) ProtoReflect() protoreflect.Message {
+	mi := &file_Product_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReserveStockResponse_VariantWithProduct.ProtoReflect.Descriptor instead.
+func (*ReserveStockResponse_VariantWithProduct) Descriptor() ([]byte, []int) {
+	return file_Product_proto_rawDescGZIP(), []int{2, 0}
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) GetSku() string {
+	if x != nil {
+		return x.Sku
+	}
+	return ""
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) GetSalePrice() float64 {
+	if x != nil {
+		return x.SalePrice
+	}
+	return 0
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) GetStock() int32 {
+	if x != nil {
+		return x.Stock
+	}
+	return 0
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) GetMediaUrl() string {
+	if x != nil {
+		return x.MediaUrl
+	}
+	return ""
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *ReserveStockResponse_VariantWithProduct) GetProductName() string {
+	if x != nil {
+		return x.ProductName
+	}
+	return ""
+}
+
 var File_Product_proto protoreflect.FileDescriptor
 
 const file_Product_proto_rawDesc = "" +
@@ -1519,10 +1519,19 @@ const file_Product_proto_rawDesc = "" +
 	"\tvariantId\x18\x01 \x01(\tR\tvariantId\x12\x1a\n" +
 	"\bquantity\x18\x02 \x01(\x05R\bquantity\"]\n" +
 	"\x13ReserveStockRequest\x12F\n" +
-	"\x05items\x18\x01 \x03(\v20.com.ecommerce.springboot.product.v1.VariantItemR\x05items\"\x91\x01\n" +
+	"\x05items\x18\x01 \x03(\v20.com.ecommerce.springboot.product.v1.VariantItemR\x05items\"\x85\x03\n" +
 	"\x14ReserveStockResponse\x12$\n" +
-	"\rreservationId\x18\x01 \x01(\tR\rreservationId\x12S\n" +
-	"\bvariants\x18\x02 \x03(\v27.com.ecommerce.springboot.product.v1.VariantWithProductR\bvariants\";\n" +
+	"\rreservationId\x18\x01 \x01(\tR\rreservationId\x12h\n" +
+	"\bvariants\x18\x02 \x03(\v2L.com.ecommerce.springboot.product.v1.ReserveStockResponse.VariantWithProductR\bvariants\x1a\xdc\x01\n" +
+	"\x12VariantWithProduct\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
+	"\x03sku\x18\x02 \x01(\tR\x03sku\x12\x14\n" +
+	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x1c\n" +
+	"\tsalePrice\x18\x04 \x01(\x01R\tsalePrice\x12\x14\n" +
+	"\x05stock\x18\x05 \x01(\x05R\x05stock\x12\x1a\n" +
+	"\bmediaUrl\x18\a \x01(\tR\bmediaUrl\x12\x1c\n" +
+	"\tproductId\x18\b \x01(\tR\tproductId\x12 \n" +
+	"\vproductName\x18\t \x01(\tR\vproductName\";\n" +
 	"\x13ReleaseStockRequest\x12$\n" +
 	"\rreservationId\x18\x01 \x01(\tR\rreservationId\"\xbd\x02\n" +
 	"\x14CreateVariantRequest\x12:\n" +
@@ -1533,16 +1542,7 @@ const file_Product_proto_rawDesc = "" +
 	"\bmediaUrl\x18\x05 \x01(\v2\x1c.google.protobuf.StringValueR\bmediaUrl\x12\x18\n" +
 	"\aoptions\x18\x06 \x03(\tR\aoptions\"'\n" +
 	"\x15CreateVariantResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xfc\x01\n" +
-	"\x12VariantWithProduct\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
-	"\x03sku\x18\x02 \x01(\tR\x03sku\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x1c\n" +
-	"\tsalePrice\x18\x04 \x01(\x01R\tsalePrice\x12\x14\n" +
-	"\x05stock\x18\x05 \x01(\x05R\x05stock\x12\x16\n" +
-	"\x06status\x18\x06 \x01(\tR\x06status\x12\x1a\n" +
-	"\bmediaUrl\x18\a \x01(\tR\bmediaUrl\x12F\n" +
-	"\aproduct\x18\b \x01(\v2,.com.ecommerce.springboot.product.v1.ProductR\aproduct\"\xc8\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xc8\x01\n" +
 	"\x17CreateOptionTypeRequest\x12:\n" +
 	"\tproductId\x18\x01 \x01(\v2\x1c.google.protobuf.StringValueR\tproductId\x120\n" +
 	"\x04name\x18\x02 \x01(\v2\x1c.google.protobuf.StringValueR\x04name\x12?\n" +
@@ -1645,87 +1645,86 @@ func file_Product_proto_rawDescGZIP() []byte {
 
 var file_Product_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_Product_proto_goTypes = []any{
-	(*VariantItem)(nil),               // 0: com.ecommerce.springboot.product.v1.VariantItem
-	(*ReserveStockRequest)(nil),       // 1: com.ecommerce.springboot.product.v1.ReserveStockRequest
-	(*ReserveStockResponse)(nil),      // 2: com.ecommerce.springboot.product.v1.ReserveStockResponse
-	(*ReleaseStockRequest)(nil),       // 3: com.ecommerce.springboot.product.v1.ReleaseStockRequest
-	(*CreateVariantRequest)(nil),      // 4: com.ecommerce.springboot.product.v1.CreateVariantRequest
-	(*CreateVariantResponse)(nil),     // 5: com.ecommerce.springboot.product.v1.CreateVariantResponse
-	(*VariantWithProduct)(nil),        // 6: com.ecommerce.springboot.product.v1.VariantWithProduct
-	(*CreateOptionTypeRequest)(nil),   // 7: com.ecommerce.springboot.product.v1.CreateOptionTypeRequest
-	(*CreateOptionTypeResponse)(nil),  // 8: com.ecommerce.springboot.product.v1.CreateOptionTypeResponse
-	(*GetOptionTypesRequest)(nil),     // 9: com.ecommerce.springboot.product.v1.GetOptionTypesRequest
-	(*GetOptionTypesResponse)(nil),    // 10: com.ecommerce.springboot.product.v1.GetOptionTypesResponse
-	(*CreateOptionValueRequest)(nil),  // 11: com.ecommerce.springboot.product.v1.CreateOptionValueRequest
-	(*CreateOptionValueResponse)(nil), // 12: com.ecommerce.springboot.product.v1.CreateOptionValueResponse
-	(*GetProductsRequest)(nil),        // 13: com.ecommerce.springboot.product.v1.GetProductsRequest
-	(*GetProductsResponse)(nil),       // 14: com.ecommerce.springboot.product.v1.GetProductsResponse
-	(*GetProductDetailRequest)(nil),   // 15: com.ecommerce.springboot.product.v1.GetProductDetailRequest
-	(*GetProductDetailResponse)(nil),  // 16: com.ecommerce.springboot.product.v1.GetProductDetailResponse
-	(*OptionType)(nil),                // 17: com.ecommerce.springboot.product.v1.OptionType
-	(*OptionValue)(nil),               // 18: com.ecommerce.springboot.product.v1.OptionValue
-	(*Variant)(nil),                   // 19: com.ecommerce.springboot.product.v1.Variant
-	(*SelectedOption)(nil),            // 20: com.ecommerce.springboot.product.v1.SelectedOption
-	(*CreateProductRequest)(nil),      // 21: com.ecommerce.springboot.product.v1.CreateProductRequest
-	(*CreateProductResponse)(nil),     // 22: com.ecommerce.springboot.product.v1.CreateProductResponse
-	(*Product)(nil),                   // 23: com.ecommerce.springboot.product.v1.Product
-	(*wrapperspb.StringValue)(nil),    // 24: google.protobuf.StringValue
-	(*wrapperspb.DoubleValue)(nil),    // 25: google.protobuf.DoubleValue
-	(*wrapperspb.Int32Value)(nil),     // 26: google.protobuf.Int32Value
+	(*VariantItem)(nil),                             // 0: com.ecommerce.springboot.product.v1.VariantItem
+	(*ReserveStockRequest)(nil),                     // 1: com.ecommerce.springboot.product.v1.ReserveStockRequest
+	(*ReserveStockResponse)(nil),                    // 2: com.ecommerce.springboot.product.v1.ReserveStockResponse
+	(*ReleaseStockRequest)(nil),                     // 3: com.ecommerce.springboot.product.v1.ReleaseStockRequest
+	(*CreateVariantRequest)(nil),                    // 4: com.ecommerce.springboot.product.v1.CreateVariantRequest
+	(*CreateVariantResponse)(nil),                   // 5: com.ecommerce.springboot.product.v1.CreateVariantResponse
+	(*CreateOptionTypeRequest)(nil),                 // 6: com.ecommerce.springboot.product.v1.CreateOptionTypeRequest
+	(*CreateOptionTypeResponse)(nil),                // 7: com.ecommerce.springboot.product.v1.CreateOptionTypeResponse
+	(*GetOptionTypesRequest)(nil),                   // 8: com.ecommerce.springboot.product.v1.GetOptionTypesRequest
+	(*GetOptionTypesResponse)(nil),                  // 9: com.ecommerce.springboot.product.v1.GetOptionTypesResponse
+	(*CreateOptionValueRequest)(nil),                // 10: com.ecommerce.springboot.product.v1.CreateOptionValueRequest
+	(*CreateOptionValueResponse)(nil),               // 11: com.ecommerce.springboot.product.v1.CreateOptionValueResponse
+	(*GetProductsRequest)(nil),                      // 12: com.ecommerce.springboot.product.v1.GetProductsRequest
+	(*GetProductsResponse)(nil),                     // 13: com.ecommerce.springboot.product.v1.GetProductsResponse
+	(*GetProductDetailRequest)(nil),                 // 14: com.ecommerce.springboot.product.v1.GetProductDetailRequest
+	(*GetProductDetailResponse)(nil),                // 15: com.ecommerce.springboot.product.v1.GetProductDetailResponse
+	(*OptionType)(nil),                              // 16: com.ecommerce.springboot.product.v1.OptionType
+	(*OptionValue)(nil),                             // 17: com.ecommerce.springboot.product.v1.OptionValue
+	(*Variant)(nil),                                 // 18: com.ecommerce.springboot.product.v1.Variant
+	(*SelectedOption)(nil),                          // 19: com.ecommerce.springboot.product.v1.SelectedOption
+	(*CreateProductRequest)(nil),                    // 20: com.ecommerce.springboot.product.v1.CreateProductRequest
+	(*CreateProductResponse)(nil),                   // 21: com.ecommerce.springboot.product.v1.CreateProductResponse
+	(*Product)(nil),                                 // 22: com.ecommerce.springboot.product.v1.Product
+	(*ReserveStockResponse_VariantWithProduct)(nil), // 23: com.ecommerce.springboot.product.v1.ReserveStockResponse.VariantWithProduct
+	(*wrapperspb.StringValue)(nil),                  // 24: google.protobuf.StringValue
+	(*wrapperspb.DoubleValue)(nil),                  // 25: google.protobuf.DoubleValue
+	(*wrapperspb.Int32Value)(nil),                   // 26: google.protobuf.Int32Value
 }
 var file_Product_proto_depIdxs = []int32{
 	0,  // 0: com.ecommerce.springboot.product.v1.ReserveStockRequest.items:type_name -> com.ecommerce.springboot.product.v1.VariantItem
-	6,  // 1: com.ecommerce.springboot.product.v1.ReserveStockResponse.variants:type_name -> com.ecommerce.springboot.product.v1.VariantWithProduct
+	23, // 1: com.ecommerce.springboot.product.v1.ReserveStockResponse.variants:type_name -> com.ecommerce.springboot.product.v1.ReserveStockResponse.VariantWithProduct
 	24, // 2: com.ecommerce.springboot.product.v1.CreateVariantRequest.productId:type_name -> google.protobuf.StringValue
 	24, // 3: com.ecommerce.springboot.product.v1.CreateVariantRequest.sku:type_name -> google.protobuf.StringValue
 	25, // 4: com.ecommerce.springboot.product.v1.CreateVariantRequest.price:type_name -> google.protobuf.DoubleValue
 	26, // 5: com.ecommerce.springboot.product.v1.CreateVariantRequest.stock:type_name -> google.protobuf.Int32Value
 	24, // 6: com.ecommerce.springboot.product.v1.CreateVariantRequest.mediaUrl:type_name -> google.protobuf.StringValue
-	23, // 7: com.ecommerce.springboot.product.v1.VariantWithProduct.product:type_name -> com.ecommerce.springboot.product.v1.Product
-	24, // 8: com.ecommerce.springboot.product.v1.CreateOptionTypeRequest.productId:type_name -> google.protobuf.StringValue
-	24, // 9: com.ecommerce.springboot.product.v1.CreateOptionTypeRequest.name:type_name -> google.protobuf.StringValue
-	26, // 10: com.ecommerce.springboot.product.v1.CreateOptionTypeRequest.displayOrder:type_name -> google.protobuf.Int32Value
-	24, // 11: com.ecommerce.springboot.product.v1.GetOptionTypesRequest.productId:type_name -> google.protobuf.StringValue
-	17, // 12: com.ecommerce.springboot.product.v1.GetOptionTypesResponse.optionTypes:type_name -> com.ecommerce.springboot.product.v1.OptionType
-	24, // 13: com.ecommerce.springboot.product.v1.CreateOptionValueRequest.optionTypeId:type_name -> google.protobuf.StringValue
-	24, // 14: com.ecommerce.springboot.product.v1.CreateOptionValueRequest.value:type_name -> google.protobuf.StringValue
-	24, // 15: com.ecommerce.springboot.product.v1.CreateOptionValueRequest.mediaUrl:type_name -> google.protobuf.StringValue
-	26, // 16: com.ecommerce.springboot.product.v1.CreateOptionValueRequest.displayOrder:type_name -> google.protobuf.Int32Value
-	26, // 17: com.ecommerce.springboot.product.v1.GetProductsRequest.skip:type_name -> google.protobuf.Int32Value
-	26, // 18: com.ecommerce.springboot.product.v1.GetProductsRequest.take:type_name -> google.protobuf.Int32Value
-	23, // 19: com.ecommerce.springboot.product.v1.GetProductsResponse.products:type_name -> com.ecommerce.springboot.product.v1.Product
-	24, // 20: com.ecommerce.springboot.product.v1.GetProductDetailRequest.id:type_name -> google.protobuf.StringValue
-	17, // 21: com.ecommerce.springboot.product.v1.GetProductDetailResponse.optionTypes:type_name -> com.ecommerce.springboot.product.v1.OptionType
-	19, // 22: com.ecommerce.springboot.product.v1.GetProductDetailResponse.variants:type_name -> com.ecommerce.springboot.product.v1.Variant
-	18, // 23: com.ecommerce.springboot.product.v1.OptionType.optionValues:type_name -> com.ecommerce.springboot.product.v1.OptionValue
-	20, // 24: com.ecommerce.springboot.product.v1.Variant.selectedOptions:type_name -> com.ecommerce.springboot.product.v1.SelectedOption
-	24, // 25: com.ecommerce.springboot.product.v1.CreateProductRequest.name:type_name -> google.protobuf.StringValue
-	24, // 26: com.ecommerce.springboot.product.v1.CreateProductRequest.sellerId:type_name -> google.protobuf.StringValue
-	24, // 27: com.ecommerce.springboot.product.v1.CreateProductRequest.description:type_name -> google.protobuf.StringValue
-	24, // 28: com.ecommerce.springboot.product.v1.CreateProductRequest.brand:type_name -> google.protobuf.StringValue
-	13, // 29: com.ecommerce.springboot.product.v1.ProductService.GetProducts:input_type -> com.ecommerce.springboot.product.v1.GetProductsRequest
-	15, // 30: com.ecommerce.springboot.product.v1.ProductService.GetProductDetail:input_type -> com.ecommerce.springboot.product.v1.GetProductDetailRequest
-	21, // 31: com.ecommerce.springboot.product.v1.ProductService.CreateProduct:input_type -> com.ecommerce.springboot.product.v1.CreateProductRequest
-	7,  // 32: com.ecommerce.springboot.product.v1.OptionService.CreateOptionType:input_type -> com.ecommerce.springboot.product.v1.CreateOptionTypeRequest
-	9,  // 33: com.ecommerce.springboot.product.v1.OptionService.GetOptionTypes:input_type -> com.ecommerce.springboot.product.v1.GetOptionTypesRequest
-	11, // 34: com.ecommerce.springboot.product.v1.OptionService.CreateOptionValue:input_type -> com.ecommerce.springboot.product.v1.CreateOptionValueRequest
-	4,  // 35: com.ecommerce.springboot.product.v1.VariantService.CreateVariant:input_type -> com.ecommerce.springboot.product.v1.CreateVariantRequest
-	1,  // 36: com.ecommerce.springboot.product.v1.VariantService.ReserveStock:input_type -> com.ecommerce.springboot.product.v1.ReserveStockRequest
-	3,  // 37: com.ecommerce.springboot.product.v1.VariantService.ReleaseStock:input_type -> com.ecommerce.springboot.product.v1.ReleaseStockRequest
-	14, // 38: com.ecommerce.springboot.product.v1.ProductService.GetProducts:output_type -> com.ecommerce.springboot.product.v1.GetProductsResponse
-	16, // 39: com.ecommerce.springboot.product.v1.ProductService.GetProductDetail:output_type -> com.ecommerce.springboot.product.v1.GetProductDetailResponse
-	22, // 40: com.ecommerce.springboot.product.v1.ProductService.CreateProduct:output_type -> com.ecommerce.springboot.product.v1.CreateProductResponse
-	8,  // 41: com.ecommerce.springboot.product.v1.OptionService.CreateOptionType:output_type -> com.ecommerce.springboot.product.v1.CreateOptionTypeResponse
-	10, // 42: com.ecommerce.springboot.product.v1.OptionService.GetOptionTypes:output_type -> com.ecommerce.springboot.product.v1.GetOptionTypesResponse
-	12, // 43: com.ecommerce.springboot.product.v1.OptionService.CreateOptionValue:output_type -> com.ecommerce.springboot.product.v1.CreateOptionValueResponse
-	5,  // 44: com.ecommerce.springboot.product.v1.VariantService.CreateVariant:output_type -> com.ecommerce.springboot.product.v1.CreateVariantResponse
-	2,  // 45: com.ecommerce.springboot.product.v1.VariantService.ReserveStock:output_type -> com.ecommerce.springboot.product.v1.ReserveStockResponse
-	25, // 46: com.ecommerce.springboot.product.v1.VariantService.ReleaseStock:output_type -> google.protobuf.DoubleValue
-	38, // [38:47] is the sub-list for method output_type
-	29, // [29:38] is the sub-list for method input_type
-	29, // [29:29] is the sub-list for extension type_name
-	29, // [29:29] is the sub-list for extension extendee
-	0,  // [0:29] is the sub-list for field type_name
+	24, // 7: com.ecommerce.springboot.product.v1.CreateOptionTypeRequest.productId:type_name -> google.protobuf.StringValue
+	24, // 8: com.ecommerce.springboot.product.v1.CreateOptionTypeRequest.name:type_name -> google.protobuf.StringValue
+	26, // 9: com.ecommerce.springboot.product.v1.CreateOptionTypeRequest.displayOrder:type_name -> google.protobuf.Int32Value
+	24, // 10: com.ecommerce.springboot.product.v1.GetOptionTypesRequest.productId:type_name -> google.protobuf.StringValue
+	16, // 11: com.ecommerce.springboot.product.v1.GetOptionTypesResponse.optionTypes:type_name -> com.ecommerce.springboot.product.v1.OptionType
+	24, // 12: com.ecommerce.springboot.product.v1.CreateOptionValueRequest.optionTypeId:type_name -> google.protobuf.StringValue
+	24, // 13: com.ecommerce.springboot.product.v1.CreateOptionValueRequest.value:type_name -> google.protobuf.StringValue
+	24, // 14: com.ecommerce.springboot.product.v1.CreateOptionValueRequest.mediaUrl:type_name -> google.protobuf.StringValue
+	26, // 15: com.ecommerce.springboot.product.v1.CreateOptionValueRequest.displayOrder:type_name -> google.protobuf.Int32Value
+	26, // 16: com.ecommerce.springboot.product.v1.GetProductsRequest.skip:type_name -> google.protobuf.Int32Value
+	26, // 17: com.ecommerce.springboot.product.v1.GetProductsRequest.take:type_name -> google.protobuf.Int32Value
+	22, // 18: com.ecommerce.springboot.product.v1.GetProductsResponse.products:type_name -> com.ecommerce.springboot.product.v1.Product
+	24, // 19: com.ecommerce.springboot.product.v1.GetProductDetailRequest.id:type_name -> google.protobuf.StringValue
+	16, // 20: com.ecommerce.springboot.product.v1.GetProductDetailResponse.optionTypes:type_name -> com.ecommerce.springboot.product.v1.OptionType
+	18, // 21: com.ecommerce.springboot.product.v1.GetProductDetailResponse.variants:type_name -> com.ecommerce.springboot.product.v1.Variant
+	17, // 22: com.ecommerce.springboot.product.v1.OptionType.optionValues:type_name -> com.ecommerce.springboot.product.v1.OptionValue
+	19, // 23: com.ecommerce.springboot.product.v1.Variant.selectedOptions:type_name -> com.ecommerce.springboot.product.v1.SelectedOption
+	24, // 24: com.ecommerce.springboot.product.v1.CreateProductRequest.name:type_name -> google.protobuf.StringValue
+	24, // 25: com.ecommerce.springboot.product.v1.CreateProductRequest.sellerId:type_name -> google.protobuf.StringValue
+	24, // 26: com.ecommerce.springboot.product.v1.CreateProductRequest.description:type_name -> google.protobuf.StringValue
+	24, // 27: com.ecommerce.springboot.product.v1.CreateProductRequest.brand:type_name -> google.protobuf.StringValue
+	12, // 28: com.ecommerce.springboot.product.v1.ProductService.GetProducts:input_type -> com.ecommerce.springboot.product.v1.GetProductsRequest
+	14, // 29: com.ecommerce.springboot.product.v1.ProductService.GetProductDetail:input_type -> com.ecommerce.springboot.product.v1.GetProductDetailRequest
+	20, // 30: com.ecommerce.springboot.product.v1.ProductService.CreateProduct:input_type -> com.ecommerce.springboot.product.v1.CreateProductRequest
+	6,  // 31: com.ecommerce.springboot.product.v1.OptionService.CreateOptionType:input_type -> com.ecommerce.springboot.product.v1.CreateOptionTypeRequest
+	8,  // 32: com.ecommerce.springboot.product.v1.OptionService.GetOptionTypes:input_type -> com.ecommerce.springboot.product.v1.GetOptionTypesRequest
+	10, // 33: com.ecommerce.springboot.product.v1.OptionService.CreateOptionValue:input_type -> com.ecommerce.springboot.product.v1.CreateOptionValueRequest
+	4,  // 34: com.ecommerce.springboot.product.v1.VariantService.CreateVariant:input_type -> com.ecommerce.springboot.product.v1.CreateVariantRequest
+	1,  // 35: com.ecommerce.springboot.product.v1.VariantService.ReserveStock:input_type -> com.ecommerce.springboot.product.v1.ReserveStockRequest
+	3,  // 36: com.ecommerce.springboot.product.v1.VariantService.ReleaseStock:input_type -> com.ecommerce.springboot.product.v1.ReleaseStockRequest
+	13, // 37: com.ecommerce.springboot.product.v1.ProductService.GetProducts:output_type -> com.ecommerce.springboot.product.v1.GetProductsResponse
+	15, // 38: com.ecommerce.springboot.product.v1.ProductService.GetProductDetail:output_type -> com.ecommerce.springboot.product.v1.GetProductDetailResponse
+	21, // 39: com.ecommerce.springboot.product.v1.ProductService.CreateProduct:output_type -> com.ecommerce.springboot.product.v1.CreateProductResponse
+	7,  // 40: com.ecommerce.springboot.product.v1.OptionService.CreateOptionType:output_type -> com.ecommerce.springboot.product.v1.CreateOptionTypeResponse
+	9,  // 41: com.ecommerce.springboot.product.v1.OptionService.GetOptionTypes:output_type -> com.ecommerce.springboot.product.v1.GetOptionTypesResponse
+	11, // 42: com.ecommerce.springboot.product.v1.OptionService.CreateOptionValue:output_type -> com.ecommerce.springboot.product.v1.CreateOptionValueResponse
+	5,  // 43: com.ecommerce.springboot.product.v1.VariantService.CreateVariant:output_type -> com.ecommerce.springboot.product.v1.CreateVariantResponse
+	2,  // 44: com.ecommerce.springboot.product.v1.VariantService.ReserveStock:output_type -> com.ecommerce.springboot.product.v1.ReserveStockResponse
+	25, // 45: com.ecommerce.springboot.product.v1.VariantService.ReleaseStock:output_type -> google.protobuf.DoubleValue
+	37, // [37:46] is the sub-list for method output_type
+	28, // [28:37] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_Product_proto_init() }

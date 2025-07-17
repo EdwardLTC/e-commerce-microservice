@@ -35,6 +35,17 @@ message ReserveStockRequest {
 
 message ReserveStockResponse {
   string reservationId = 1;
+
+  message VariantWithProduct {
+    string id = 1;
+    string sku = 2;
+    double price = 3;
+    double salePrice = 4;
+    int32 stock = 5;
+    string mediaUrl = 7;
+    string productId = 8;
+    string productName = 9;
+  }
   repeated VariantWithProduct variants = 2;
 }
 
@@ -53,17 +64,6 @@ message CreateVariantRequest {
 
 message CreateVariantResponse {
   string id = 1;
-}
-
-message VariantWithProduct {
-  string id = 1;
-  string sku = 2;
-  double price = 3;
-  double salePrice = 4;
-  int32 stock = 5;
-  string status = 6;
-  string mediaUrl = 7;
-  Product product = 8;
 }
 
 message CreateOptionTypeRequest {
