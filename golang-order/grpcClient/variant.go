@@ -5,6 +5,8 @@ import (
 	"fmt"
 	pb "golang-order/gen"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"os"
 	"time"
 )
 
@@ -13,11 +15,13 @@ func VariantClient() (pb.VariantServiceClient, error) {
 
 	defer cancel()
 
-	conn, err := grpc.NewClient("localhost:50051")
+	conn, err := grpc.NewClient(os.Getenv("PRODUCT_SERVICE_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
-		return nil, fmt.Errorf("could not connect to OrderService: %w", err)
+		return nil, fmt.Errorf("could not connect to VariantService: %w", err)
 	}
+
+	fmt.Println("Connected to VariantService at", os.Getenv("PRODUCT_SERVICE_URL"))
 
 	client := pb.NewVariantServiceClient(conn)
 

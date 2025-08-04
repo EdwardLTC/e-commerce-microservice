@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  spring-boot-product:
+    image: spring-boot-product
+    build:
+      context: ../
+      dockerfile: spring-boot-product/Dockerfile
+    ports:
+      - "9090:9090"
+    networks:
+      - golang-order
+
+networks:
+  golang-order:
+    driver: bridge

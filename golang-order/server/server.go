@@ -11,14 +11,20 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"os"
 )
 
 func StartGRPCServer() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using system env")
+		log.Fatalf("No .env file found, using system env")
 	}
 
-	lis, err := net.Listen("tcp", ":50051")
+	port := os.Getenv("APP_PORT")
+	if port == "" {
+		log.Fatal("APP_PORT environment variable is not set")
+	}
+
+	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -38,7 +44,7 @@ func StartGRPCServer() {
 
 	pb.RegisterOrderServiceServer(s, order.NewHandler(entClient))
 
-	log.Println("gRPC server running on :50051")
+	log.Println("gRPC server running on :" + port)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

@@ -63,14 +63,12 @@ func (o *Orchestrator) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 		}
 	})
 
-	total := subTotal + tax + shippingCost
-
-	orderReturned, err := o.repository.CreateDraftOrder(ctx, CreateOrderInput{
+	orderCreated, err := o.repository.CreateDraftOrder(ctx, CreateOrderInput{
 		CustomerID:      uuid.MustParse(req.CustomerId),
 		Subtotal:        subTotal,
 		Tax:             tax,
 		ShippingCost:    shippingCost,
-		Total:           total,
+		Total:           subTotal + tax + shippingCost,
 		ShippingAddress: req.ShippingAddress,
 		BillingAddress:  req.BillingAddress,
 		Items:           items,
@@ -81,14 +79,14 @@ func (o *Orchestrator) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 		return nil, err
 	}
 
-	paymentIntent, err := o.createPaymentIntent(ctx, orderReturned.Total, orderReturned.ID.String()) // Step 3: Create payment intent
+	paymentIntent, err := o.createPaymentIntent(ctx, orderCreated.Total, orderCreated.ID.String()) // Step 3: Create payment intent
 
 	if err != nil {
 		o.releaseStock(ctx, reservation.ReservationId)
 		return nil, err
 	}
 
-	orderReturned, err = o.repository.UpdateOrder(ctx, orderReturned.ID, UpdateOrder{
+	orderCreated, err = o.repository.UpdateOrder(ctx, orderCreated.ID, UpdateOrder{
 		status:          ptr.Ptr(order.StatusPendingPayment),
 		paymentIntentId: ptr.Ptr(uuid.MustParse(paymentIntent.IntentId)),
 	}) // Step 4: Update order status to pending payment
@@ -99,8 +97,8 @@ func (o *Orchestrator) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 	}
 
 	return &pb.CreateOrderResponse{
-		Id:         orderReturned.ID.String(),
-		Status:     entToProtoOrderStatus(orderReturned.Status),
+		Id:         orderCreated.ID.String(),
+		Status:     entToProtoOrderStatus(orderCreated.Status),
 		PaymentUrl: paymentIntent.PaymentUrl,
 	}, nil
 }
