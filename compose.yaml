@@ -16,6 +16,7 @@
     build:
       context: .
       dockerfile: asp-user/Dockerfile
+    platform: linux/amd64
     ports:
         - "5232:5232"
 

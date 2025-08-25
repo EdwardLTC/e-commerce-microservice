@@ -2,8 +2,7 @@
 FROM gradle:8.5-jdk17 AS build
 
 # Install JDK 19 from Adoptium
-RUN apt-get update && \
-    apt-get install -y wget unzip && \
+RUN apt-get install -y wget unzip && \
     wget https://github.com/adoptium/temurin19-binaries/releases/download/jdk-19.0.2%2B7/OpenJDK19U-jdk_x64_linux_hotspot_19.0.2_7.tar.gz && \
     mkdir /jdk-19 && \
     tar -xzf OpenJDK19U-jdk_x64_linux_hotspot_19.0.2_7.tar.gz -C /jdk-19 --strip-components=1 && \
@@ -25,7 +24,7 @@ RUN chmod +x ./gradlew
 
 RUN ./gradlew build -x test --no-daemon
 
-FROM eclipse-temurin:19-jre-alpine AS runtime
+FROM eclipse-temurin:19-jre AS runtime
 
 WORKDIR /app
 
