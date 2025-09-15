@@ -3,6 +3,7 @@ version: '3.8'
 services:
   asp-user:
     image: asp-user
+    platform: linux/amd64
     build:
       context: ../
       dockerfile: asp-user/Dockerfile
@@ -10,17 +11,18 @@ services:
       - "5232:5232"
     networks:
       - nest-api-gateway
-  
+
   spring-boot-product:
     image: spring-boot-product
+    platform: linux/amd64
     build:
-      context: ../spring-boot-product
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: spring-boot-product/Dockerfile
     ports:
-      - "9090:9090"
+      - "2003:2003"
     networks:
       - nest-api-gateway
-    
+
   golang-order:
     image: golang-order
     build:

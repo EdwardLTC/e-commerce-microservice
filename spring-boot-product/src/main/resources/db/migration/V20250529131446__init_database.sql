@@ -19,7 +19,8 @@ CREATE TABLE option_types
     product_id    UUID         NOT NULL,
     name          VARCHAR(100) NOT NULL,
     display_order SMALLINT         DEFAULT 1,
-    FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
+    CONSTRAINT uq_option_types_product_name UNIQUE (product_id, name)
 );
 
 CREATE TABLE option_values
@@ -29,7 +30,8 @@ CREATE TABLE option_values
     value          VARCHAR(100) NOT NULL,
     media_url      TEXT,
     display_order  SMALLINT         DEFAULT 1,
-    FOREIGN KEY (option_type_id) REFERENCES option_types (id) ON DELETE CASCADE
+    FOREIGN KEY (option_type_id) REFERENCES option_types (id) ON DELETE CASCADE,
+    CONSTRAINT uq_option_values_type_value UNIQUE (option_type_id, value)
 );
 
 CREATE TYPE VARIANT_STATUS AS ENUM ('ACTIVE', 'HIDDEN', 'OUT_OF_STOCK');

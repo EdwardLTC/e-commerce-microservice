@@ -9,7 +9,7 @@ import com.ecommerce.springboot.product.v1.ProductOuterClass.*
 import com.ecommerce.springboot.product.v1.ProductServiceGrpcKt.ProductServiceCoroutineImplBase
 import net.devh.boot.grpc.server.service.GrpcService
 
-@GrpcService()
+@GrpcService
 class ProductService(private val productRepository: ProductRepository) : ProductServiceCoroutineImplBase() {
     override suspend fun getProducts(request: GetProductsRequest): GetProductsResponse =
         safeValidatedCall(request, GetProductsDto) { dto ->
@@ -55,13 +55,13 @@ class ProductService(private val productRepository: ProductRepository) : Product
                 .addAllOptionTypes(
                     product.optionTypes.map { optionType ->
                         OptionType.newBuilder()
-                            .setId(optionType.id.toString())
+                            .setId(optionType.id)
                             .setName(optionType.name)
                             .setDisplayOrder(optionType.displayOrder.toInt())
                             .addAllOptionValues(
                                 optionType.optionValues.map { optionValue ->
                                     OptionValue.newBuilder()
-                                        .setId(optionValue.id.toString())
+                                        .setId(optionValue.id)
                                         .setValue(optionValue.value)
                                         .setDisplayOrder(optionValue.displayOrder.toInt())
                                         .setMediaUrl(optionValue.mediaUrl ?: "")

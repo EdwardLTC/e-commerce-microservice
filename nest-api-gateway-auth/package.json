@@ -15,7 +15,7 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "gen:resource": "nest g resource  --no-spec",
-    "proto:gen": "tsproto --ts_proto_opt=nestJs=true --path ../.proto --output ./generated --clean --ignore .idea && eslint ./generated/.proto/*.ts --fix"
+    "proto:gen": "tsproto --ts_proto_opt=nestJs=true --path ../.proto --output ./generated --clean --ignore .idea"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.1",

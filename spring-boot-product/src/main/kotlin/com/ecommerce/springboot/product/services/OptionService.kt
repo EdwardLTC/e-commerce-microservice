@@ -9,7 +9,7 @@ import com.ecommerce.springboot.product.v1.OptionServiceGrpcKt.OptionServiceCoro
 import com.ecommerce.springboot.product.v1.ProductOuterClass.*
 import net.devh.boot.grpc.server.service.GrpcService
 
-@GrpcService()
+@GrpcService
 class OptionService(private val optionTypeRepository: OptionRepository) : OptionServiceCoroutineImplBase() {
     override suspend fun createOptionType(request: CreateOptionTypeRequest): CreateOptionTypeResponse =
         safeValidatedCall(request, CreateOptionTypeDto) { dto ->
@@ -32,13 +32,13 @@ class OptionService(private val optionTypeRepository: OptionRepository) : Option
                 .addAllOptionTypes(
                     optionTypes.map { optionType ->
                         OptionType.newBuilder()
-                            .setId(optionType.id.toString())
+                            .setId(optionType.id)
                             .setName(optionType.name)
                             .setDisplayOrder(optionType.displayOrder.toInt())
                             .addAllOptionValues(
                                 optionType.optionValues.map { optionValue ->
                                     OptionValue.newBuilder()
-                                        .setId(optionValue.id.toString())
+                                        .setId(optionValue.id)
                                         .setValue(optionValue.value)
                                         .setDisplayOrder(optionValue.displayOrder.toInt())
                                         .setMediaUrl(optionValue.mediaUrl ?: "")

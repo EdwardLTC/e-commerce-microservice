@@ -33,5 +33,5 @@ ENV GRPC_SERVICES_USER_HOST=asp-user
 
 COPY --from=build /app/build/libs/*.jar app.jar
 
-EXPOSE 9090
-ENTRYPOINT ["java", "-Dserver.port=9090", "-jar", "app.jar"]
+EXPOSE 2003
+ENTRYPOINT ["java", "-Dserver.port=2003", "-jar", "app.jar"]
