@@ -3,6 +3,7 @@ package com.ecommerce.springboot.product.services
 import com.ecommerce.springboot.product.dto.CreateOptionTypeDto
 import com.ecommerce.springboot.product.dto.CreateOptionValueDto
 import com.ecommerce.springboot.product.dto.GetOptionTypesDto
+import com.ecommerce.springboot.product.dto.GetOptionValuesDto
 import com.ecommerce.springboot.product.helpers.safeValidatedCall
 import com.ecommerce.springboot.product.repositories.OptionRepository
 import com.ecommerce.springboot.product.v1.OptionServiceGrpcKt.OptionServiceCoroutineImplBase
@@ -14,7 +15,7 @@ class OptionService(private val optionTypeRepository: OptionRepository) : Option
     override suspend fun createOptionType(request: CreateOptionTypeRequest): CreateOptionTypeResponse =
         safeValidatedCall(request, CreateOptionTypeDto) { dto ->
             return@safeValidatedCall CreateOptionTypeResponse.newBuilder()
-                .setId(optionTypeRepository.create(dto).id.toString())
+                .setId(optionTypeRepository.create(dto).id)
                 .build()
         }
 
@@ -51,4 +52,20 @@ class OptionService(private val optionTypeRepository: OptionRepository) : Option
                 .build()
 
         }
+
+    override suspend fun getOptionValues(request: GetOptionValuesRequest): GetOptionValuesResponse =
+        safeValidatedCall(request, GetOptionValuesDto) { dto ->
+            val optionValue = optionTypeRepository.getOptionValuesByOptionTypeId(dto.optionTypeId)
+            return@safeValidatedCall GetOptionValuesResponse.newBuilder().addAllOptionValues(
+                optionValue.map { optionValue ->
+                    OptionValue.newBuilder()
+                        .setId(optionValue.id)
+                        .setValue(optionValue.value)
+                        .setDisplayOrder(optionValue.displayOrder.toInt())
+                        .setMediaUrl(optionValue.mediaUrl ?: "")
+                        .build()
+                }
+            ).build()
+        }
+    
 }

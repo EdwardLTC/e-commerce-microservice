@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	pb "golang-order/gen"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"os"
 	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func VariantClient() (pb.VariantServiceClient, error) {

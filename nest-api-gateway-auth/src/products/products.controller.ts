@@ -51,6 +51,12 @@ export class ProductsController {
     return this.productsService.createOptionValue(optionTypeId, data);
   }
 
+  @Get('/option-types/:optionTypeId/option-values')
+  @HttpCode(HttpStatus.OK)
+  public async getOptionValues(@Query('optionTypeId', new ParseUUIDPipe()) optionTypeId: string) {
+    return this.productsService.getOptionValues(optionTypeId);
+  }
+
   @Post(':id/variants')
   @HttpCode(HttpStatus.CREATED)
   public async createVariant(@Query('id', new ParseUUIDPipe()) productId: string, @Body() data: CreateProductVariantRequest) {

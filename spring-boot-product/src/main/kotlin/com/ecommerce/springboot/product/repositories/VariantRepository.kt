@@ -65,7 +65,7 @@ class VariantRepository(
             optionTypeRepository.getOptionValuesByIds(request.options).filter { it.productId == request.productId }
 
         if (optionValues.size != request.options.size) {
-            val invalidIds = request.options - optionValues.map { it.id }
+            val invalidIds = request.options - optionValues.map { it.id }.toSet()
             throw IllegalArgumentException("Invalid option values: $invalidIds")
         }
 

@@ -15,7 +15,7 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "gen:resource": "nest g resource  --no-spec",
-    "proto:gen": "tsproto --ts_proto_opt=nestJs=true --path ../.proto --output ./generated --clean --ignore .idea"
+    "protoc": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/generated --ts_proto_opt=nestJs=true,outputServices=grpc-js,esModuleInterop=true,useOptionals=messages -I ../.proto -I ./node_modules/protobufjs/src -I ./node_modules/google-protobuf ../.proto/*.proto"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.1",
@@ -35,7 +35,8 @@
     "class-validator": "^0.14.1",
     "nestjs-proto-gen-ts": "^1.0.21",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "ts-proto": "^2.7.7"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.5",

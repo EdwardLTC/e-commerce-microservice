@@ -2,11 +2,12 @@ package db
 
 import (
 	"context"
-	_ "github.com/lib/pq"
 	"golang-order/ent"
 	"log"
 	"os"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func NewEntClient() *ent.Client {
@@ -22,6 +23,6 @@ func NewEntClient() *ent.Client {
 		log.Fatalf("❌ Failed creating schema resources: %v", err)
 	}
 
-	log.Println("✅ Connected to PostgreSQL")
+	log.Println("✅ Connected to PostgresSQL")
 	return client
 }

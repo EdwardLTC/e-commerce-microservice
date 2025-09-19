@@ -11,7 +11,7 @@ suspend fun <Req, DTO : Any, Res> safeValidatedCall(
 ): Res {
     try {
         val dto = transform.from(request)
-        ValidationHelper.validate<DTO>(dto)
+        ValidationHelper.validate(dto)
         return block(dto)
     } catch (e: Exception) {
         var status = when (e) {

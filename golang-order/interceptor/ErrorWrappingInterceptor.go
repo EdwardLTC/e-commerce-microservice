@@ -2,11 +2,12 @@ package interceptor
 
 import (
 	"context"
+	"log"
+	"runtime/debug"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
-	"runtime/debug"
 )
 
 func ErrorWrappingInterceptor(

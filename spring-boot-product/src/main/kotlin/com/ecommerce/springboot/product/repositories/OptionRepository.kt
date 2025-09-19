@@ -4,6 +4,7 @@ import com.ecommerce.springboot.product.database.OptionTypesTable
 import com.ecommerce.springboot.product.database.OptionValuesTable
 import com.ecommerce.springboot.product.dto.CreateOptionTypeDto
 import com.ecommerce.springboot.product.dto.CreateOptionValueDto
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.innerJoin
 import org.jetbrains.exposed.v1.core.leftJoin
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
@@ -43,6 +44,12 @@ class OptionRepository(private val productRepository: ProductRepository) {
         productRepository.getById(request.productId)
             ?: throw IllegalArgumentException("Product with ID ${request.productId} not found")
 
+        OptionTypesTable.select(OptionTypesTable.id).where {
+            (OptionTypesTable.product eq request.productId) and (OptionTypesTable.name eq request.name)
+        }.firstOrNull()?.let {
+            throw IllegalArgumentException("Option type with name ${request.name} already exists for product ${request.productId}")
+        }
+
         return transaction {
             val optionType = OptionTypesTable.insertReturning {
                 it[product] = request.productId
@@ -66,6 +73,12 @@ class OptionRepository(private val productRepository: ProductRepository) {
         OptionTypesTable.select(OptionTypesTable.id).where { OptionTypesTable.id eq request.optionTypeId }
             .firstOrNull()
             ?: throw IllegalArgumentException("Option type with ID ${request.optionTypeId} not found")
+
+        OptionValuesTable.select(OptionValuesTable.id).where {
+            (OptionValuesTable.optionType eq request.optionTypeId) and (OptionValuesTable.value eq request.value)
+        }.firstOrNull()?.let {
+            throw IllegalArgumentException("Option value with value ${request.value} already exists for option type ${request.optionTypeId}")
+        }
 
         return OptionValuesTable.insertAndGetId {
             it[this.optionType] = request.optionTypeId
@@ -120,6 +133,27 @@ class OptionRepository(private val productRepository: ProductRepository) {
 
         return OptionValuesTable.innerJoin(OptionTypesTable, onColumn = { optionType }, otherColumn = { id })
             .select(selectFields).where { OptionValuesTable.id inList optionTypeIds.toList() }.map { row ->
+                OptionValueWithProductId(
+                    id = row[OptionValuesTable.id].value.toString(),
+                    value = row[OptionValuesTable.value],
+                    mediaUrl = row[OptionValuesTable.mediaUrl],
+                    displayOrder = row[OptionValuesTable.displayOrder],
+                    productId = row[OptionTypesTable.product].value
+                )
+            }
+    }
+
+    fun getOptionValuesByOptionTypeId(optionTypeId: UUID): List<OptionValueWithProductId> {
+        val selectFields = listOf(
+            OptionValuesTable.id,
+            OptionValuesTable.value,
+            OptionValuesTable.mediaUrl,
+            OptionValuesTable.displayOrder,
+            OptionTypesTable.product
+        )
+
+        return OptionValuesTable.innerJoin(OptionTypesTable, onColumn = { optionType }, otherColumn = { id })
+            .select(selectFields).where { OptionValuesTable.optionType eq optionTypeId }.map { row ->
                 OptionValueWithProductId(
                     id = row[OptionValuesTable.id].value.toString(),
                     value = row[OptionValuesTable.value],

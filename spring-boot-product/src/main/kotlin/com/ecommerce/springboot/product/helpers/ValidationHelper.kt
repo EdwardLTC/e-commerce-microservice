@@ -13,7 +13,7 @@ object ValidationHelper {
         ValidationHelper.validator = validator
     }
 
-    fun <T : Any> validate(dto: Any) {
+    fun <T : Any> validate(dto: T) {
         val violations = validator.validate(dto)
         if (violations.isNotEmpty()) {
             val message = violations.joinToString("; ") { "${it.propertyPath}: ${it.message}" }

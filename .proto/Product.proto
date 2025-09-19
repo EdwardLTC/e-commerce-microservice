@@ -6,6 +6,9 @@ option go_package = "e-commerce-microservice/springboot-product/gen;pb";
 
 import "google/protobuf/wrappers.proto";
 
+// ==========================
+// Services
+// ==========================
 service ProductService {
   rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
   rpc GetProductDetail(GetProductDetailRequest) returns (GetProductDetailResponse);
@@ -16,6 +19,7 @@ service OptionService {
   rpc CreateOptionType(CreateOptionTypeRequest) returns (CreateOptionTypeResponse);
   rpc GetOptionTypes(GetOptionTypesRequest) returns (GetOptionTypesResponse);
   rpc CreateOptionValue(CreateOptionValueRequest) returns (CreateOptionValueResponse);
+  rpc GetOptionValues(GetOptionValuesRequest) returns (GetOptionValuesResponse);
 }
 
 service VariantService {
@@ -24,48 +28,49 @@ service VariantService {
   rpc ReleaseStock(ReleaseStockRequest) returns (google.protobuf.DoubleValue);
 }
 
-message VariantItem {
-  string variantId = 1;
-  int32 quantity = 2;
+// ==========================
+// Product Messages
+// ==========================
+message GetProductsRequest {
+  google.protobuf.Int32Value skip = 1;
+  google.protobuf.Int32Value take = 2;
 }
 
-message ReserveStockRequest {
-  repeated VariantItem items = 1;
+message GetProductsResponse {
+  repeated Product products = 1;
 }
 
-message ReserveStockResponse {
-  string reservationId = 1;
-
-  message VariantWithProduct {
-    string id = 1;
-    string sku = 2;
-    double price = 3;
-    double salePrice = 4;
-    int32 stock = 5;
-    string mediaUrl = 7;
-    string productId = 8;
-    string productName = 9;
-  }
-  repeated VariantWithProduct variants = 2;
+message GetProductDetailRequest {
+  google.protobuf.StringValue id = 1;
 }
 
-message ReleaseStockRequest {
-  string reservationId = 1;
+message GetProductDetailResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string brand = 4;
+  int32 totalSaleCount = 5;
+  double averageRating = 6;
+  repeated string mediaUrls = 7;
+  repeated OptionType optionTypes = 8;
+  repeated Variant variants = 9;
 }
 
-message CreateVariantRequest {
-  google.protobuf.StringValue productId = 1;
-  google.protobuf.StringValue sku = 2;
-  google.protobuf.DoubleValue price = 3;
-  google.protobuf.Int32Value stock = 4;
-  google.protobuf.StringValue mediaUrl = 5;
-  repeated string options = 6;
+message CreateProductRequest {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue sellerId = 2;
+  google.protobuf.StringValue description = 3;
+  google.protobuf.StringValue brand = 4;
+  repeated string mediaUrls = 5;
 }
 
-message CreateVariantResponse {
+message CreateProductResponse {
   string id = 1;
 }
 
+// ==========================
+// Option Messages
+// ==========================
 message CreateOptionTypeRequest {
   google.protobuf.StringValue productId = 1;
   google.protobuf.StringValue name = 2;
@@ -95,29 +100,72 @@ message CreateOptionValueResponse {
   string id = 1;
 }
 
-message GetProductsRequest {
-  google.protobuf.Int32Value skip = 1;
-  google.protobuf.Int32Value take = 2;
+message GetOptionValuesRequest {
+  google.protobuf.StringValue optionTypeId = 1;
 }
 
-message GetProductsResponse {
-  repeated Product products = 1;
+message GetOptionValuesResponse {
+  repeated OptionValue optionValues = 1;
 }
 
-message GetProductDetailRequest {
-  google.protobuf.StringValue id = 1;
+// ==========================
+// Variant Messages
+// ==========================
+message CreateVariantRequest {
+  google.protobuf.StringValue productId = 1;
+  google.protobuf.StringValue sku = 2;
+  google.protobuf.DoubleValue price = 3;
+  google.protobuf.Int32Value stock = 4;
+  google.protobuf.StringValue mediaUrl = 5;
+  repeated string options = 6;
 }
 
-message GetProductDetailResponse {
+message CreateVariantResponse {
+  string id = 1;
+}
+
+message ReserveStockRequest {
+  repeated VariantItem items = 1;
+}
+
+message ReserveStockResponse {
+  string reservationId = 1;
+  repeated VariantWithProduct variants = 2;
+
+  message VariantWithProduct {
+    string id = 1;
+    string sku = 2;
+    double price = 3;
+    double salePrice = 4;
+    int32 stock = 5;
+    string mediaUrl = 6;
+    string productId = 7;
+    string productName = 8;
+  }
+}
+
+message ReleaseStockRequest {
+  string reservationId = 1;
+}
+
+message VariantItem {
+  string variantId = 1;
+  int32 quantity = 2;
+}
+
+// ==========================
+// Domain Models
+// ==========================
+message Product {
   string id = 1;
   string name = 2;
   string description = 3;
   string brand = 4;
-  int32  totalSaleCount = 5;
-  double averageRating = 6;
-  repeated string mediaUrls = 7;
-  repeated OptionType optionTypes = 8;
-  repeated Variant variants = 9;
+  double minPrice = 5;
+  double maxPrice = 6;
+  int32 totalSaleCount = 7;
+  double rating = 8;
+  repeated string mediaUrls = 9;
 }
 
 message OptionType {
@@ -148,28 +196,4 @@ message Variant {
 message SelectedOption {
   string optionTypeId = 1;
   string optionValueId = 2;
-}
-
-message CreateProductRequest {
-  google.protobuf.StringValue name = 1;
-  google.protobuf.StringValue sellerId = 2;
-  google.protobuf.StringValue description = 3;
-  google.protobuf.StringValue brand = 4;
-  repeated string mediaUrls = 5;
-}
-
-message CreateProductResponse {
-  string id = 1;
-}
-
-message Product {
-  string id = 1;
-  string name = 2;
-  string description = 3;
-  string brand = 4;
-  double minPrice = 5;
-  double maxPrice = 6;
-  int32 totalSaleCount = 7;
-  double rating = 8;
-  repeated string mediaUrls = 9;
 }
