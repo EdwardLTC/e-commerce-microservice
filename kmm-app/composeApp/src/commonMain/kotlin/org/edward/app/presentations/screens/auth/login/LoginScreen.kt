@@ -59,11 +59,11 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import ecommerce.composeapp.generated.resources.Res
+import ecommerce.composeapp.generated.resources.facebook
+import ecommerce.composeapp.generated.resources.google
+import ecommerce.composeapp.generated.resources.ic_cyclone
 import kotlinx.coroutines.launch
-import multiplatform_app.composeapp.generated.resources.Res
-import multiplatform_app.composeapp.generated.resources.facebook
-import multiplatform_app.composeapp.generated.resources.google
-import multiplatform_app.composeapp.generated.resources.ic_cyclone
 import org.edward.app.presentations.navigations.RootAppDestination
 import org.edward.app.presentations.navigations.replaceAll
 import org.jetbrains.compose.resources.DrawableResource

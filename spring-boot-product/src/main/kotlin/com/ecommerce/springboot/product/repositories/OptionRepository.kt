@@ -4,9 +4,7 @@ import com.ecommerce.springboot.product.database.OptionTypesTable
 import com.ecommerce.springboot.product.database.OptionValuesTable
 import com.ecommerce.springboot.product.dto.CreateOptionTypeDto
 import com.ecommerce.springboot.product.dto.CreateOptionValueDto
-import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.innerJoin
-import org.jetbrains.exposed.v1.core.leftJoin
+import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.insertReturning
 import org.jetbrains.exposed.v1.jdbc.select

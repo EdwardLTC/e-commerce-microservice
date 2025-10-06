@@ -14,13 +14,13 @@ type Handler struct {
 }
 
 func NewHandler(db *ent.Client) *Handler {
-	variantClient, err := grpcClient.VariantClient()
+	stockClient, err := grpcClient.StockClient()
 
 	if err != nil {
 		panic("failed to connect to VariantService: " + err.Error())
 	}
 
-	return &Handler{svc: *order.NewOrderOrchestrator(db, variantClient, nil)}
+	return &Handler{svc: *order.NewOrderOrchestrator(db, stockClient, nil)}
 }
 
 func (h *Handler) CreateOrder(ctx context.Context, req *pb.CreateOrderRequest) (*pb.CreateOrderResponse, error) {

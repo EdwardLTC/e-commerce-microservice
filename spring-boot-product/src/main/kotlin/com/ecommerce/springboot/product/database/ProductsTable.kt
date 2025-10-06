@@ -1,8 +1,7 @@
 package com.ecommerce.springboot.product.database
 
 import org.jetbrains.exposed.v1.core.dao.id.UUIDTable
-import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
-import org.jetbrains.exposed.v1.datetime.timestamp
+import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 
 object ProductsTable : UUIDTable("products") {
     val sellerId = varchar("seller_id", 36)
@@ -13,6 +12,6 @@ object ProductsTable : UUIDTable("products") {
     val isActive = bool("is_active").default(true)
     val totalSaleCount = integer("total_sale_count").default(0)
     val averageRating = double("average_rating").default(0.0)
-    val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
-    val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
+    val createdAt = timestampWithTimeZone("created_at")
+    val updatedAt = timestampWithTimeZone("updated_at")
 }

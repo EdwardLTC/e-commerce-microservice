@@ -1,17 +1,18 @@
 package server
 
 import (
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/joho/godotenv"
 	"golang-order/api/order"
 	"golang-order/ent"
 	pb "golang-order/gen"
 	"golang-order/interceptor"
 	"golang-order/pkg/db"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
 func StartGRPCServer() {

@@ -7,6 +7,7 @@ import com.ecommerce.springboot.product.dto.CreateProductDto
 import com.ecommerce.springboot.product.repositories.OptionRepository.Companion.OptionType
 import com.ecommerce.springboot.product.repositories.VariantRepository.Companion.Variant
 import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.max
 import org.jetbrains.exposed.v1.core.min
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
@@ -22,9 +23,9 @@ import java.util.*
 @Transactional
 class ProductRepository(
     private val userServiceClient: UserServiceClient,
-    @Lazy
+    @param:Lazy
     private val optionTypeRepository: OptionRepository,
-    @Lazy
+    @param:Lazy
     private val variantRepository: VariantRepository,
 ) {
 

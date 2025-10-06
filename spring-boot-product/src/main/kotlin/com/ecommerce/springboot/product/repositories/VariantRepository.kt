@@ -1,15 +1,17 @@
 package com.ecommerce.springboot.product.repositories
 
-import com.ecommerce.springboot.product.database.*
+import com.ecommerce.springboot.product.database.OptionTypesTable
+import com.ecommerce.springboot.product.database.OptionValuesTable
+import com.ecommerce.springboot.product.database.VariantOptionValuesTable
 import com.ecommerce.springboot.product.database.VariantOptionValuesTable.optionValue
 import com.ecommerce.springboot.product.database.VariantOptionValuesTable.variant
+import com.ecommerce.springboot.product.database.VariantsTable
 import com.ecommerce.springboot.product.dto.CreateVariantDto
-import com.ecommerce.springboot.product.dto.ReverseStockDto
-import org.jetbrains.exposed.v1.core.SqlExpressionBuilder
-import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.leftJoin
-import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
-import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.batchInsert
+import org.jetbrains.exposed.v1.jdbc.insertAndGetId
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -50,10 +52,6 @@ class VariantRepository(
             val mediaUrl: String?,
             val productId: UUID,
             val productName: String,
-        )
-
-        data class ReverseStockResponse(
-            val reversalId: UUID, val items: List<VariantWithProduct>
         )
     }
 
@@ -130,91 +128,4 @@ class VariantRepository(
             }
         return variantsMap.values.toList()
     }
-
-    fun reserveStock(request: ReverseStockDto): ReverseStockResponse {
-        return transaction {
-            val reversalId = StockReversalsTable.insertAndGetId {
-                it[status] = StockReversalsTable.StockCheckinStatus.PENDING
-            }.value
-
-            val variants = request.map { item ->
-                val variantId = item.variantId
-                val quantity = item.quantity
-
-                val effectedRow = VariantsTable.update(
-                    where = { (VariantsTable.id eq variantId) and (VariantsTable.stock greaterEq quantity) }) {
-                    with(SqlExpressionBuilder) {
-                        it.update(stock, stock - quantity)
-                    }
-                }
-
-                if (effectedRow == 0) {
-                    throw IllegalArgumentException("Insufficient stock for variant ID: $variantId")
-                }
-
-                StockReversalItemsTable.insert {
-                    it[this.reversal] = reversalId
-                    it[this.variant] = variantId
-                    it[this.quantity] = quantity
-                }
-
-                val joinedRow = (VariantsTable innerJoin ProductsTable).select(
-                    VariantsTable.id,
-                    VariantsTable.sku,
-                    VariantsTable.price,
-                    VariantsTable.salePrice,
-                    VariantsTable.stock,
-                    VariantsTable.status,
-                    VariantsTable.mediaUrl,
-                    VariantsTable.product,
-                    ProductsTable.name
-                ).where { VariantsTable.id eq variantId }.single()
-
-                VariantWithProduct(
-                    id = joinedRow[VariantsTable.id].value,
-                    sku = joinedRow[VariantsTable.sku],
-                    price = joinedRow[VariantsTable.price].toDouble(),
-                    salePrice = joinedRow[VariantsTable.salePrice]?.toDouble() ?: 0.0,
-                    stock = joinedRow[VariantsTable.stock],
-                    status = joinedRow[VariantsTable.status].name,
-                    mediaUrl = joinedRow[VariantsTable.mediaUrl],
-                    productId = joinedRow[ProductsTable.id].value,
-                    productName = joinedRow[ProductsTable.name]
-
-                )
-            }
-
-            return@transaction ReverseStockResponse(
-                reversalId = reversalId,
-                items = variants,
-            )
-
-        }
-    }
-
-    fun releaseStock(reservationId: UUID): Int {
-        return transaction {
-            val items = StockReversalItemsTable.selectAll().where {
-                StockReversalItemsTable.reversal eq reservationId
-            }.associate { row ->
-                row[StockReversalItemsTable.variant] to row[StockReversalItemsTable.quantity]
-            }
-
-            items.forEach { (variantId, quantity) ->
-                VariantsTable.update({ VariantsTable.id eq variantId }) {
-                    with(SqlExpressionBuilder) {
-                        it.update(stock, stock + quantity)
-                    }
-                }
-            }
-
-            StockReversalsTable.update({ StockReversalsTable.id eq reservationId }) {
-                it[status] = StockReversalsTable.StockCheckinStatus.RELEASED
-                it[releaseAt] = CurrentTimestamp
-            }
-
-            return@transaction items.size
-        }
-    }
-
 }

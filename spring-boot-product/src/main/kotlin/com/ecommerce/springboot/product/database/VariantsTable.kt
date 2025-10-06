@@ -3,9 +3,10 @@ package com.ecommerce.springboot.product.database
 import com.ecommerce.springboot.product.database.utilities.PGEnum
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.core.dao.id.UUIDTable
+import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.or
-import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
-import org.jetbrains.exposed.v1.datetime.timestamp
+import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 import java.math.BigDecimal
 
 object VariantsTable : UUIDTable("variants") {
@@ -29,6 +30,6 @@ object VariantsTable : UUIDTable("variants") {
     val mediaUrl = varchar("media_url", 255).nullable()
     val weight = decimal("weight", 8, 2).nullable()
     val dimensions = varchar("dimensions", 50).nullable()
-    val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
-    val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
+    val createdAt = timestampWithTimeZone("created_at")
+    val updatedAt = timestampWithTimeZone("updated_at")
 }

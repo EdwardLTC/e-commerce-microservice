@@ -8,69 +8,70 @@ import {
   GetProductsRequest,
 } from './products.model';
 import { lastValueFrom } from 'rxjs';
-import {
-  COM_ECOMMERCE_SPRINGBOOT_PRODUCT_V1_PACKAGE_NAME,
-  OPTION_SERVICE_NAME,
-  OptionServiceClient,
-  PRODUCT_SERVICE_NAME,
-  ProductServiceClient,
-  VARIANT_SERVICE_NAME,
-  VariantServiceClient,
-} from '../generated/Product';
+import { com } from '../generated/.proto/Product';
+import { numberValue, stringValue } from '../helpers/well-know-type';
+import ProductService = com.ecommerce.springboot.product.v1.ProductService;
+import OptionService = com.ecommerce.springboot.product.v1.OptionService;
+import VariantService = com.ecommerce.springboot.product.v1.VariantService;
 
 @Injectable()
 export class ProductsService {
-  private readonly productClient = this.client.getService<ProductServiceClient>(PRODUCT_SERVICE_NAME);
-  private readonly optionClient = this.client.getService<OptionServiceClient>(OPTION_SERVICE_NAME);
-  private readonly variantClient = this.client.getService<VariantServiceClient>(VARIANT_SERVICE_NAME);
+  private readonly productClient = this.client.getService<ProductService>('ProductService');
+  private readonly optionClient = this.client.getService<OptionService>('OptionService');
+  private readonly variantClient = this.client.getService<VariantService>('VariantService');
 
-  constructor(@Inject(COM_ECOMMERCE_SPRINGBOOT_PRODUCT_V1_PACKAGE_NAME) private client: ClientGrpc) {}
+  constructor(@Inject('com.ecommerce.springboot.product.v1') private client: ClientGrpc) {}
 
   public async getProducts(data: GetProductsRequest) {
-    return lastValueFrom(this.productClient.getProducts(data)).then(response => response.products);
+    return lastValueFrom(
+      this.productClient.getProducts({
+        skip: numberValue(data.skip),
+        take: numberValue(data.take),
+      }),
+    ).then(response => response.products);
   }
 
   public async getProductById(id: string) {
-    return lastValueFrom(this.productClient.getProductDetail({ id: id }));
+    return lastValueFrom(this.productClient.getProductDetail({ id: stringValue(id) }));
   }
 
   public async createProduct(data: CreateProductRequest, sellerId: string) {
     return lastValueFrom(
       this.productClient.createProduct({
-        sellerId: sellerId,
-        name: data.name,
-        brand: data.brand,
-        description: data.description,
+        sellerId: stringValue(sellerId),
+        name: stringValue(data.name),
+        brand: stringValue(data.brand),
+        description: stringValue(data.description),
         mediaUrls: data.mediaUrls,
       }),
     );
   }
 
   public async getOptionTypes(productId: string) {
-    return lastValueFrom(this.optionClient.getOptionTypes({ productId: productId })).then(response => response.optionTypes);
+    return lastValueFrom(this.optionClient.getOptionTypes({ productId: stringValue(productId) })).then(response => response.optionTypes);
   }
 
   public async createOptionType(productId: string, data: CreateProductOptionTypeRequest) {
     return lastValueFrom(
       this.optionClient.createOptionType({
-        productId: productId,
-        name: data.name,
-        displayOrder: data.displayOrder ? data.displayOrder : undefined,
+        productId: stringValue(productId),
+        name: stringValue(data.name),
+        displayOrder: data.displayOrder ? numberValue(data.displayOrder) : undefined,
       }),
     );
   }
 
   public async getOptionValues(optionTypeId: string) {
-    return lastValueFrom(this.optionClient.getOptionValues({ optionTypeId: optionTypeId })).then(response => response.optionValues);
+    return lastValueFrom(this.optionClient.getOptionValues({ optionTypeId: stringValue(optionTypeId) })).then(response => response.optionValues);
   }
 
   public async createOptionValue(optionTypeId: string, data: CreateProductOptionValueRequest) {
     return lastValueFrom(
       this.optionClient.createOptionValue({
-        optionTypeId: optionTypeId,
-        value: data.value,
-        mediaUrl: data.mediaUrl ? data.mediaUrl : undefined,
-        displayOrder: data.displayOrder ? data.displayOrder : undefined,
+        optionTypeId: stringValue(optionTypeId),
+        value: stringValue(data.value),
+        mediaUrl: data.mediaUrl ? stringValue(data.mediaUrl) : undefined,
+        displayOrder: data.displayOrder ? numberValue(data.displayOrder) : undefined,
       }),
     );
   }
@@ -78,11 +79,11 @@ export class ProductsService {
   public async createVariant(productId: string, data: CreateProductVariantRequest) {
     return lastValueFrom(
       this.variantClient.createVariant({
-        productId: productId,
-        sku: data.sku,
-        price: data.price,
-        stock: data.stock,
-        mediaUrl: data.mediaUrl ? data.mediaUrl : undefined,
+        productId: stringValue(productId),
+        sku: stringValue(data.sku),
+        price: numberValue(data.price),
+        stock: numberValue(data.stock),
+        mediaUrl: data.mediaUrl ? stringValue(data.mediaUrl) : undefined,
         options: data.options,
       }),
     );

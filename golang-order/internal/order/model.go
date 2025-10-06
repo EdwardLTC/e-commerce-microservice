@@ -1,8 +1,9 @@
 package order
 
 import (
-	"github.com/google/uuid"
 	"golang-order/ent/order"
+
+	"github.com/google/uuid"
 )
 
 type UpdateOrder struct {

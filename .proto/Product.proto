@@ -24,6 +24,9 @@ service OptionService {
 
 service VariantService {
   rpc CreateVariant(CreateVariantRequest) returns (CreateVariantResponse);
+}
+
+service StockService {
   rpc ReserveStock(ReserveStockRequest) returns (ReserveStockResponse);
   rpc ReleaseStock(ReleaseStockRequest) returns (google.protobuf.DoubleValue);
 }

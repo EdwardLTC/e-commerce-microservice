@@ -1,7 +1,7 @@
 import com.google.protobuf.gradle.id
 
 plugins {
-    kotlin("jvm") version "1.9.25"
+    kotlin("jvm") version "2.1.0"
     kotlin("plugin.spring") version "1.9.25"
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
@@ -28,7 +28,7 @@ repositories {
 }
 
 extra["springGrpcVersion"] = "0.6.0"
-extra["exposedVersion"] = "1.0.0-beta-2"
+extra["exposedVersion"] = "1.0.0-rc-1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -36,6 +36,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("org.postgresql:postgresql")

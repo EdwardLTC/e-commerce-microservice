@@ -2,11 +2,10 @@ package com.ecommerce.springboot.product.database
 
 import com.ecommerce.springboot.product.database.utilities.PGEnum
 import org.jetbrains.exposed.v1.core.dao.id.UUIDTable
-import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
-import org.jetbrains.exposed.v1.datetime.timestamp
+import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 
 object StockReversalsTable : UUIDTable("stock_reversals") {
-    
+
     enum class StockCheckinStatus {
         PENDING,
         RELEASED,
@@ -20,6 +19,6 @@ object StockReversalsTable : UUIDTable("stock_reversals") {
         toDb = { PGEnum("stock_reversal_status", it) }
     ).default(StockCheckinStatus.PENDING)
 
-    val checkinAt = timestamp("checkin_at").defaultExpression(CurrentTimestamp)
-    val releaseAt = timestamp("release_at").nullable().default(null)
+    val checkinAt = timestampWithTimeZone("checkin_at")
+    val releaseAt = timestampWithTimeZone("release_at").nullable().default(null)
 }

@@ -5,19 +5,18 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { EnvironmentsModule } from '../environments/environments.module';
 import { EnvironmentsService } from '../environments/environments.service';
-import { COM_ECOMMERCE_ASPNET_USER_PACKAGE_NAME } from '../generated/User';
 
 @Module({
   imports: [
     ClientsModule.registerAsync([
       {
-        name: COM_ECOMMERCE_ASPNET_USER_PACKAGE_NAME,
+        name: 'com.ecommerce.aspnet.user',
         imports: [EnvironmentsModule],
         inject: [EnvironmentsService],
         useFactory: (env: EnvironmentsService) => ({
           transport: Transport.GRPC,
           options: {
-            package: COM_ECOMMERCE_ASPNET_USER_PACKAGE_NAME,
+            package: 'com.ecommerce.aspnet.user',
             protoPath: join(__dirname, '../../../.proto/User.proto'),
             url: env.microservice.userServiceURL,
             loader: {

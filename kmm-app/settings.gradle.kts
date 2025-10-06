@@ -1,4 +1,4 @@
-rootProject.name = "Edward  Ecommerce"
+rootProject.name = "Ecommerce"
 include(":composeApp")
 
 pluginManagement {

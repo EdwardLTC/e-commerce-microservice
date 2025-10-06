@@ -2,12 +2,13 @@ package order
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"golang-order/ent"
 	"golang-order/ent/order"
 	pb "golang-order/gen"
 	"golang-order/utility/array"
 	"golang-order/utility/ptr"
+
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -16,19 +17,19 @@ import (
 type Orchestrator struct {
 	db            *ent.Client
 	repository    Repository
-	variantClient pb.VariantServiceClient
+	stockClient   pb.StockServiceClient
 	paymentClient pb.PaymentServiceClient
 }
 
 func NewOrderOrchestrator(
 	db *ent.Client,
-	variantClient pb.VariantServiceClient,
+	stockClient pb.StockServiceClient,
 	paymentClient pb.PaymentServiceClient,
 ) *Orchestrator {
 	return &Orchestrator{
 		db:            db,
 		repository:    NewOrderRepository(db),
-		variantClient: variantClient,
+		stockClient:   stockClient,
 		paymentClient: paymentClient,
 	}
 }
@@ -36,7 +37,7 @@ func NewOrderOrchestrator(
 func (o *Orchestrator) CreateOrder(ctx context.Context, req *pb.CreateOrderRequest) (*pb.CreateOrderResponse, error) {
 	reservation, err := o.reserveStock(ctx, req.Items) // Step 1: Reserve stock to avoid over selling
 
-	if err != nil {
+	if err != nil || reservation == nil {
 		return nil, err
 	}
 
@@ -81,7 +82,7 @@ func (o *Orchestrator) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 
 	paymentIntent, err := o.createPaymentIntent(ctx, orderCreated.Total, orderCreated.ID.String()) // Step 3: Create payment intent
 
-	if err != nil {
+	if err != nil || paymentIntent == nil {
 		o.releaseStock(ctx, reservation.ReservationId)
 		return nil, err
 	}
@@ -104,7 +105,7 @@ func (o *Orchestrator) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 }
 
 func (o *Orchestrator) reserveStock(ctx context.Context, items []*pb.OrderItemRequest) (*pb.ReserveStockResponse, error) {
-	reservation, err := o.variantClient.ReserveStock(ctx, &pb.ReserveStockRequest{
+	reservation, err := o.stockClient.ReserveStock(ctx, &pb.ReserveStockRequest{
 		Items: array.Map(items, func(item *pb.OrderItemRequest) *pb.VariantItem {
 			return &pb.VariantItem{
 				VariantId: item.VariantId,
@@ -125,7 +126,7 @@ func (o *Orchestrator) reserveStock(ctx context.Context, items []*pb.OrderItemRe
 }
 
 func (o *Orchestrator) releaseStock(ctx context.Context, reservationID string) {
-	_, err := o.variantClient.ReleaseStock(ctx, &pb.ReleaseStockRequest{ReservationId: reservationID})
+	_, err := o.stockClient.ReleaseStock(ctx, &pb.ReleaseStockRequest{ReservationId: reservationID})
 	if err != nil {
 		print("failed to release stock: ", err)
 	}
