@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	server.StartGRPCServer()
+	server.Start()
 }

@@ -1,40 +1,44 @@
 package com.ecommerce.springboot.product.repositories
 
-import com.ecommerce.springboot.product.database.ProductsTable
 import com.ecommerce.springboot.product.database.StockReversalItemsTable
 import com.ecommerce.springboot.product.database.StockReversalsTable
 import com.ecommerce.springboot.product.database.VariantsTable
-import com.ecommerce.springboot.product.dto.ReverseStockDto
-import com.ecommerce.springboot.product.repositories.VariantRepository.Companion.VariantWithProduct
+import com.ecommerce.springboot.product.dto.ReserveStock
 import org.jetbrains.exposed.v1.core.*
-import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.insertAndGetId
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
-import java.time.OffsetDateTime
+import java.math.BigDecimal
 import java.util.*
 
 @Repository
 @Transactional
 class StockRepository {
-    companion object {
-        data class ReverseStockResponse(
-            val reversalId: UUID, val items: List<VariantWithProduct>
-        )
-    }
+    fun reserveStock(request: List<ReserveStock>, orderId: String): UUID {
 
-    fun reserveStock(request: ReverseStockDto): ReverseStockResponse {
+        val isExisting = StockReversalsTable.selectAll().where { StockReversalsTable.orderId eq orderId }.singleOrNull()
+
+        if (isExisting != null) {
+            return isExisting[StockReversalsTable.id].value
+        }
+
         return transaction {
             val reversalId = StockReversalsTable.insertAndGetId {
-                it[status] = StockReversalsTable.StockCheckinStatus.PENDING
+                it[status] = StockReversalsTable.StockCheckinStatus.REVERSED
+                it[this.orderId] = orderId
             }.value
 
-            val variants = request.map { item ->
+            request.map { item ->
                 val variantId = item.variantId
                 val quantity = item.quantity
+                val unitPrice = BigDecimal.valueOf(item.unitPrice)
 
                 val effectedRow = VariantsTable.update(
-                    where = { (VariantsTable.id eq variantId) and (VariantsTable.stock greaterEq quantity) }) {
+                    where = { (VariantsTable.id eq variantId) and (VariantsTable.stock greaterEq quantity) and (VariantsTable.price eq unitPrice) }) {
                     it[stock] = stock.minus(quantity)
                 }
 
@@ -47,45 +51,22 @@ class StockRepository {
                     it[this.variant] = variantId
                     it[this.quantity] = quantity
                 }
-
-                val joinedRow = (VariantsTable innerJoin ProductsTable).select(
-                    VariantsTable.id,
-                    VariantsTable.sku,
-                    VariantsTable.price,
-                    VariantsTable.salePrice,
-                    VariantsTable.stock,
-                    VariantsTable.status,
-                    VariantsTable.mediaUrl,
-                    VariantsTable.product,
-                    ProductsTable.name
-                ).where { VariantsTable.id eq variantId }.single()
-
-                VariantWithProduct(
-                    id = joinedRow[VariantsTable.id].value,
-                    sku = joinedRow[VariantsTable.sku],
-                    price = joinedRow[VariantsTable.price].toDouble(),
-                    salePrice = joinedRow[VariantsTable.salePrice]?.toDouble() ?: 0.0,
-                    stock = joinedRow[VariantsTable.stock],
-                    status = joinedRow[VariantsTable.status].name,
-                    mediaUrl = joinedRow[VariantsTable.mediaUrl],
-                    productId = joinedRow[ProductsTable.id].value,
-                    productName = joinedRow[ProductsTable.name]
-
-                )
             }
 
-            return@transaction ReverseStockResponse(
-                reversalId = reversalId,
-                items = variants,
-            )
-
+            return@transaction reversalId
         }
     }
 
-    fun releaseStock(reservationId: UUID): Int {
+    fun releaseStock(orderId: String): Int {
+        val reversal = StockReversalsTable.selectAll().where { StockReversalsTable.orderId eq orderId }.singleOrNull()
+
+        if (reversal == null) {
+            throw IllegalArgumentException("Stock reversal not exist for: $orderId")
+        }
+
         return transaction {
             val items = StockReversalItemsTable.selectAll().where {
-                StockReversalItemsTable.reversal eq reservationId
+                StockReversalItemsTable.reversal eq reversal[StockReversalsTable.id]
             }.associate { row ->
                 row[StockReversalItemsTable.variant] to row[StockReversalItemsTable.quantity]
             }
@@ -96,9 +77,8 @@ class StockRepository {
                 }
             }
 
-            StockReversalsTable.update({ StockReversalsTable.id eq reservationId }) {
+            StockReversalsTable.update({ StockReversalsTable.id eq reversal[StockReversalsTable.id] }) {
                 it[status] = StockReversalsTable.StockCheckinStatus.RELEASED
-                it[releaseAt] = OffsetDateTime.now()
             }
 
             return@transaction items.size

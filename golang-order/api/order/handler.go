@@ -2,25 +2,25 @@ package order
 
 import (
 	"context"
-	"golang-order/ent"
-	pb "golang-order/gen"
+	"fmt"
+	"golang-order/gen/ent"
+	pb "golang-order/gen/proto"
 	"golang-order/grpcClient"
 	"golang-order/internal/order"
 )
 
 type Handler struct {
 	pb.UnimplementedOrderServiceServer
-	svc order.Orchestrator
+	svc order.Choreography
 }
 
 func NewHandler(db *ent.Client) *Handler {
-	stockClient, err := grpcClient.StockClient()
-
+	variantClient, err := grpcClient.VariantClient()
 	if err != nil {
-		panic("failed to connect to VariantService: " + err.Error())
+		fmt.Println(err)
 	}
 
-	return &Handler{svc: *order.NewOrderOrchestrator(db, stockClient, nil)}
+	return &Handler{svc: *order.NewOrderChoreography(db, variantClient)}
 }
 
 func (h *Handler) CreateOrder(ctx context.Context, req *pb.CreateOrderRequest) (*pb.CreateOrderResponse, error) {

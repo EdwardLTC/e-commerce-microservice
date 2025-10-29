@@ -3,7 +3,7 @@ package grpcClient
 import (
 	"context"
 	"fmt"
-	pb "golang-order/gen"
+	pb "golang-order/gen/proto"
 	"os"
 	"time"
 

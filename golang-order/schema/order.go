@@ -16,31 +16,35 @@ type OrderStatus string
 
 func OrderStatusValues() []string {
 	return []string{
-		string(Draft),
-		string(PendingPayment),
-		string(PaymentReceived),
-		string(Preparing),
-		string(Shipped),
-		string(Delivered),
-		string(Cancelled),
+		string(Created),
+		string(PendingInventory),
+		string(InventoryReserved),
+		string(InventoryReservedFailed),
+		string(PaymentPending),
+		string(PaymentCompleted),
+		string(PaymentFailed),
+		string(Shipping),
+		string(Completed),
 	}
 }
 
 const (
-	Draft           OrderStatus = "draft"
-	PendingPayment  OrderStatus = "pending_payment"
-	PaymentReceived OrderStatus = "payment_received"
-	Preparing       OrderStatus = "preparing"
-	Shipped         OrderStatus = "shipped"
-	Delivered       OrderStatus = "delivered"
-	Cancelled       OrderStatus = "cancelled"
+	Created                 OrderStatus = "created"
+	PendingInventory        OrderStatus = "pending_inventory"
+	InventoryReserved       OrderStatus = "inventory_reserved"
+	InventoryReservedFailed OrderStatus = "inventory_reserved_failed"
+	PaymentPending          OrderStatus = "payment_pending"
+	PaymentCompleted        OrderStatus = "payment_completed"
+	PaymentFailed           OrderStatus = "payment_failed"
+	Shipping                OrderStatus = "shipping"
+	Completed               OrderStatus = "completed"
 )
 
 func (Order) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Unique().Immutable(),
 		field.UUID("customer_id", uuid.UUID{}), // Reference to user service
-		field.Enum("status").Values(OrderStatusValues()...).Default(string(Draft)),
+		field.Enum("status").Values(OrderStatusValues()...).Default(string(Created)),
 		field.Float("subtotal").Default(0).Min(0),
 		field.Float("tax").Default(0).Min(0),
 		field.Float("shipping_cost").Default(0).Min(0),
@@ -54,7 +58,6 @@ func (Order) Fields() []ent.Field {
 func (Order) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("items", OrderItem.Type),
-		edge.To("refunds", Refund.Type),
 	}
 }
 

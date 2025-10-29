@@ -1,0 +1,16 @@
+{
+  "namespace": "com.example.stock",
+  "type": "record",
+  "name": "StockReductionSuccessEvent",
+  "doc": "Event emitted after a stock reduction is successful",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string"
+    },
+    {
+      "name": "price",
+      "type": "double"
+    }
+  ]
+}

@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"golang-order/ent"
+	"golang-order/gen/ent"
 	"log"
 	"os"
 	"time"
