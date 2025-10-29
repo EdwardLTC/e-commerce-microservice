@@ -101,9 +101,9 @@ func BillingAddress(v string) predicate.Order {
 	return predicate.Order(sql.FieldEQ(FieldBillingAddress, v))
 }
 
-// PaymentIntentID applies equality check predicate on the "payment_intent_id" field. It's identical to PaymentIntentIDEQ.
-func PaymentIntentID(v uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldEQ(FieldPaymentIntentID, v))
+// ErrorMessage applies equality check predicate on the "error_message" field. It's identical to ErrorMessageEQ.
+func ErrorMessage(v string) predicate.Order {
+	return predicate.Order(sql.FieldEQ(FieldErrorMessage, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -536,54 +536,79 @@ func BillingAddressContainsFold(v string) predicate.Order {
 	return predicate.Order(sql.FieldContainsFold(FieldBillingAddress, v))
 }
 
-// PaymentIntentIDEQ applies the EQ predicate on the "payment_intent_id" field.
-func PaymentIntentIDEQ(v uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldEQ(FieldPaymentIntentID, v))
+// ErrorMessageEQ applies the EQ predicate on the "error_message" field.
+func ErrorMessageEQ(v string) predicate.Order {
+	return predicate.Order(sql.FieldEQ(FieldErrorMessage, v))
 }
 
-// PaymentIntentIDNEQ applies the NEQ predicate on the "payment_intent_id" field.
-func PaymentIntentIDNEQ(v uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldNEQ(FieldPaymentIntentID, v))
+// ErrorMessageNEQ applies the NEQ predicate on the "error_message" field.
+func ErrorMessageNEQ(v string) predicate.Order {
+	return predicate.Order(sql.FieldNEQ(FieldErrorMessage, v))
 }
 
-// PaymentIntentIDIn applies the In predicate on the "payment_intent_id" field.
-func PaymentIntentIDIn(vs ...uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldIn(FieldPaymentIntentID, vs...))
+// ErrorMessageIn applies the In predicate on the "error_message" field.
+func ErrorMessageIn(vs ...string) predicate.Order {
+	return predicate.Order(sql.FieldIn(FieldErrorMessage, vs...))
 }
 
-// PaymentIntentIDNotIn applies the NotIn predicate on the "payment_intent_id" field.
-func PaymentIntentIDNotIn(vs ...uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldNotIn(FieldPaymentIntentID, vs...))
+// ErrorMessageNotIn applies the NotIn predicate on the "error_message" field.
+func ErrorMessageNotIn(vs ...string) predicate.Order {
+	return predicate.Order(sql.FieldNotIn(FieldErrorMessage, vs...))
 }
 
-// PaymentIntentIDGT applies the GT predicate on the "payment_intent_id" field.
-func PaymentIntentIDGT(v uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldGT(FieldPaymentIntentID, v))
+// ErrorMessageGT applies the GT predicate on the "error_message" field.
+func ErrorMessageGT(v string) predicate.Order {
+	return predicate.Order(sql.FieldGT(FieldErrorMessage, v))
 }
 
-// PaymentIntentIDGTE applies the GTE predicate on the "payment_intent_id" field.
-func PaymentIntentIDGTE(v uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldGTE(FieldPaymentIntentID, v))
+// ErrorMessageGTE applies the GTE predicate on the "error_message" field.
+func ErrorMessageGTE(v string) predicate.Order {
+	return predicate.Order(sql.FieldGTE(FieldErrorMessage, v))
 }
 
-// PaymentIntentIDLT applies the LT predicate on the "payment_intent_id" field.
-func PaymentIntentIDLT(v uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldLT(FieldPaymentIntentID, v))
+// ErrorMessageLT applies the LT predicate on the "error_message" field.
+func ErrorMessageLT(v string) predicate.Order {
+	return predicate.Order(sql.FieldLT(FieldErrorMessage, v))
 }
 
-// PaymentIntentIDLTE applies the LTE predicate on the "payment_intent_id" field.
-func PaymentIntentIDLTE(v uuid.UUID) predicate.Order {
-	return predicate.Order(sql.FieldLTE(FieldPaymentIntentID, v))
+// ErrorMessageLTE applies the LTE predicate on the "error_message" field.
+func ErrorMessageLTE(v string) predicate.Order {
+	return predicate.Order(sql.FieldLTE(FieldErrorMessage, v))
 }
 
-// PaymentIntentIDIsNil applies the IsNil predicate on the "payment_intent_id" field.
-func PaymentIntentIDIsNil() predicate.Order {
-	return predicate.Order(sql.FieldIsNull(FieldPaymentIntentID))
+// ErrorMessageContains applies the Contains predicate on the "error_message" field.
+func ErrorMessageContains(v string) predicate.Order {
+	return predicate.Order(sql.FieldContains(FieldErrorMessage, v))
 }
 
-// PaymentIntentIDNotNil applies the NotNil predicate on the "payment_intent_id" field.
-func PaymentIntentIDNotNil() predicate.Order {
-	return predicate.Order(sql.FieldNotNull(FieldPaymentIntentID))
+// ErrorMessageHasPrefix applies the HasPrefix predicate on the "error_message" field.
+func ErrorMessageHasPrefix(v string) predicate.Order {
+	return predicate.Order(sql.FieldHasPrefix(FieldErrorMessage, v))
+}
+
+// ErrorMessageHasSuffix applies the HasSuffix predicate on the "error_message" field.
+func ErrorMessageHasSuffix(v string) predicate.Order {
+	return predicate.Order(sql.FieldHasSuffix(FieldErrorMessage, v))
+}
+
+// ErrorMessageIsNil applies the IsNil predicate on the "error_message" field.
+func ErrorMessageIsNil() predicate.Order {
+	return predicate.Order(sql.FieldIsNull(FieldErrorMessage))
+}
+
+// ErrorMessageNotNil applies the NotNil predicate on the "error_message" field.
+func ErrorMessageNotNil() predicate.Order {
+	return predicate.Order(sql.FieldNotNull(FieldErrorMessage))
+}
+
+// ErrorMessageEqualFold applies the EqualFold predicate on the "error_message" field.
+func ErrorMessageEqualFold(v string) predicate.Order {
+	return predicate.Order(sql.FieldEqualFold(FieldErrorMessage, v))
+}
+
+// ErrorMessageContainsFold applies the ContainsFold predicate on the "error_message" field.
+func ErrorMessageContainsFold(v string) predicate.Order {
+	return predicate.Order(sql.FieldContainsFold(FieldErrorMessage, v))
 }
 
 // HasItems applies the HasEdge predicate on the "items" edge.

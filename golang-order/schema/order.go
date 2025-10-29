@@ -51,7 +51,7 @@ func (Order) Fields() []ent.Field {
 		field.Float("total").Default(0).Min(0),
 		field.Text("shipping_address"),
 		field.Text("billing_address"),
-		field.UUID("payment_intent_id", uuid.UUID{}).Optional(), // Reference to payment service
+		field.Text("error_message").Optional(),
 	}
 }
 
@@ -71,6 +71,5 @@ func (Order) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("customer_id"),
 		index.Fields("status"),
-		index.Fields("payment_intent_id"),
 	}
 }

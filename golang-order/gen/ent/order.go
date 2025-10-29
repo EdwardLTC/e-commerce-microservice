@@ -38,8 +38,8 @@ type Order struct {
 	ShippingAddress string `json:"shipping_address,omitempty"`
 	// BillingAddress holds the value of the "billing_address" field.
 	BillingAddress string `json:"billing_address,omitempty"`
-	// PaymentIntentID holds the value of the "payment_intent_id" field.
-	PaymentIntentID uuid.UUID `json:"payment_intent_id,omitempty"`
+	// ErrorMessage holds the value of the "error_message" field.
+	ErrorMessage string `json:"error_message,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OrderQuery when eager-loading is set.
 	Edges        OrderEdges `json:"edges"`
@@ -71,11 +71,11 @@ func (*Order) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case order.FieldSubtotal, order.FieldTax, order.FieldShippingCost, order.FieldTotal:
 			values[i] = new(sql.NullFloat64)
-		case order.FieldStatus, order.FieldShippingAddress, order.FieldBillingAddress:
+		case order.FieldStatus, order.FieldShippingAddress, order.FieldBillingAddress, order.FieldErrorMessage:
 			values[i] = new(sql.NullString)
 		case order.FieldCreatedAt, order.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case order.FieldID, order.FieldCustomerID, order.FieldPaymentIntentID:
+		case order.FieldID, order.FieldCustomerID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -86,7 +86,7 @@ func (*Order) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Order fields.
-func (o *Order) assignValues(columns []string, values []any) error {
+func (_m *Order) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -96,76 +96,76 @@ func (o *Order) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				o.ID = *value
+				_m.ID = *value
 			}
 		case order.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				o.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case order.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				o.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case order.FieldCustomerID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field customer_id", values[i])
 			} else if value != nil {
-				o.CustomerID = *value
+				_m.CustomerID = *value
 			}
 		case order.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				o.Status = order.Status(value.String)
+				_m.Status = order.Status(value.String)
 			}
 		case order.FieldSubtotal:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field subtotal", values[i])
 			} else if value.Valid {
-				o.Subtotal = value.Float64
+				_m.Subtotal = value.Float64
 			}
 		case order.FieldTax:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field tax", values[i])
 			} else if value.Valid {
-				o.Tax = value.Float64
+				_m.Tax = value.Float64
 			}
 		case order.FieldShippingCost:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field shipping_cost", values[i])
 			} else if value.Valid {
-				o.ShippingCost = value.Float64
+				_m.ShippingCost = value.Float64
 			}
 		case order.FieldTotal:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field total", values[i])
 			} else if value.Valid {
-				o.Total = value.Float64
+				_m.Total = value.Float64
 			}
 		case order.FieldShippingAddress:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field shipping_address", values[i])
 			} else if value.Valid {
-				o.ShippingAddress = value.String
+				_m.ShippingAddress = value.String
 			}
 		case order.FieldBillingAddress:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field billing_address", values[i])
 			} else if value.Valid {
-				o.BillingAddress = value.String
+				_m.BillingAddress = value.String
 			}
-		case order.FieldPaymentIntentID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field payment_intent_id", values[i])
-			} else if value != nil {
-				o.PaymentIntentID = *value
+		case order.FieldErrorMessage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field error_message", values[i])
+			} else if value.Valid {
+				_m.ErrorMessage = value.String
 			}
 		default:
-			o.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -173,70 +173,70 @@ func (o *Order) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Order.
 // This includes values selected through modifiers, order, etc.
-func (o *Order) Value(name string) (ent.Value, error) {
-	return o.selectValues.Get(name)
+func (_m *Order) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryItems queries the "items" edge of the Order entity.
-func (o *Order) QueryItems() *OrderItemQuery {
-	return NewOrderClient(o.config).QueryItems(o)
+func (_m *Order) QueryItems() *OrderItemQuery {
+	return NewOrderClient(_m.config).QueryItems(_m)
 }
 
 // Update returns a builder for updating this Order.
 // Note that you need to call Order.Unwrap() before calling this method if this Order
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (o *Order) Update() *OrderUpdateOne {
-	return NewOrderClient(o.config).UpdateOne(o)
+func (_m *Order) Update() *OrderUpdateOne {
+	return NewOrderClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Order entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (o *Order) Unwrap() *Order {
-	_tx, ok := o.config.driver.(*txDriver)
+func (_m *Order) Unwrap() *Order {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Order is not a transactional entity")
 	}
-	o.config.driver = _tx.drv
-	return o
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (o *Order) String() string {
+func (_m *Order) String() string {
 	var builder strings.Builder
 	builder.WriteString("Order(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", o.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(o.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(o.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("customer_id=")
-	builder.WriteString(fmt.Sprintf("%v", o.CustomerID))
+	builder.WriteString(fmt.Sprintf("%v", _m.CustomerID))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", o.Status))
+	builder.WriteString(fmt.Sprintf("%v", _m.Status))
 	builder.WriteString(", ")
 	builder.WriteString("subtotal=")
-	builder.WriteString(fmt.Sprintf("%v", o.Subtotal))
+	builder.WriteString(fmt.Sprintf("%v", _m.Subtotal))
 	builder.WriteString(", ")
 	builder.WriteString("tax=")
-	builder.WriteString(fmt.Sprintf("%v", o.Tax))
+	builder.WriteString(fmt.Sprintf("%v", _m.Tax))
 	builder.WriteString(", ")
 	builder.WriteString("shipping_cost=")
-	builder.WriteString(fmt.Sprintf("%v", o.ShippingCost))
+	builder.WriteString(fmt.Sprintf("%v", _m.ShippingCost))
 	builder.WriteString(", ")
 	builder.WriteString("total=")
-	builder.WriteString(fmt.Sprintf("%v", o.Total))
+	builder.WriteString(fmt.Sprintf("%v", _m.Total))
 	builder.WriteString(", ")
 	builder.WriteString("shipping_address=")
-	builder.WriteString(o.ShippingAddress)
+	builder.WriteString(_m.ShippingAddress)
 	builder.WriteString(", ")
 	builder.WriteString("billing_address=")
-	builder.WriteString(o.BillingAddress)
+	builder.WriteString(_m.BillingAddress)
 	builder.WriteString(", ")
-	builder.WriteString("payment_intent_id=")
-	builder.WriteString(fmt.Sprintf("%v", o.PaymentIntentID))
+	builder.WriteString("error_message=")
+	builder.WriteString(_m.ErrorMessage)
 	builder.WriteByte(')')
 	return builder.String()
 }

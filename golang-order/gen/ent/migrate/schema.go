@@ -21,7 +21,7 @@ var (
 		{Name: "total", Type: field.TypeFloat64, Default: 0},
 		{Name: "shipping_address", Type: field.TypeString, Size: 2147483647},
 		{Name: "billing_address", Type: field.TypeString, Size: 2147483647},
-		{Name: "payment_intent_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "error_message", Type: field.TypeString, Nullable: true, Size: 2147483647},
 	}
 	// OrdersTable holds the schema information for the "orders" table.
 	OrdersTable = &schema.Table{
@@ -38,11 +38,6 @@ var (
 				Name:    "order_status",
 				Unique:  false,
 				Columns: []*schema.Column{OrdersColumns[4]},
-			},
-			{
-				Name:    "order_payment_intent_id",
-				Unique:  false,
-				Columns: []*schema.Column{OrdersColumns[11]},
 			},
 		},
 	}

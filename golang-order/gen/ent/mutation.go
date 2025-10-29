@@ -35,31 +35,31 @@ const (
 // OrderMutation represents an operation that mutates the Order nodes in the graph.
 type OrderMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *uuid.UUID
-	created_at        *time.Time
-	updated_at        *time.Time
-	customer_id       *uuid.UUID
-	status            *order.Status
-	subtotal          *float64
-	addsubtotal       *float64
-	tax               *float64
-	addtax            *float64
-	shipping_cost     *float64
-	addshipping_cost  *float64
-	total             *float64
-	addtotal          *float64
-	shipping_address  *string
-	billing_address   *string
-	payment_intent_id *uuid.UUID
-	clearedFields     map[string]struct{}
-	items             map[uuid.UUID]struct{}
-	removeditems      map[uuid.UUID]struct{}
-	cleareditems      bool
-	done              bool
-	oldValue          func(context.Context) (*Order, error)
-	predicates        []predicate.Order
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	created_at       *time.Time
+	updated_at       *time.Time
+	customer_id      *uuid.UUID
+	status           *order.Status
+	subtotal         *float64
+	addsubtotal      *float64
+	tax              *float64
+	addtax           *float64
+	shipping_cost    *float64
+	addshipping_cost *float64
+	total            *float64
+	addtotal         *float64
+	shipping_address *string
+	billing_address  *string
+	error_message    *string
+	clearedFields    map[string]struct{}
+	items            map[uuid.UUID]struct{}
+	removeditems     map[uuid.UUID]struct{}
+	cleareditems     bool
+	done             bool
+	oldValue         func(context.Context) (*Order, error)
+	predicates       []predicate.Order
 }
 
 var _ ent.Mutation = (*OrderMutation)(nil)
@@ -606,53 +606,53 @@ func (m *OrderMutation) ResetBillingAddress() {
 	m.billing_address = nil
 }
 
-// SetPaymentIntentID sets the "payment_intent_id" field.
-func (m *OrderMutation) SetPaymentIntentID(u uuid.UUID) {
-	m.payment_intent_id = &u
+// SetErrorMessage sets the "error_message" field.
+func (m *OrderMutation) SetErrorMessage(s string) {
+	m.error_message = &s
 }
 
-// PaymentIntentID returns the value of the "payment_intent_id" field in the mutation.
-func (m *OrderMutation) PaymentIntentID() (r uuid.UUID, exists bool) {
-	v := m.payment_intent_id
+// ErrorMessage returns the value of the "error_message" field in the mutation.
+func (m *OrderMutation) ErrorMessage() (r string, exists bool) {
+	v := m.error_message
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldPaymentIntentID returns the old "payment_intent_id" field's value of the Order entity.
+// OldErrorMessage returns the old "error_message" field's value of the Order entity.
 // If the Order object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OrderMutation) OldPaymentIntentID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OrderMutation) OldErrorMessage(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPaymentIntentID is only allowed on UpdateOne operations")
+		return v, errors.New("OldErrorMessage is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPaymentIntentID requires an ID field in the mutation")
+		return v, errors.New("OldErrorMessage requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPaymentIntentID: %w", err)
+		return v, fmt.Errorf("querying old value for OldErrorMessage: %w", err)
 	}
-	return oldValue.PaymentIntentID, nil
+	return oldValue.ErrorMessage, nil
 }
 
-// ClearPaymentIntentID clears the value of the "payment_intent_id" field.
-func (m *OrderMutation) ClearPaymentIntentID() {
-	m.payment_intent_id = nil
-	m.clearedFields[order.FieldPaymentIntentID] = struct{}{}
+// ClearErrorMessage clears the value of the "error_message" field.
+func (m *OrderMutation) ClearErrorMessage() {
+	m.error_message = nil
+	m.clearedFields[order.FieldErrorMessage] = struct{}{}
 }
 
-// PaymentIntentIDCleared returns if the "payment_intent_id" field was cleared in this mutation.
-func (m *OrderMutation) PaymentIntentIDCleared() bool {
-	_, ok := m.clearedFields[order.FieldPaymentIntentID]
+// ErrorMessageCleared returns if the "error_message" field was cleared in this mutation.
+func (m *OrderMutation) ErrorMessageCleared() bool {
+	_, ok := m.clearedFields[order.FieldErrorMessage]
 	return ok
 }
 
-// ResetPaymentIntentID resets all changes to the "payment_intent_id" field.
-func (m *OrderMutation) ResetPaymentIntentID() {
-	m.payment_intent_id = nil
-	delete(m.clearedFields, order.FieldPaymentIntentID)
+// ResetErrorMessage resets all changes to the "error_message" field.
+func (m *OrderMutation) ResetErrorMessage() {
+	m.error_message = nil
+	delete(m.clearedFields, order.FieldErrorMessage)
 }
 
 // AddItemIDs adds the "items" edge to the OrderItem entity by ids.
@@ -774,8 +774,8 @@ func (m *OrderMutation) Fields() []string {
 	if m.billing_address != nil {
 		fields = append(fields, order.FieldBillingAddress)
 	}
-	if m.payment_intent_id != nil {
-		fields = append(fields, order.FieldPaymentIntentID)
+	if m.error_message != nil {
+		fields = append(fields, order.FieldErrorMessage)
 	}
 	return fields
 }
@@ -805,8 +805,8 @@ func (m *OrderMutation) Field(name string) (ent.Value, bool) {
 		return m.ShippingAddress()
 	case order.FieldBillingAddress:
 		return m.BillingAddress()
-	case order.FieldPaymentIntentID:
-		return m.PaymentIntentID()
+	case order.FieldErrorMessage:
+		return m.ErrorMessage()
 	}
 	return nil, false
 }
@@ -836,8 +836,8 @@ func (m *OrderMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldShippingAddress(ctx)
 	case order.FieldBillingAddress:
 		return m.OldBillingAddress(ctx)
-	case order.FieldPaymentIntentID:
-		return m.OldPaymentIntentID(ctx)
+	case order.FieldErrorMessage:
+		return m.OldErrorMessage(ctx)
 	}
 	return nil, fmt.Errorf("unknown Order field %s", name)
 }
@@ -917,12 +917,12 @@ func (m *OrderMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetBillingAddress(v)
 		return nil
-	case order.FieldPaymentIntentID:
-		v, ok := value.(uuid.UUID)
+	case order.FieldErrorMessage:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetPaymentIntentID(v)
+		m.SetErrorMessage(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Order field %s", name)
@@ -1005,8 +1005,8 @@ func (m *OrderMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *OrderMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(order.FieldPaymentIntentID) {
-		fields = append(fields, order.FieldPaymentIntentID)
+	if m.FieldCleared(order.FieldErrorMessage) {
+		fields = append(fields, order.FieldErrorMessage)
 	}
 	return fields
 }
@@ -1022,8 +1022,8 @@ func (m *OrderMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *OrderMutation) ClearField(name string) error {
 	switch name {
-	case order.FieldPaymentIntentID:
-		m.ClearPaymentIntentID()
+	case order.FieldErrorMessage:
+		m.ClearErrorMessage()
 		return nil
 	}
 	return fmt.Errorf("unknown Order nullable field %s", name)
@@ -1063,8 +1063,8 @@ func (m *OrderMutation) ResetField(name string) error {
 	case order.FieldBillingAddress:
 		m.ResetBillingAddress()
 		return nil
-	case order.FieldPaymentIntentID:
-		m.ResetPaymentIntentID()
+	case order.FieldErrorMessage:
+		m.ResetErrorMessage()
 		return nil
 	}
 	return fmt.Errorf("unknown Order field %s", name)

@@ -59,7 +59,7 @@ func (*OutboxEvent) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the OutboxEvent fields.
-func (oe *OutboxEvent) assignValues(columns []string, values []any) error {
+func (_m *OutboxEvent) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -69,52 +69,52 @@ func (oe *OutboxEvent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				oe.ID = *value
+				_m.ID = *value
 			}
 		case outboxevent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				oe.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case outboxevent.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				oe.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case outboxevent.FieldAggregateType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field aggregate_type", values[i])
 			} else if value.Valid {
-				oe.AggregateType = value.String
+				_m.AggregateType = value.String
 			}
 		case outboxevent.FieldAggregateID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field aggregate_id", values[i])
 			} else if value != nil {
-				oe.AggregateID = *value
+				_m.AggregateID = *value
 			}
 		case outboxevent.FieldEventType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field event_type", values[i])
 			} else if value.Valid {
-				oe.EventType = value.String
+				_m.EventType = value.String
 			}
 		case outboxevent.FieldPayload:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field payload", values[i])
 			} else if value != nil {
-				oe.Payload = *value
+				_m.Payload = *value
 			}
 		case outboxevent.FieldProcessed:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field processed", values[i])
 			} else if value.Valid {
-				oe.Processed = value.Bool
+				_m.Processed = value.Bool
 			}
 		default:
-			oe.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -122,53 +122,53 @@ func (oe *OutboxEvent) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the OutboxEvent.
 // This includes values selected through modifiers, order, etc.
-func (oe *OutboxEvent) Value(name string) (ent.Value, error) {
-	return oe.selectValues.Get(name)
+func (_m *OutboxEvent) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this OutboxEvent.
 // Note that you need to call OutboxEvent.Unwrap() before calling this method if this OutboxEvent
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (oe *OutboxEvent) Update() *OutboxEventUpdateOne {
-	return NewOutboxEventClient(oe.config).UpdateOne(oe)
+func (_m *OutboxEvent) Update() *OutboxEventUpdateOne {
+	return NewOutboxEventClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the OutboxEvent entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (oe *OutboxEvent) Unwrap() *OutboxEvent {
-	_tx, ok := oe.config.driver.(*txDriver)
+func (_m *OutboxEvent) Unwrap() *OutboxEvent {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: OutboxEvent is not a transactional entity")
 	}
-	oe.config.driver = _tx.drv
-	return oe
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (oe *OutboxEvent) String() string {
+func (_m *OutboxEvent) String() string {
 	var builder strings.Builder
 	builder.WriteString("OutboxEvent(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", oe.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(oe.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(oe.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("aggregate_type=")
-	builder.WriteString(oe.AggregateType)
+	builder.WriteString(_m.AggregateType)
 	builder.WriteString(", ")
 	builder.WriteString("aggregate_id=")
-	builder.WriteString(fmt.Sprintf("%v", oe.AggregateID))
+	builder.WriteString(fmt.Sprintf("%v", _m.AggregateID))
 	builder.WriteString(", ")
 	builder.WriteString("event_type=")
-	builder.WriteString(oe.EventType)
+	builder.WriteString(_m.EventType)
 	builder.WriteString(", ")
 	builder.WriteString("payload=")
-	builder.WriteString(fmt.Sprintf("%v", oe.Payload))
+	builder.WriteString(fmt.Sprintf("%v", _m.Payload))
 	builder.WriteString(", ")
 	builder.WriteString("processed=")
-	builder.WriteString(fmt.Sprintf("%v", oe.Processed))
+	builder.WriteString(fmt.Sprintf("%v", _m.Processed))
 	builder.WriteByte(')')
 	return builder.String()
 }

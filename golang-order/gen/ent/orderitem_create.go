@@ -23,136 +23,136 @@ type OrderItemCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (oic *OrderItemCreate) SetCreatedAt(t time.Time) *OrderItemCreate {
-	oic.mutation.SetCreatedAt(t)
-	return oic
+func (_c *OrderItemCreate) SetCreatedAt(v time.Time) *OrderItemCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (oic *OrderItemCreate) SetNillableCreatedAt(t *time.Time) *OrderItemCreate {
-	if t != nil {
-		oic.SetCreatedAt(*t)
+func (_c *OrderItemCreate) SetNillableCreatedAt(v *time.Time) *OrderItemCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return oic
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (oic *OrderItemCreate) SetUpdatedAt(t time.Time) *OrderItemCreate {
-	oic.mutation.SetUpdatedAt(t)
-	return oic
+func (_c *OrderItemCreate) SetUpdatedAt(v time.Time) *OrderItemCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (oic *OrderItemCreate) SetNillableUpdatedAt(t *time.Time) *OrderItemCreate {
-	if t != nil {
-		oic.SetUpdatedAt(*t)
+func (_c *OrderItemCreate) SetNillableUpdatedAt(v *time.Time) *OrderItemCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return oic
+	return _c
 }
 
 // SetProductID sets the "product_id" field.
-func (oic *OrderItemCreate) SetProductID(u uuid.UUID) *OrderItemCreate {
-	oic.mutation.SetProductID(u)
-	return oic
+func (_c *OrderItemCreate) SetProductID(v uuid.UUID) *OrderItemCreate {
+	_c.mutation.SetProductID(v)
+	return _c
 }
 
 // SetVariantID sets the "variant_id" field.
-func (oic *OrderItemCreate) SetVariantID(u uuid.UUID) *OrderItemCreate {
-	oic.mutation.SetVariantID(u)
-	return oic
+func (_c *OrderItemCreate) SetVariantID(v uuid.UUID) *OrderItemCreate {
+	_c.mutation.SetVariantID(v)
+	return _c
 }
 
 // SetProductName sets the "product_name" field.
-func (oic *OrderItemCreate) SetProductName(s string) *OrderItemCreate {
-	oic.mutation.SetProductName(s)
-	return oic
+func (_c *OrderItemCreate) SetProductName(v string) *OrderItemCreate {
+	_c.mutation.SetProductName(v)
+	return _c
 }
 
 // SetVariantDescription sets the "variant_description" field.
-func (oic *OrderItemCreate) SetVariantDescription(s string) *OrderItemCreate {
-	oic.mutation.SetVariantDescription(s)
-	return oic
+func (_c *OrderItemCreate) SetVariantDescription(v string) *OrderItemCreate {
+	_c.mutation.SetVariantDescription(v)
+	return _c
 }
 
 // SetNillableVariantDescription sets the "variant_description" field if the given value is not nil.
-func (oic *OrderItemCreate) SetNillableVariantDescription(s *string) *OrderItemCreate {
-	if s != nil {
-		oic.SetVariantDescription(*s)
+func (_c *OrderItemCreate) SetNillableVariantDescription(v *string) *OrderItemCreate {
+	if v != nil {
+		_c.SetVariantDescription(*v)
 	}
-	return oic
+	return _c
 }
 
 // SetUnitPrice sets the "unit_price" field.
-func (oic *OrderItemCreate) SetUnitPrice(f float64) *OrderItemCreate {
-	oic.mutation.SetUnitPrice(f)
-	return oic
+func (_c *OrderItemCreate) SetUnitPrice(v float64) *OrderItemCreate {
+	_c.mutation.SetUnitPrice(v)
+	return _c
 }
 
 // SetQuantity sets the "quantity" field.
-func (oic *OrderItemCreate) SetQuantity(i int) *OrderItemCreate {
-	oic.mutation.SetQuantity(i)
-	return oic
+func (_c *OrderItemCreate) SetQuantity(v int) *OrderItemCreate {
+	_c.mutation.SetQuantity(v)
+	return _c
 }
 
 // SetTotalPrice sets the "total_price" field.
-func (oic *OrderItemCreate) SetTotalPrice(f float64) *OrderItemCreate {
-	oic.mutation.SetTotalPrice(f)
-	return oic
+func (_c *OrderItemCreate) SetTotalPrice(v float64) *OrderItemCreate {
+	_c.mutation.SetTotalPrice(v)
+	return _c
 }
 
 // SetImageURL sets the "image_url" field.
-func (oic *OrderItemCreate) SetImageURL(s string) *OrderItemCreate {
-	oic.mutation.SetImageURL(s)
-	return oic
+func (_c *OrderItemCreate) SetImageURL(v string) *OrderItemCreate {
+	_c.mutation.SetImageURL(v)
+	return _c
 }
 
 // SetNillableImageURL sets the "image_url" field if the given value is not nil.
-func (oic *OrderItemCreate) SetNillableImageURL(s *string) *OrderItemCreate {
-	if s != nil {
-		oic.SetImageURL(*s)
+func (_c *OrderItemCreate) SetNillableImageURL(v *string) *OrderItemCreate {
+	if v != nil {
+		_c.SetImageURL(*v)
 	}
-	return oic
+	return _c
 }
 
 // SetID sets the "id" field.
-func (oic *OrderItemCreate) SetID(u uuid.UUID) *OrderItemCreate {
-	oic.mutation.SetID(u)
-	return oic
+func (_c *OrderItemCreate) SetID(v uuid.UUID) *OrderItemCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (oic *OrderItemCreate) SetNillableID(u *uuid.UUID) *OrderItemCreate {
-	if u != nil {
-		oic.SetID(*u)
+func (_c *OrderItemCreate) SetNillableID(v *uuid.UUID) *OrderItemCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return oic
+	return _c
 }
 
 // SetOrderID sets the "order" edge to the Order entity by ID.
-func (oic *OrderItemCreate) SetOrderID(id uuid.UUID) *OrderItemCreate {
-	oic.mutation.SetOrderID(id)
-	return oic
+func (_c *OrderItemCreate) SetOrderID(id uuid.UUID) *OrderItemCreate {
+	_c.mutation.SetOrderID(id)
+	return _c
 }
 
 // SetOrder sets the "order" edge to the Order entity.
-func (oic *OrderItemCreate) SetOrder(o *Order) *OrderItemCreate {
-	return oic.SetOrderID(o.ID)
+func (_c *OrderItemCreate) SetOrder(v *Order) *OrderItemCreate {
+	return _c.SetOrderID(v.ID)
 }
 
 // Mutation returns the OrderItemMutation object of the builder.
-func (oic *OrderItemCreate) Mutation() *OrderItemMutation {
-	return oic.mutation
+func (_c *OrderItemCreate) Mutation() *OrderItemMutation {
+	return _c.mutation
 }
 
 // Save creates the OrderItem in the database.
-func (oic *OrderItemCreate) Save(ctx context.Context) (*OrderItem, error) {
-	oic.defaults()
-	return withHooks(ctx, oic.sqlSave, oic.mutation, oic.hooks)
+func (_c *OrderItemCreate) Save(ctx context.Context) (*OrderItem, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (oic *OrderItemCreate) SaveX(ctx context.Context) *OrderItem {
-	v, err := oic.Save(ctx)
+func (_c *OrderItemCreate) SaveX(ctx context.Context) *OrderItem {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -160,92 +160,92 @@ func (oic *OrderItemCreate) SaveX(ctx context.Context) *OrderItem {
 }
 
 // Exec executes the query.
-func (oic *OrderItemCreate) Exec(ctx context.Context) error {
-	_, err := oic.Save(ctx)
+func (_c *OrderItemCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oic *OrderItemCreate) ExecX(ctx context.Context) {
-	if err := oic.Exec(ctx); err != nil {
+func (_c *OrderItemCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (oic *OrderItemCreate) defaults() {
-	if _, ok := oic.mutation.CreatedAt(); !ok {
+func (_c *OrderItemCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := orderitem.DefaultCreatedAt()
-		oic.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := oic.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := orderitem.DefaultUpdatedAt()
-		oic.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := oic.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := orderitem.DefaultID()
-		oic.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (oic *OrderItemCreate) check() error {
-	if _, ok := oic.mutation.CreatedAt(); !ok {
+func (_c *OrderItemCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OrderItem.created_at"`)}
 	}
-	if _, ok := oic.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "OrderItem.updated_at"`)}
 	}
-	if _, ok := oic.mutation.ProductID(); !ok {
+	if _, ok := _c.mutation.ProductID(); !ok {
 		return &ValidationError{Name: "product_id", err: errors.New(`ent: missing required field "OrderItem.product_id"`)}
 	}
-	if _, ok := oic.mutation.VariantID(); !ok {
+	if _, ok := _c.mutation.VariantID(); !ok {
 		return &ValidationError{Name: "variant_id", err: errors.New(`ent: missing required field "OrderItem.variant_id"`)}
 	}
-	if _, ok := oic.mutation.ProductName(); !ok {
+	if _, ok := _c.mutation.ProductName(); !ok {
 		return &ValidationError{Name: "product_name", err: errors.New(`ent: missing required field "OrderItem.product_name"`)}
 	}
-	if v, ok := oic.mutation.ProductName(); ok {
+	if v, ok := _c.mutation.ProductName(); ok {
 		if err := orderitem.ProductNameValidator(v); err != nil {
 			return &ValidationError{Name: "product_name", err: fmt.Errorf(`ent: validator failed for field "OrderItem.product_name": %w`, err)}
 		}
 	}
-	if _, ok := oic.mutation.UnitPrice(); !ok {
+	if _, ok := _c.mutation.UnitPrice(); !ok {
 		return &ValidationError{Name: "unit_price", err: errors.New(`ent: missing required field "OrderItem.unit_price"`)}
 	}
-	if v, ok := oic.mutation.UnitPrice(); ok {
+	if v, ok := _c.mutation.UnitPrice(); ok {
 		if err := orderitem.UnitPriceValidator(v); err != nil {
 			return &ValidationError{Name: "unit_price", err: fmt.Errorf(`ent: validator failed for field "OrderItem.unit_price": %w`, err)}
 		}
 	}
-	if _, ok := oic.mutation.Quantity(); !ok {
+	if _, ok := _c.mutation.Quantity(); !ok {
 		return &ValidationError{Name: "quantity", err: errors.New(`ent: missing required field "OrderItem.quantity"`)}
 	}
-	if v, ok := oic.mutation.Quantity(); ok {
+	if v, ok := _c.mutation.Quantity(); ok {
 		if err := orderitem.QuantityValidator(v); err != nil {
 			return &ValidationError{Name: "quantity", err: fmt.Errorf(`ent: validator failed for field "OrderItem.quantity": %w`, err)}
 		}
 	}
-	if _, ok := oic.mutation.TotalPrice(); !ok {
+	if _, ok := _c.mutation.TotalPrice(); !ok {
 		return &ValidationError{Name: "total_price", err: errors.New(`ent: missing required field "OrderItem.total_price"`)}
 	}
-	if v, ok := oic.mutation.TotalPrice(); ok {
+	if v, ok := _c.mutation.TotalPrice(); ok {
 		if err := orderitem.TotalPriceValidator(v); err != nil {
 			return &ValidationError{Name: "total_price", err: fmt.Errorf(`ent: validator failed for field "OrderItem.total_price": %w`, err)}
 		}
 	}
-	if len(oic.mutation.OrderIDs()) == 0 {
+	if len(_c.mutation.OrderIDs()) == 0 {
 		return &ValidationError{Name: "order", err: errors.New(`ent: missing required edge "OrderItem.order"`)}
 	}
 	return nil
 }
 
-func (oic *OrderItemCreate) sqlSave(ctx context.Context) (*OrderItem, error) {
-	if err := oic.check(); err != nil {
+func (_c *OrderItemCreate) sqlSave(ctx context.Context) (*OrderItem, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := oic.createSpec()
-	if err := sqlgraph.CreateNode(ctx, oic.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -258,61 +258,61 @@ func (oic *OrderItemCreate) sqlSave(ctx context.Context) (*OrderItem, error) {
 			return nil, err
 		}
 	}
-	oic.mutation.id = &_node.ID
-	oic.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (oic *OrderItemCreate) createSpec() (*OrderItem, *sqlgraph.CreateSpec) {
+func (_c *OrderItemCreate) createSpec() (*OrderItem, *sqlgraph.CreateSpec) {
 	var (
-		_node = &OrderItem{config: oic.config}
+		_node = &OrderItem{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(orderitem.Table, sqlgraph.NewFieldSpec(orderitem.FieldID, field.TypeUUID))
 	)
-	if id, ok := oic.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := oic.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(orderitem.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := oic.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(orderitem.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := oic.mutation.ProductID(); ok {
+	if value, ok := _c.mutation.ProductID(); ok {
 		_spec.SetField(orderitem.FieldProductID, field.TypeUUID, value)
 		_node.ProductID = value
 	}
-	if value, ok := oic.mutation.VariantID(); ok {
+	if value, ok := _c.mutation.VariantID(); ok {
 		_spec.SetField(orderitem.FieldVariantID, field.TypeUUID, value)
 		_node.VariantID = value
 	}
-	if value, ok := oic.mutation.ProductName(); ok {
+	if value, ok := _c.mutation.ProductName(); ok {
 		_spec.SetField(orderitem.FieldProductName, field.TypeString, value)
 		_node.ProductName = value
 	}
-	if value, ok := oic.mutation.VariantDescription(); ok {
+	if value, ok := _c.mutation.VariantDescription(); ok {
 		_spec.SetField(orderitem.FieldVariantDescription, field.TypeString, value)
 		_node.VariantDescription = value
 	}
-	if value, ok := oic.mutation.UnitPrice(); ok {
+	if value, ok := _c.mutation.UnitPrice(); ok {
 		_spec.SetField(orderitem.FieldUnitPrice, field.TypeFloat64, value)
 		_node.UnitPrice = value
 	}
-	if value, ok := oic.mutation.Quantity(); ok {
+	if value, ok := _c.mutation.Quantity(); ok {
 		_spec.SetField(orderitem.FieldQuantity, field.TypeInt, value)
 		_node.Quantity = value
 	}
-	if value, ok := oic.mutation.TotalPrice(); ok {
+	if value, ok := _c.mutation.TotalPrice(); ok {
 		_spec.SetField(orderitem.FieldTotalPrice, field.TypeFloat64, value)
 		_node.TotalPrice = value
 	}
-	if value, ok := oic.mutation.ImageURL(); ok {
+	if value, ok := _c.mutation.ImageURL(); ok {
 		_spec.SetField(orderitem.FieldImageURL, field.TypeString, value)
 		_node.ImageURL = value
 	}
-	if nodes := oic.mutation.OrderIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.OrderIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -340,16 +340,16 @@ type OrderItemCreateBulk struct {
 }
 
 // Save creates the OrderItem entities in the database.
-func (oicb *OrderItemCreateBulk) Save(ctx context.Context) ([]*OrderItem, error) {
-	if oicb.err != nil {
-		return nil, oicb.err
+func (_c *OrderItemCreateBulk) Save(ctx context.Context) ([]*OrderItem, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(oicb.builders))
-	nodes := make([]*OrderItem, len(oicb.builders))
-	mutators := make([]Mutator, len(oicb.builders))
-	for i := range oicb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*OrderItem, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := oicb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OrderItemMutation)
@@ -363,11 +363,11 @@ func (oicb *OrderItemCreateBulk) Save(ctx context.Context) ([]*OrderItem, error)
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, oicb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, oicb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -387,7 +387,7 @@ func (oicb *OrderItemCreateBulk) Save(ctx context.Context) ([]*OrderItem, error)
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, oicb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -395,8 +395,8 @@ func (oicb *OrderItemCreateBulk) Save(ctx context.Context) ([]*OrderItem, error)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (oicb *OrderItemCreateBulk) SaveX(ctx context.Context) []*OrderItem {
-	v, err := oicb.Save(ctx)
+func (_c *OrderItemCreateBulk) SaveX(ctx context.Context) []*OrderItem {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -404,14 +404,14 @@ func (oicb *OrderItemCreateBulk) SaveX(ctx context.Context) []*OrderItem {
 }
 
 // Exec executes the query.
-func (oicb *OrderItemCreateBulk) Exec(ctx context.Context) error {
-	_, err := oicb.Save(ctx)
+func (_c *OrderItemCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oicb *OrderItemCreateBulk) ExecX(ctx context.Context) {
-	if err := oicb.Exec(ctx); err != nil {
+func (_c *OrderItemCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

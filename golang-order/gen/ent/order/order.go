@@ -36,8 +36,8 @@ const (
 	FieldShippingAddress = "shipping_address"
 	// FieldBillingAddress holds the string denoting the billing_address field in the database.
 	FieldBillingAddress = "billing_address"
-	// FieldPaymentIntentID holds the string denoting the payment_intent_id field in the database.
-	FieldPaymentIntentID = "payment_intent_id"
+	// FieldErrorMessage holds the string denoting the error_message field in the database.
+	FieldErrorMessage = "error_message"
 	// EdgeItems holds the string denoting the items edge name in mutations.
 	EdgeItems = "items"
 	// Table holds the table name of the order in the database.
@@ -64,7 +64,7 @@ var Columns = []string{
 	FieldTotal,
 	FieldShippingAddress,
 	FieldBillingAddress,
-	FieldPaymentIntentID,
+	FieldErrorMessage,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -195,9 +195,9 @@ func ByBillingAddress(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBillingAddress, opts...).ToFunc()
 }
 
-// ByPaymentIntentID orders the results by the payment_intent_id field.
-func ByPaymentIntentID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPaymentIntentID, opts...).ToFunc()
+// ByErrorMessage orders the results by the error_message field.
+func ByErrorMessage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldErrorMessage, opts...).ToFunc()
 }
 
 // ByItemsCount orders the results by items count.

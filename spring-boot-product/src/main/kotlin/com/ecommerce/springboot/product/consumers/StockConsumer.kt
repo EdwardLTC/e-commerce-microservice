@@ -1,4 +1,4 @@
-package com.ecommerce.springboot.product.services
+package com.ecommerce.springboot.product.consumers
 
 import com.ecommerce.springboot.product.dto.ReserveStock
 import com.ecommerce.springboot.product.repositories.StockRepository

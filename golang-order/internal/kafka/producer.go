@@ -50,7 +50,7 @@ func (kp *Producer) Publish(topic string, key string, value []byte) error {
 		return m.TopicPartition.Error
 	}
 
-	log.Printf("✅ Avro event published to %s [%d] at offset %v\n",
+	log.Printf("✅ Event published to %s [%d] at offset %v\n",
 		*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
 	return nil
 }
