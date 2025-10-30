@@ -35,7 +35,7 @@ class StockConsumer(
                 .setPrice(event.temporaryPrice)
                 .build()
 
-            kafkaTemplate.send("stock.reduce.success", AvroUtils.serialize(stockReduceSuccessEvent))
+            kafkaTemplate.send("stock.reduction.success", AvroUtils.serialize(stockReduceSuccessEvent))
             ack.acknowledge()
         } catch (e: IllegalArgumentException) {
             val stockReductionFailedEvent = StockReductionFailedEvent.newBuilder()
@@ -43,7 +43,7 @@ class StockConsumer(
                 .setMessage(e.message ?: "Unknown error")
                 .build()
 
-            kafkaTemplate.send("stock.reduce.fail", AvroUtils.serialize(stockReductionFailedEvent))
+            kafkaTemplate.send("stock.reduction.fail", AvroUtils.serialize(stockReductionFailedEvent))
             ack.acknowledge()
         } catch (e: Exception) {
             throw e

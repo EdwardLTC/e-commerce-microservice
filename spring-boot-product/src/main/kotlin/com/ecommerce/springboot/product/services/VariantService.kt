@@ -1,6 +1,7 @@
 package com.ecommerce.springboot.product.services
 
 import com.ecommerce.springboot.product.dto.CreateVariantDto
+import com.ecommerce.springboot.product.dto.GetVariantByIdsDto
 import com.ecommerce.springboot.product.helpers.safeValidatedCall
 import com.ecommerce.springboot.product.repositories.VariantRepository
 import com.ecommerce.springboot.product.v1.ProductOuterClass
@@ -17,7 +18,25 @@ class VariantService(private val variantRepository: VariantRepository) : Variant
                 .build()
         }
 
-    override suspend fun getVariantsByIds(request: ProductOuterClass.GetVariantByIdsRequest): ProductOuterClass.GetVariantsResponse {
-        return super.getVariantsByIds(request)
-    }
+    override suspend fun getVariantsByIds(request: ProductOuterClass.GetVariantByIdsRequest): ProductOuterClass.GetVariantsResponse =
+        safeValidatedCall(request, GetVariantByIdsDto) { dto ->
+            val variants = variantRepository.getByVariantIds(dto.ids)
+            val responseBuilder = ProductOuterClass.GetVariantsResponse.newBuilder()
+            variants.forEach {
+                responseBuilder.addVariants(
+                    ProductOuterClass.GetVariantsResponse.Variant.newBuilder()
+                        .setId(it.id.toString())
+                        .setSku(it.sku)
+                        .setPrice(it.price)
+                        .setSalePrice(it.salePrice)
+                        .setStock(it.stock)
+                        .setMediaUrl(it.mediaUrl)
+                        .setProductId(it.productId.toString())
+                        .setProductName(it.productName)
+                        .build()
+                )
+            }
+            return@safeValidatedCall responseBuilder.build()
+        }
+
 }

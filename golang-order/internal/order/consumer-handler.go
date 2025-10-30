@@ -69,5 +69,10 @@ func (c ConsumerHandler) onStockEvent(isSuccess bool, orderID uuid.UUID, errMess
 		return
 	}
 
-	ack.CommitMessage(msg)
+	// should put into transaction outbox
+	_, err = ack.CommitMessage(msg)
+	if err != nil {
+		fmt.Printf("failed to commit message: %v", err)
+		return
+	}
 }

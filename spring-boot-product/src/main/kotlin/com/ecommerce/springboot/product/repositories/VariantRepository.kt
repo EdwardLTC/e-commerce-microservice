@@ -1,13 +1,11 @@
 package com.ecommerce.springboot.product.repositories
 
-import com.ecommerce.springboot.product.database.OptionTypesTable
-import com.ecommerce.springboot.product.database.OptionValuesTable
-import com.ecommerce.springboot.product.database.VariantOptionValuesTable
+import com.ecommerce.springboot.product.database.*
 import com.ecommerce.springboot.product.database.VariantOptionValuesTable.optionValue
 import com.ecommerce.springboot.product.database.VariantOptionValuesTable.variant
-import com.ecommerce.springboot.product.database.VariantsTable
 import com.ecommerce.springboot.product.dto.CreateVariantDto
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.leftJoin
 import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
@@ -127,5 +125,30 @@ class VariantRepository(
                 }
             }
         return variantsMap.values.toList()
+    }
+
+    fun getByVariantIds(variantIds: List<UUID>): List<VariantWithProduct> {
+        val results = mutableListOf<VariantWithProduct>()
+
+        VariantsTable
+            .leftJoin(ProductsTable, onColumn = { product }, otherColumn = { id })
+            .select(VariantsTable.id inList variantIds)
+            .forEach { row ->
+                results.add(
+                    VariantWithProduct(
+                        id = row[VariantsTable.id].value,
+                        sku = row[VariantsTable.sku],
+                        price = row[VariantsTable.price].toDouble(),
+                        salePrice = row[VariantsTable.salePrice]?.toDouble() ?: 0.0,
+                        stock = row[VariantsTable.stock],
+                        status = row[VariantsTable.status].name,
+                        mediaUrl = row[VariantsTable.mediaUrl],
+                        productId = row[ProductsTable.id].value,
+                        productName = row[ProductsTable.name],
+                    )
+                )
+            }
+
+        return results
     }
 }

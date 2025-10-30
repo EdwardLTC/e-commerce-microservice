@@ -31,7 +31,7 @@ func NewKafkaConsumer(brokers string, groupID string, topics []string, handler H
 		"group.id":           groupID,
 		"enable.auto.commit": false,      // disable auto commits
 		"auto.offset.reset":  "earliest", // start from oldest if no offset
-		"session.timeout.ms": 5000,
+		"session.timeout.ms": 10000,
 	}
 
 	c, err := kafka.NewConsumer(cfg)

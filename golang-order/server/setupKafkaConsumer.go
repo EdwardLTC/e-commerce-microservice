@@ -6,15 +6,18 @@ import (
 	"os"
 )
 
-func setupKafkaConsumer(handler kafka.Handler) {
-	events := []string{"user-events", "order-events", "payment-events"}
+func setupKafkaConsumer(handler kafka.Handler) *kafka.Consumer {
+	events := []string{"stock.reduction.fail", "stock.reduction.success"}
 	consumer, err := kafka.NewKafkaConsumer(os.Getenv("KAFKA_BROKER"), "order-service-group", events, handler)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Failed to initialize Kafka consumer: %v", err)
+		return nil
 	}
 
-	defer consumer.Stop()
+	if err := consumer.Start(); err != nil {
+		log.Printf("Failed to start Kafka consumer: %v", err)
+	}
 
-	consumer.Start()
+	return consumer
 }

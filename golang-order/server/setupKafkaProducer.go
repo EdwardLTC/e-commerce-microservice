@@ -11,7 +11,6 @@ func setupKafkaProducer() *kafka.Producer {
 	if err != nil {
 		log.Fatalf("Failed to initialize Kafka producer: %v", err)
 	}
-	defer kafkaProducer.Close()
 
 	return kafkaProducer
 }

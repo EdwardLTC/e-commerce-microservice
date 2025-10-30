@@ -20,7 +20,7 @@ func Start() {
 	entClient := setupDBClient()
 	kafkaProducer := setupKafkaProducer()
 	outboxCancel := setupOutboxDispatcher(entClient, kafkaProducer)
-	setupKafkaConsumer(order.NewConsumerHandler(entClient))
+	consumer := setupKafkaConsumer(order.NewConsumerHandler(entClient))
 	grpcServer := initGrpcServer(entClient)
 
 	// Graceful shutdown on SIGINT/SIGTERM
@@ -31,6 +31,12 @@ func Start() {
 		log.Println("Shutting down gRPC server...")
 		grpcServer.GracefulStop()
 		outboxCancel()
+		if err := consumer.Stop(); err != nil {
+			log.Printf("Error stopping Kafka consumer: %v", err)
+		}
+		kafkaProducer.Close()
+
+		log.Println("Closing database connection...")
 		if err := entClient.Close(); err != nil {
 			log.Printf("Error closing ent client: %v", err)
 		}
