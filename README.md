@@ -205,3 +205,8 @@ sequenceDiagram
     - Facilitates debugging and monitoring of saga execution
     - Allows for audit trail and compliance reporting
 - **Implementation:** Order Service maintains a status history table in PostgreSQL, recording each status transition with timestamp and triggering event
+
+## Avro Schemas for Message Definitions
+- All events published to Kafka topics use Avro serialization for efficient, schema-based messaging.
+- Schemas are defined for each event type to ensure consistency across services.
+- Schemas located in .avro/ directory of the project repository.
