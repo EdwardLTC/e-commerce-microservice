@@ -30,7 +30,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasDefaultValueSql("gen_random_uuid()");
     }
 
-    private void ApplyChangeTrackerHook()
+    void ApplyChangeTrackerHook()
     {
         foreach (var entry in ChangeTracker.Entries<IHasTimestamps>())
             switch (entry.State)

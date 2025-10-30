@@ -1,9 +1,0 @@
-﻿using JetBrains.Annotations;
-
-namespace asp_user.Attributes;
-
-[AttributeUsage(AttributeTargets.Class)]
-[MeansImplicitUse(ImplicitUseTargetFlags.WithMembers)]
-public class KafkaHandlerAttribute : Attribute
-{
-}

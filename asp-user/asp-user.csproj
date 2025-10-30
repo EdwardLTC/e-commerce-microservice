@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Apache.Avro" Version="1.12.1"/>
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
         <PackageReference Include="Confluent.Kafka" Version="2.8.0"/>
         <PackageReference Include="FluentValidation" Version="12.0.0"/>
@@ -37,13 +38,29 @@
     </ItemGroup>
     <ItemGroup>
         <Protobuf Include="..\.proto\*.proto">
-            <GrpcServices>Server</GrpcServices>
+            <GrpcServices>Both</GrpcServices>
             <Access>Public</Access>
             <ProtoCompile>True</ProtoCompile>
             <CompileOutputs>True</CompileOutputs>
             <OutputDir>obj\Debug\net9.0\</OutputDir>
             <Generator>MSBuild:Compile</Generator>
         </Protobuf>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\.avro\**\*.avsc"
+              Link=".avro\%(RecursiveDir)%(Filename)%(Extension)"/>
+    </ItemGroup>
+
+    <Target Name="GenerateAvroCode" BeforeTargets="BeforeBuild">
+        <Message Text="🔧 Generating Avro classes from schemas..." Importance="High"/>
+        <MakeDir Directories="$(ProjectDir)Generated\Avro" Condition="!Exists('$(ProjectDir)Generated\Avro')"/>
+        <Exec Command="dotnet avrogen -s &quot;%(None.Identity)&quot; -o Generated\Avro"
+              WorkingDirectory="$(ProjectDir)"
+              Condition=" '%(None.Extension)' == '.avsc' "
+              ContinueOnError="false"/>
+    </Target>
+    <ItemGroup>
+        <Compile Include="Generated\Avro\**\*.cs"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Migrations\"/>
