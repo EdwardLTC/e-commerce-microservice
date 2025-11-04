@@ -42,23 +42,61 @@ func (c ConsumerHandler) HandleMessage(msg *kafka.Message, ack *kafka.Consumer) 
 			return
 		}
 		c.onStockEvent(true, uuid.MustParse(event.Order_id), "", msg, ack)
-
+	case "payment.fail":
+		event, err := avro.DeserializePaymentFailedEvent(bytes.NewReader(msg.Value))
+		if err != nil {
+			log.Printf("failed to deserialize PaymentFailedEvent: %v", err)
+			return
+		}
+		c.onPaymentEvent(false, uuid.MustParse(event.Order_id), event.Fail_reason, msg, ack)
+	case "payment.success":
+		event, err := avro.DeserializePaymentSuccessEvent(bytes.NewReader(msg.Value))
+		if err != nil {
+			log.Printf("failed to deserialize PaymentSuccessEvent: %v", err)
+			return
+		}
+		c.onPaymentEvent(true, uuid.MustParse(event.Order_id), "", msg, ack)
 	default:
 		log.Printf("unknown topic: %s", topic)
 	}
 }
 
 func (c ConsumerHandler) onStockEvent(isSuccess bool, orderID uuid.UUID, errMessage string, msg *kafka.Message, ack *kafka.Consumer) {
-	builder := c.db.Order.UpdateOneID(orderID)
+	builder := c.db.Order.UpdateOneID(orderID).Where(order.StatusEQ(order.StatusCreated))
 
 	if isSuccess {
 		builder = builder.
-			Where(order.StatusEQ(order.StatusCreated)).
 			SetStatus(order.StatusInventoryReserved)
 	} else {
 		builder = builder.
-			Where(order.StatusEQ(order.StatusCreated)).
 			SetStatus(order.StatusInventoryReservedFailed).
+			SetErrorMessage(errMessage)
+	}
+
+	_, err := builder.Save(context.Background())
+
+	if err != nil {
+		fmt.Printf(err.Error())
+		return
+	}
+
+	// should put into transaction outbox
+	_, err = ack.CommitMessage(msg)
+	if err != nil {
+		fmt.Printf("failed to commit message: %v", err)
+		return
+	}
+}
+
+func (c ConsumerHandler) onPaymentEvent(isSuccess bool, orderID uuid.UUID, errMessage string, msg *kafka.Message, ack *kafka.Consumer) {
+	builder := c.db.Order.UpdateOneID(orderID).Where(order.StatusEQ(order.StatusInventoryReserved))
+
+	if isSuccess {
+		builder = builder.
+			SetStatus(order.StatusPaymentCompleted)
+	} else {
+		builder = builder.
+			SetStatus(order.StatusPaymentFailed).
 			SetErrorMessage(errMessage)
 	}
 

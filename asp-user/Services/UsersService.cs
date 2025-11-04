@@ -1,5 +1,6 @@
 ﻿using asp_user.Attributes;
 using asp_user.Contexts;
+using asp_user.Exceptions;
 using asp_user.Models;
 using Com.Ecommerce.Aspnet.User;
 using Grpc.Core;
@@ -116,17 +117,12 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 		User? user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 		if (user == null)
 		{
-			throw new Exception("User not found");
+			throw new InsufficientBalanceException(0, amount);
 		}
 
-		if (amount <= 0)
+		if (amount <= 0 || user.Wallet <= amount)
 		{
-			throw new Exception("Amount must be greater than zero");
-		}
-
-		if (user.Wallet < amount)
-		{
-			throw new Exception("Insufficient wallet balance");
+			throw new InsufficientBalanceException(user.Wallet, amount);
 		}
 
 		user.Wallet -= amount;

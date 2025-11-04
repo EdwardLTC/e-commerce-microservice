@@ -2,6 +2,8 @@
 /*
  * SOURCES:
  *     order.created.avsc
+ *     payment.fail.avsc
+ *     payment.success.avsc
  *     stock.reduction.fail.avsc
  *     stock.reduction.success.avsc
  */

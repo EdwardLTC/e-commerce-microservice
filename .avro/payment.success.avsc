@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "PaymentSuccessEvent",
+  "namespace": "com.example.payment",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string"
+    }
+  ]
+}

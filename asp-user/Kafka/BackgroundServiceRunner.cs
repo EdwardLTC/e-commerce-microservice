@@ -1,16 +1,9 @@
 namespace asp_user.Kafka;
 
-public class BackgroundServiceRunner : BackgroundService
+public class BackgroundServiceRunner(KafkaAttributeConsumer consumer) : BackgroundService
 {
-	readonly KafkaAttributeConsumer _consumer;
-
-	public BackgroundServiceRunner(KafkaAttributeConsumer consumer)
-	{
-		_consumer = consumer;
-	}
-
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-		return Task.Run(() => _consumer.StartConsuming(stoppingToken), stoppingToken);
+		return Task.Run(() => consumer.StartConsuming(stoppingToken), stoppingToken);
 	}
 }

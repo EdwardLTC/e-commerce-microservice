@@ -4,6 +4,7 @@ import com.ecommerce.springboot.product.dto.ReserveStock
 import com.ecommerce.springboot.product.repositories.StockRepository
 import com.ecommerce.springboot.product.utils.AvroUtils
 import com.example.order.OrderCreatedEvent
+import com.example.payment.PaymentFailedEvent
 import com.example.stock.StockReductionFailedEvent
 import com.example.stock.StockReductionSuccessEvent
 import org.springframework.kafka.annotation.KafkaListener
@@ -36,7 +37,6 @@ class StockConsumer(
                 .build()
 
             kafkaTemplate.send("stock.reduction.success", AvroUtils.serialize(stockReduceSuccessEvent))
-            ack.acknowledge()
         } catch (e: IllegalArgumentException) {
             val stockReductionFailedEvent = StockReductionFailedEvent.newBuilder()
                 .setOrderId(event.orderId)
@@ -44,10 +44,18 @@ class StockConsumer(
                 .build()
 
             kafkaTemplate.send("stock.reduction.fail", AvroUtils.serialize(stockReductionFailedEvent))
-            ack.acknowledge()
         } catch (e: Exception) {
             throw e
         }
+        ack.acknowledge()
+    }
 
+    @KafkaListener(topics = ["payment.fail"], groupId = "stock-consumer-group")
+    fun onStockReductionRollback(payload: ByteArray, ack: Acknowledgment) {
+        val event = AvroUtils.deserialize(payload, PaymentFailedEvent.getClassSchema(), PaymentFailedEvent::class.java)
+
+        stockRepository.releaseStock(event.orderId)
+
+        ack.acknowledge()
     }
 }
