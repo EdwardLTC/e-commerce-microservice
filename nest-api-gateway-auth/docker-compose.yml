@@ -1,38 +1,6 @@
 version: '3.8'
 
 services:
-  asp-user:
-    image: asp-user
-    platform: linux/amd64
-    build:
-      context: ../
-      dockerfile: asp-user/Dockerfile
-    ports:
-      - "5232:5232"
-    networks:
-      - nest-api-gateway
-
-  spring-boot-product:
-    image: spring-boot-product
-    platform: linux/amd64
-    build:
-      context: ../
-      dockerfile: spring-boot-product/Dockerfile
-    ports:
-      - "2003:2003"
-    networks:
-      - nest-api-gateway
-
-  golang-order:
-    image: golang-order
-    build:
-      context: ../golang-order
-      dockerfile: Dockerfile
-    ports:
-      - "4040:4040"
-    networks:
-      - nest-api-gateway
-
   cache:
     image: redis:6.2-alpine
     restart: always
