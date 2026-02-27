@@ -128,27 +128,24 @@ class VariantRepository(
     }
 
     fun getByVariantIds(variantIds: List<UUID>): List<VariantWithProduct> {
-        val results = mutableListOf<VariantWithProduct>()
+        if (variantIds.isEmpty()) return emptyList()
 
-        VariantsTable
+        return VariantsTable
             .leftJoin(ProductsTable, onColumn = { product }, otherColumn = { id })
-            .select(VariantsTable.id inList variantIds)
-            .forEach { row ->
-                results.add(
-                    VariantWithProduct(
-                        id = row[VariantsTable.id].value,
-                        sku = row[VariantsTable.sku],
-                        price = row[VariantsTable.price].toDouble(),
-                        salePrice = row[VariantsTable.salePrice]?.toDouble() ?: 0.0,
-                        stock = row[VariantsTable.stock],
-                        status = row[VariantsTable.status].name,
-                        mediaUrl = row[VariantsTable.mediaUrl],
-                        productId = row[ProductsTable.id].value,
-                        productName = row[ProductsTable.name],
-                    )
+            .select(VariantsTable.columns + listOf(ProductsTable.id, ProductsTable.name))
+            .where { VariantsTable.id inList variantIds }
+            .map { row ->
+                VariantWithProduct(
+                    id = row[VariantsTable.id].value,
+                    sku = row[VariantsTable.sku],
+                    price = row[VariantsTable.price].toDouble(),
+                    salePrice = row[VariantsTable.salePrice]?.toDouble() ?: 0.0,
+                    stock = row[VariantsTable.stock],
+                    status = row[VariantsTable.status].name,
+                    mediaUrl = row[VariantsTable.mediaUrl],
+                    productId = row[ProductsTable.id].value,
+                    productName = row[ProductsTable.name],
                 )
             }
-
-        return results
     }
 }

@@ -138,7 +138,6 @@ class ProfileScreen : Tab, KoinComponent {
         }
     }
 
-    @Preview
     @Composable
     fun GeneralInformation(onLogout: () -> Unit) {
         Column(

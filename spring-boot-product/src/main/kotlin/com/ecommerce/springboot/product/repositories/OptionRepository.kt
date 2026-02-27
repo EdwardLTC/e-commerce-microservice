@@ -100,8 +100,11 @@ class OptionRepository(private val productRepository: ProductRepository) {
         )
 
         return OptionTypesTable.leftJoin(OptionValuesTable, onColumn = { id }, otherColumn = { optionType })
-            .select(selectFields).where { OptionTypesTable.product eq productId }.toList()
-            .groupBy { row -> row[OptionTypesTable.id].value.toString() }.map { (id, rows) ->
+            .select(selectFields)
+            .where { OptionTypesTable.product eq productId }
+            .orderBy(OptionTypesTable.displayOrder)
+            .groupBy { row -> row[OptionTypesTable.id].value.toString() }
+            .map { (id, rows) ->
                 val optionType = rows.first()
                 OptionType(
                     id = id,
@@ -120,7 +123,9 @@ class OptionRepository(private val productRepository: ProductRepository) {
             }
     }
 
-    fun getOptionValuesByIds(optionTypeIds: List<UUID>): List<OptionValueWithProductId> {
+    fun getOptionValuesByIds(optionValueIds: List<UUID>): List<OptionValueWithProductId> {
+        if (optionValueIds.isEmpty()) return emptyList()
+
         val selectFields = listOf(
             OptionValuesTable.id,
             OptionValuesTable.value,
@@ -130,7 +135,9 @@ class OptionRepository(private val productRepository: ProductRepository) {
         )
 
         return OptionValuesTable.innerJoin(OptionTypesTable, onColumn = { optionType }, otherColumn = { id })
-            .select(selectFields).where { OptionValuesTable.id inList optionTypeIds.toList() }.map { row ->
+            .select(selectFields)
+            .where { OptionValuesTable.id inList optionValueIds }
+            .map { row ->
                 OptionValueWithProductId(
                     id = row[OptionValuesTable.id].value.toString(),
                     value = row[OptionValuesTable.value],

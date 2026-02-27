@@ -6,10 +6,7 @@ import com.ecommerce.springboot.product.database.VariantsTable
 import com.ecommerce.springboot.product.dto.CreateProductDto
 import com.ecommerce.springboot.product.repositories.OptionRepository.Companion.OptionType
 import com.ecommerce.springboot.product.repositories.VariantRepository.Companion.Variant
-import org.jetbrains.exposed.v1.core.JoinType
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.max
-import org.jetbrains.exposed.v1.core.min
+import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.update
@@ -125,7 +122,10 @@ class ProductRepository(
         ).select(selectFields)
             .where { ProductsTable.isActive eq true }
             .groupBy(ProductsTable.id)
-            .offset(skip.toLong()).limit(take).toList().map { row ->
+            .orderBy(ProductsTable.totalSaleCount to SortOrder.DESC)
+            .limit(take)
+            .offset(skip.toLong())
+            .map { row ->
                 GetProductResponse(
                     id = row[ProductsTable.id].value,
                     name = row[ProductsTable.name],

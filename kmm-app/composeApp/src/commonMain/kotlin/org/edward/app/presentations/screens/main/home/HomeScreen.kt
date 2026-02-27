@@ -39,7 +39,6 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.edward.app.data.remote.product.Product
 import org.edward.app.presentations.screens.components.PullToRefreshBox
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.core.component.KoinComponent
 
 class HomeScreen : Tab, KoinComponent {
@@ -89,8 +88,7 @@ class HomeScreen : Tab, KoinComponent {
             }
         }
     }
-
-    @Preview
+    
     @Composable
     fun ProductCard(product: Product) {
         Card(

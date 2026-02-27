@@ -1,7 +1,7 @@
 package com.ecommerce.springboot.product.database
 
 import com.ecommerce.springboot.product.database.utilities.PGEnum
-import org.jetbrains.exposed.v1.core.dao.id.UUIDTable
+import org.jetbrains.exposed.v1.core.dao.id.java.UUIDTable
 
 object StockReversalsTable : UUIDTable("stock_reversals") {
 

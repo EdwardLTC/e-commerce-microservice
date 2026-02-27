@@ -19,8 +19,13 @@ import java.util.*
 @Transactional
 class StockRepository {
     fun reserveStock(request: List<ReserveStock>, orderId: String): UUID {
+        if (request.isEmpty()) {
+            throw IllegalArgumentException("Reserve stock request cannot be empty")
+        }
 
-        val isExisting = StockReversalsTable.selectAll().where { StockReversalsTable.orderId eq orderId }.singleOrNull()
+        val isExisting = StockReversalsTable.selectAll()
+            .where { StockReversalsTable.orderId eq orderId }
+            .singleOrNull()
 
         if (isExisting != null) {
             return isExisting[StockReversalsTable.id].value
@@ -32,13 +37,18 @@ class StockRepository {
                 it[this.orderId] = orderId
             }.value
 
-            request.map { item ->
+            request.forEach { item ->
                 val variantId = item.variantId
                 val quantity = item.quantity
                 val unitPrice = BigDecimal.valueOf(item.unitPrice)
 
                 val effectedRow = VariantsTable.update(
-                    where = { (VariantsTable.id eq variantId) and (VariantsTable.stock greaterEq quantity) and (VariantsTable.price eq unitPrice) }) {
+                    where = {
+                        (VariantsTable.id eq variantId) and
+                                (VariantsTable.stock greaterEq quantity) and
+                                (VariantsTable.price eq unitPrice)
+                    }
+                ) {
                     it[stock] = stock.minus(quantity)
                 }
 
@@ -58,26 +68,34 @@ class StockRepository {
     }
 
     fun releaseStock(orderId: String): Int {
-        val reversal = StockReversalsTable.selectAll().where { StockReversalsTable.orderId eq orderId }.singleOrNull()
+        val reversal = StockReversalsTable.selectAll()
+            .where { StockReversalsTable.orderId eq orderId }
+            .singleOrNull()
+            ?: throw IllegalArgumentException("Stock reversal not exist for: $orderId")
 
-        if (reversal == null) {
-            throw IllegalArgumentException("Stock reversal not exist for: $orderId")
-        }
+        val reversalId = reversal[StockReversalsTable.id]
 
         return transaction {
-            val items = StockReversalItemsTable.selectAll().where {
-                StockReversalItemsTable.reversal eq reversal[StockReversalsTable.id]
-            }.associate { row ->
-                row[StockReversalItemsTable.variant] to row[StockReversalItemsTable.quantity]
-            }
+            val items = StockReversalItemsTable.selectAll()
+                .where { StockReversalItemsTable.reversal eq reversalId }
+                .associate { row ->
+                    row[StockReversalItemsTable.variant].value to row[StockReversalItemsTable.quantity]
+                }
 
+            if (items.isEmpty()) {
+                StockReversalsTable.update({ StockReversalsTable.id eq reversalId }) {
+                    it[status] = StockReversalsTable.StockCheckinStatus.RELEASED
+                }
+                return@transaction 0
+            }
+            
             items.forEach { (variantId, quantity) ->
                 VariantsTable.update({ VariantsTable.id eq variantId }) {
-                    it.update(stock, stock.plus(quantity))
+                    it[stock] = stock.plus(quantity)
                 }
             }
 
-            StockReversalsTable.update({ StockReversalsTable.id eq reversal[StockReversalsTable.id] }) {
+            StockReversalsTable.update({ StockReversalsTable.id eq reversalId }) {
                 it[status] = StockReversalsTable.StockCheckinStatus.RELEASED
             }
 

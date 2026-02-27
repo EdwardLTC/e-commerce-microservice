@@ -58,18 +58,11 @@ export namespace com {
                             metadata?: Metadata,
                             ...rest: any[]
                         ): Observable<CreateVariantResponse>;
-                    }
-                    export interface StockService {
-                        reserveStock(
-                            data: ReserveStockRequest,
+                        getVariantsByIds(
+                            data: GetVariantByIdsRequest,
                             metadata?: Metadata,
                             ...rest: any[]
-                        ): Observable<ReserveStockResponse>;
-                        releaseStock(
-                            data: ReleaseStockRequest,
-                            metadata?: Metadata,
-                            ...rest: any[]
-                        ): Observable<google.protobuf.DoubleValue>;
+                        ): Observable<GetVariantsResponse>;
                     }
                     // &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
                     // Product Messages
@@ -151,15 +144,14 @@ export namespace com {
                     export interface CreateVariantResponse {
                         id?: string;
                     }
-                    export interface ReserveStockRequest {
-                        items?: v1.VariantItem[];
+                    export interface GetVariantByIdsRequest {
+                        ids?: string[];
                     }
-                    export interface ReserveStockResponse {
-                        reservationId?: string;
-                        variants?: ReserveStockResponse.VariantWithProduct[];
+                    export interface GetVariantsResponse {
+                        variants?: GetVariantsResponse.Variant[];
                     }
-                    export namespace ReserveStockResponse {
-                        export interface VariantWithProduct {
+                    export namespace GetVariantsResponse {
+                        export interface Variant {
                             id?: string;
                             sku?: string;
                             price?: number;
@@ -169,13 +161,6 @@ export namespace com {
                             productId?: string;
                             productName?: string;
                         }
-                    }
-                    export interface ReleaseStockRequest {
-                        reservationId?: string;
-                    }
-                    export interface VariantItem {
-                        variantId?: string;
-                        quantity?: number;
                     }
                     // &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
                     // Domain Models

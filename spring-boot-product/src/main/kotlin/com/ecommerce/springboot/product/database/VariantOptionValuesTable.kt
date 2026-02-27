@@ -1,7 +1,7 @@
 package com.ecommerce.springboot.product.database
 
 import org.jetbrains.exposed.v1.core.ReferenceOption
-import org.jetbrains.exposed.v1.core.dao.id.UUIDTable
+import org.jetbrains.exposed.v1.core.dao.id.java.UUIDTable
 
 object VariantOptionValuesTable : UUIDTable("variant_option_values") {
     val variant = reference("variant_id", VariantsTable, onDelete = ReferenceOption.CASCADE)

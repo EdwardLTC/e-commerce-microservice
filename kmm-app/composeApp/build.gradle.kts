@@ -149,31 +149,10 @@ buildConfig {
         envFile.inputStream().use { envProps.load(it) }
     }
 
-    val generateEnvConfig by tasks.registering {
-        val outputDir = project.layout.buildDirectory.dir("generated/env")
-        inputs.file(envFile)
-        outputs.dir(outputDir)
+    packageName("org.edward.app.config")
+    className("EnvConfig")
 
-        doLast {
-            val file = outputDir.get().file("EnvConfig.kt").asFile
-            file.parentFile.mkdirs()
-            file.writeText(buildString {
-                appendLine("package org.edward.app.config")
-                appendLine("")
-                appendLine("object EnvConfig {")
-                envProps.forEach { (key, value) ->
-                    appendLine("    const val ${key.toString().uppercase()} = \"${value}\"")
-                }
-                appendLine("}")
-            })
-        }
-    }
-
-    kotlin.sourceSets.getByName("commonMain").kotlin.srcDir(
-        project.layout.buildDirectory.dir("generated/env")
-    )
-
-    tasks.named("compileKotlinMetadata").configure {
-        dependsOn(generateEnvConfig)
+    envProps.forEach { (key, value) ->
+        buildConfigField("String", key.toString().uppercase(), "\"$value\"")
     }
 }

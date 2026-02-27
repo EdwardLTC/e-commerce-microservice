@@ -33,7 +33,7 @@ val networkModule = module {
         HttpClient {
             expectSuccess = false
             defaultRequest {
-                url.takeFrom(URLBuilder().takeFrom("https://fakestoreapi.com/"))
+                url.takeFrom(URLBuilder().takeFrom("http://localhost:3000"))
                 contentType(ContentType.Application.Json)
                 accept(ContentType.Application.Json)
             }

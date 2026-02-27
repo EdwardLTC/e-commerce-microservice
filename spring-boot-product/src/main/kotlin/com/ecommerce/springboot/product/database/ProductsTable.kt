@@ -1,6 +1,6 @@
 package com.ecommerce.springboot.product.database
 
-import org.jetbrains.exposed.v1.core.dao.id.UUIDTable
+import org.jetbrains.exposed.v1.core.dao.id.java.UUIDTable
 import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 
 object ProductsTable : UUIDTable("products") {

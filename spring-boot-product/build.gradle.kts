@@ -29,8 +29,7 @@ repositories {
     maven { url = uri("https://packages.confluent.io/maven/") }
 }
 
-extra["springGrpcVersion"] = "0.6.0"
-extra["exposedVersion"] = "1.0.0-rc-1"
+extra["exposedVersion"] = "1.0.0"
 
 dependencies {
     // --- Spring Boot ---
@@ -52,9 +51,9 @@ dependencies {
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
     implementation("io.grpc:grpc-protobuf:1.64.0")
     implementation("io.grpc:grpc-stub:1.64.0")
-    implementation("io.grpc:grpc-netty-shaded:1.64.0")
+    implementation("io.grpc:grpc-netty-shaded:1.75.0")
     implementation("net.devh:grpc-spring-boot-starter:2.15.0.RELEASE")
-    implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
+    implementation("com.google.protobuf:protobuf-kotlin:4.28.2")
     implementation("com.google.protobuf:protobuf-java-util:3.25.3")
     implementation("build.buf.protoc-gen-validate:protoc-gen-validate:1.0.2")
 
@@ -78,7 +77,7 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.grpc:spring-grpc-dependencies:${property("springGrpcVersion")}")
+        mavenBom("org.springframework.grpc:spring-grpc-dependencies:0.6.0")
     }
 }
 

@@ -21,38 +21,11 @@ export namespace com {
                         metadata?: Metadata,
                         ...rest: any[]
                     ): Observable<Order>;
-                    updateOrderStatus(
-                        data: UpdateOrderStatusRequest,
-                        metadata?: Metadata,
-                        ...rest: any[]
-                    ): Observable<Order>;
-                    listOrders(
+                    getOrders(
                         data: ListOrdersRequest,
                         metadata?: Metadata,
                         ...rest: any[]
                     ): Observable<ListOrdersResponse>;
-                    // Payment Integration
-                    initiatePayment(
-                        data: PaymentIntentRequest,
-                        metadata?: Metadata,
-                        ...rest: any[]
-                    ): Observable<PaymentIntentResponse>;
-                    handlePaymentWebhook(
-                        data: PaymentWebhookRequest,
-                        metadata?: Metadata,
-                        ...rest: any[]
-                    ): Observable<google.protobuf.Empty>;
-                    // Refunds
-                    createRefund(
-                        data: CreateRefundRequest,
-                        metadata?: Metadata,
-                        ...rest: any[]
-                    ): Observable<Refund>;
-                    processRefund(
-                        data: ProcessRefundRequest,
-                        metadata?: Metadata,
-                        ...rest: any[]
-                    ): Observable<Refund>;
                 }
                 export interface Order {
                     // UUID
@@ -71,7 +44,6 @@ export namespace com {
                     createdAt?: google.protobuf.Timestamp;
                     updatedAt?: google.protobuf.Timestamp;
                     items?: order.OrderItem[];
-                    refunds?: order.Refund[];
                 }
                 export interface OrderItem {
                     // UUID
@@ -90,51 +62,31 @@ export namespace com {
                     createdAt?: google.protobuf.Timestamp;
                     updatedAt?: google.protobuf.Timestamp;
                 }
-                export interface Refund {
-                    // UUID
-                    id?: string;
-                    status?: order.RefundStatus;
-                    amount?: number;
-                    reason?: string;
-                    // UUID
-                    paymentRefundId?: string;
-                    // UUIDs
-                    orderItemIds?: string[];
-                    createdAt?: google.protobuf.Timestamp;
-                    updatedAt?: google.protobuf.Timestamp;
-                }
                 export interface CreateOrderResponse {
                     id?: string;
                     status?: order.OrderStatus;
-                    paymentUrl?: string;
                 }
                 export enum OrderStatus {
-                    ORDER_STATUS_DRAFT_UNSPECIFIED = 0,
-                    ORDER_STATUS_PENDING_PAYMENT = 1,
-                    ORDER_STATUS_PAYMENT_RECEIVED = 2,
-                    ORDER_STATUS_PROCESSING = 3,
-                    ORDER_STATUS_SHIPPED = 4,
-                    ORDER_STATUS_DELIVERED = 5,
-                    ORDER_STATUS_CANCELLED = 6,
-                    ORDER_STATUS_ON_HOLD = 7,
-                    ORDER_STATUS_REFUNDED = 8,
+                    // created
+                    CREATED = 0,
+                    // pending_inventory
+                    PENDING_INVENTORY = 1,
+                    // inventory_reserved
+                    INVENTORY_RESERVED = 2,
+                    // inventory_reserved_failed
+                    INVENTORY_RESERVED_FAILED = 3,
+                    // payment_pending
+                    PAYMENT_PENDING = 4,
+                    // payment_completed
+                    PAYMENT_COMPLETED = 5,
+                    // payment_failed
+                    PAYMENT_FAILED = 6,
+                    // shipping
+                    SHIPPING = 7,
+                    // completed
+                    COMPLETED = 8,
                 }
-                export enum RefundStatus {
-                    REFUND_STATUS_REQUESTED_UNSPECIFIED = 0,
-                    REFUND_STATUS_APPROVED = 1,
-                    REFUND_STATUS_REJECTED = 2,
-                    REFUND_STATUS_PROCESSED = 3,
-                    REFUND_STATUS_FAILED = 4,
-                }
-                export enum PaymentMethod {
-                    PAYMENT_METHOD_UNSPECIFIED = 0,
-                    PAYMENT_METHOD_CREDIT_CARD = 1,
-                    PAYMENT_METHOD_PAYPAL = 2,
-                    PAYMENT_METHOD_BANK_TRANSFER = 3,
-                    PAYMENT_METHOD_CRYPTO = 4,
-                    PAYMENT_METHOD_CASH = 5,
-                }
-                // Order Management
+                // &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; Request/Response Messages &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
                 export interface CreateOrderRequest {
                     // UUID
                     customerId?: string;
@@ -146,15 +98,11 @@ export namespace com {
                     // UUID
                     variantId?: string;
                     quantity?: number;
+                    unitPrice?: number;
                 }
                 export interface GetOrderRequest {
                     // UUID
                     id?: string;
-                }
-                export interface UpdateOrderStatusRequest {
-                    // UUID
-                    id?: string;
-                    status?: order.OrderStatus;
                 }
                 export interface ListOrdersRequest {
                     page?: number;
@@ -171,52 +119,6 @@ export namespace com {
                     currentPage?: number;
                     totalPages?: number;
                 }
-                // Payment Integration
-                export interface PaymentIntentRequest {
-                    // UUID
-                    orderId?: string;
-                    amount?: number;
-                    // ISO 4217
-                    currency?: string;
-                    method?: order.PaymentMethod;
-                    customerEmail?: string;
-                    metadata?: { [key: string]: string };
-                }
-                export interface PaymentIntentResponse {
-                    // UUID
-                    paymentIntentId?: string;
-                    // For Stripe-like integrations
-                    clientSecret?: string;
-                    redirectUrl?: string;
-                }
-                export interface PaymentWebhookRequest {
-                    eventId?: string;
-                    eventType?: string;
-                    // UUID
-                    paymentIntentId?: string;
-                    amount?: number;
-                    currency?: string;
-                    success?: boolean;
-                    createdAt?: google.protobuf.Timestamp;
-                    metadata?: { [key: string]: string };
-                    // For verification
-                    signature?: string;
-                }
-                // Refunds
-                export interface CreateRefundRequest {
-                    // UUID
-                    orderId?: string;
-                    // UUIDs
-                    orderItemIds?: string[];
-                    reason?: string;
-                    amount?: number;
-                }
-                export interface ProcessRefundRequest {
-                    // UUID
-                    refundId?: string;
-                    // UUID from payment service
-                    paymentRefundId?: string;
-                }
             }
         }
     }
@@ -226,9 +128,6 @@ export namespace google {
         export interface Timestamp {
             seconds?: number;
             nanos?: number;
-        }
-        // tslint:disable-next-line:no-empty-interface
-        export interface Empty {
         }
     }
 }

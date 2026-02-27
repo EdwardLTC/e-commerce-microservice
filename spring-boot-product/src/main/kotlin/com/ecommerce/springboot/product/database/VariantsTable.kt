@@ -2,7 +2,7 @@ package com.ecommerce.springboot.product.database
 
 import com.ecommerce.springboot.product.database.utilities.PGEnum
 import org.jetbrains.exposed.v1.core.ReferenceOption
-import org.jetbrains.exposed.v1.core.dao.id.UUIDTable
+import org.jetbrains.exposed.v1.core.dao.id.java.UUIDTable
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.or
