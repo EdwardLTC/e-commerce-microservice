@@ -1,11 +1,14 @@
 ﻿using asp_user.Attributes;
 using asp_user.Contexts;
 using asp_user.Exceptions;
+using asp_user.Kafka;
 using asp_user.Models;
 using Com.Ecommerce.Aspnet.User;
+using com.example.payment;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace asp_user.Services;
 
@@ -129,5 +132,37 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 		dbContext.Users.Update(user);
 		await dbContext.SaveChangesAsync();
 		return user;
+	}
+
+	public async Task DecreaseWalletAndEnqueuePaymentSuccessAsync(Guid userId, decimal amount, string orderId)
+	{
+		await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
+
+		User? user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+		if (user == null)
+		{
+			throw new InsufficientBalanceException(0, amount);
+		}
+
+		if (amount <= 0 || user.Wallet <= amount)
+		{
+			throw new InsufficientBalanceException(user.Wallet, amount);
+		}
+
+		user.Wallet -= amount;
+		dbContext.Users.Update(user);
+
+		PaymentSuccessEvent paymentSuccess = new PaymentSuccessEvent
+		{
+			order_id = orderId
+		};
+
+		byte[] payload = AvroMessageSerializer.Serialize(paymentSuccess);
+
+		OutboxMessage outbox = OutboxMessage.Create("payment.success", orderId, orderId, payload);
+		dbContext.OutboxMessages.Add(outbox);
+
+		await dbContext.SaveChangesAsync();
+		await transaction.CommitAsync();
 	}
 }

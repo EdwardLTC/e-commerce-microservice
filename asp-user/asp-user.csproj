@@ -62,8 +62,5 @@
     <ItemGroup>
         <Compile Include="Generated\Avro\**\*.cs"/>
     </ItemGroup>
-    <ItemGroup>
-        <Folder Include="Migrations\"/>
-    </ItemGroup>
 
 </Project>

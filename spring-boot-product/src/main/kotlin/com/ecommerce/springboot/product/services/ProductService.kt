@@ -10,7 +10,7 @@ import com.ecommerce.springboot.product.v1.ProductServiceGrpcKt.ProductServiceCo
 import net.devh.boot.grpc.server.service.GrpcService
 
 @GrpcService
-class ProductService(private val productRepository: ProductRepository) : ProductServiceCoroutineImplBase() {
+final class ProductService(private val productRepository: ProductRepository) : ProductServiceCoroutineImplBase() {
     override suspend fun getProducts(request: GetProductsRequest): GetProductsResponse =
         safeValidatedCall(request, GetProductsDto) { dto ->
             return@safeValidatedCall GetProductsResponse.newBuilder()

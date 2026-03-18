@@ -11,7 +11,7 @@ import com.ecommerce.springboot.product.v1.VariantServiceGrpcKt.VariantServiceCo
 import net.devh.boot.grpc.server.service.GrpcService
 
 @GrpcService
-class VariantService(private val variantRepository: VariantRepository) : VariantServiceCoroutineImplBase() {
+final class VariantService(private val variantRepository: VariantRepository) : VariantServiceCoroutineImplBase() {
     override suspend fun createVariant(request: CreateVariantRequest): CreateVariantResponse =
         safeValidatedCall(request, CreateVariantDto) { dto ->
             return@safeValidatedCall CreateVariantResponse.newBuilder().setId(variantRepository.create(dto).toString())

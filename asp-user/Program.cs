@@ -5,6 +5,7 @@ using asp_user.Extensions;
 using asp_user.GrpcServiceClients;
 using asp_user.Interceptors;
 using asp_user.Kafka;
+using asp_user.Outbox;
 using Confluent.Kafka;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
@@ -27,11 +28,15 @@ builder.Services.AddSingleton(new OrderServiceClient(builder.Configuration.GetVa
 
 builder.Services.Configure<ProducerConfig>(builder.Configuration.GetSection("Kafka:Producer"));
 builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection("Kafka:Consumer"));
+builder.Services.Configure<OutboxOptions>(builder.Configuration.GetSection("Outbox"));
 
 builder.Services.AddTransient<UserConsumer>();
 builder.Services.AddSingleton<KafkaProducerService>();
 builder.Services.AddSingleton<KafkaAttributeConsumer>();
+
+builder.Services.AddScoped<OutboxDispatchService>();
 builder.Services.AddHostedService(sp => new BackgroundServiceRunner(sp.GetRequiredService<KafkaAttributeConsumer>()));
+builder.Services.AddHostedService<OutboxDispatcher>();
 
 builder.Services.AddGrpc(options =>
 {

@@ -8,9 +8,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import org.edward.app.data.utils.AsyncResult
 
-class ProductRepositoryImpl(
-    private val httpClient: HttpClient
-) : ProductRepository {
+class ProductRepositoryImpl(private val httpClient: HttpClient) : ProductRepository {
 
     companion object {
         const val PRODUCT = "products"

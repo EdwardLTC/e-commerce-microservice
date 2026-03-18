@@ -11,7 +11,7 @@ import com.ecommerce.springboot.product.v1.ProductOuterClass.*
 import net.devh.boot.grpc.server.service.GrpcService
 
 @GrpcService
-class OptionService(private val optionTypeRepository: OptionRepository) : OptionServiceCoroutineImplBase() {
+final class OptionService(private val optionTypeRepository: OptionRepository) : OptionServiceCoroutineImplBase() {
     override suspend fun createOptionType(request: CreateOptionTypeRequest): CreateOptionTypeResponse =
         safeValidatedCall(request, CreateOptionTypeDto) { dto ->
             return@safeValidatedCall CreateOptionTypeResponse.newBuilder()
@@ -67,5 +67,5 @@ class OptionService(private val optionTypeRepository: OptionRepository) : Option
                 }
             ).build()
         }
-    
+
 }

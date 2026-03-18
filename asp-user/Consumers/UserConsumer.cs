@@ -20,14 +20,7 @@ public class UserConsumer(UsersService userService, OrderServiceClient orderServ
 
 		try
 		{
-			await userService.DecreaseWalletAmountAsync(Guid.Parse(order.CustomerId), (decimal)order.Total);
-
-			PaymentSuccessEvent paymentSuccess = new PaymentSuccessEvent
-			{
-				order_id = evt.order_id
-			};
-
-			await producer.ProduceAvroAsync("payment.success", evt.order_id, paymentSuccess);
+			await userService.DecreaseWalletAndEnqueuePaymentSuccessAsync(Guid.Parse(order.CustomerId), (decimal)order.Total, evt.order_id);
 		}
 		catch (InsufficientBalanceException e)
 		{
