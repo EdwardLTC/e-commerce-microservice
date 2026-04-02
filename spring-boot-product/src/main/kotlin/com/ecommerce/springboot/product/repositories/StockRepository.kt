@@ -68,14 +68,18 @@ class StockRepository {
     }
 
     fun releaseStock(orderId: String): Int {
-        val reversal = StockReversalsTable.selectAll()
-            .where { StockReversalsTable.orderId eq orderId }
-            .singleOrNull()
-            ?: throw IllegalArgumentException("Stock reversal not exist for: $orderId")
-
-        val reversalId = reversal[StockReversalsTable.id]
-
         return transaction {
+            val reversal = StockReversalsTable.selectAll()
+                .where { StockReversalsTable.orderId eq orderId }
+                .forUpdate()
+                .singleOrNull()
+                ?: throw IllegalArgumentException("Stock reversal not exist for: $orderId")
+
+            if (reversal[StockReversalsTable.status] == StockReversalsTable.StockCheckinStatus.RELEASED) {
+                return@transaction 0
+            }
+
+            val reversalId = reversal[StockReversalsTable.id]
             val items = StockReversalItemsTable.selectAll()
                 .where { StockReversalItemsTable.reversal eq reversalId }
                 .associate { row ->

@@ -58,7 +58,7 @@ dependencies {
     implementation("build.buf.protoc-gen-validate:protoc-gen-validate:1.0.2")
 
     // --- Avro + Kafka ---
-    implementation("org.apache.avro:avro:1.11.4")
+    implementation("org.apache.avro:avro:1.12.1")
     implementation("io.confluent:kafka-avro-serializer:7.5.0")
 
     // --- Kotlin ---

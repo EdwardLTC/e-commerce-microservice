@@ -47,7 +47,7 @@ func (o *Choreography) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 			return nil, status.Errorf(codes.InvalidArgument, "variant ID %s not found", it.VariantId)
 		}
 
-		if (*variant).Price != it.UnitPrice {
+		if (*variant).SalePrice != it.UnitPrice {
 			return nil, status.Errorf(codes.InvalidArgument, "price mismatch for variant ID %s", it.VariantId)
 		}
 	}
@@ -65,8 +65,11 @@ func (o *Choreography) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 	}(tx)
 
 	subTotal := 0.0
-	utility.ForEach(req.Items, func(item *pb.OrderItemRequest) {
-		subTotal += float64(item.Quantity) * item.UnitPrice
+	utility.ForEach(response.Variants, func(variant *pb.GetVariantsResponse_Variant) {
+		item := utility.Find(req.Items, func(element *pb.OrderItemRequest) bool {
+			return variant.Id == element.VariantId
+		})
+		subTotal += float64((*item).Quantity) * variant.SalePrice
 	})
 	tax := subTotal * 0.1
 	total := tax + subTotal
@@ -117,10 +120,13 @@ func (o *Choreography) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 		Temporary_price: total,
 		Customer_id:     orderCreated.CustomerID.String(),
 		Items: utility.Map(req.Items, func(it *pb.OrderItemRequest) avro.Item {
+			variant := utility.Find(response.Variants, func(item *pb.GetVariantsResponse_Variant) bool {
+				return item.Id == it.VariantId
+			})
 			return avro.Item{
 				Variant_id: it.VariantId,
 				Quantity:   it.Quantity,
-				Unit_price: it.UnitPrice,
+				Unit_price: (*variant).SalePrice,
 			}
 		}),
 	}

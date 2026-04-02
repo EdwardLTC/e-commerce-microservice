@@ -1,4 +1,5 @@
-﻿using asp_user.Attributes;
+﻿using System.Data;
+using asp_user.Attributes;
 using asp_user.Contexts;
 using asp_user.Exceptions;
 using asp_user.Kafka;
@@ -117,13 +118,21 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 
 	public async Task<User> DecreaseWalletAmountAsync(Guid userId, decimal amount)
 	{
-		User? user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+		if (amount <= 0)
+		{
+			throw new InsufficientBalanceException(0, amount);
+		}
+
+		await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+		User? user = await dbContext.Users
+			.FromSqlInterpolated($"SELECT * FROM users.users WHERE id = {userId} FOR UPDATE")
+			.FirstOrDefaultAsync();
 		if (user == null)
 		{
 			throw new InsufficientBalanceException(0, amount);
 		}
 
-		if (amount <= 0 || user.Wallet <= amount)
+		if (user.Wallet < amount)
 		{
 			throw new InsufficientBalanceException(user.Wallet, amount);
 		}
@@ -131,20 +140,36 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 		user.Wallet -= amount;
 		dbContext.Users.Update(user);
 		await dbContext.SaveChangesAsync();
+		await transaction.CommitAsync();
 		return user;
 	}
 
 	public async Task DecreaseWalletAndEnqueuePaymentSuccessAsync(Guid userId, decimal amount, string orderId)
 	{
-		await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
+		if (amount <= 0)
+		{
+			throw new InsufficientBalanceException(0, amount);
+		}
 
-		User? user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+		await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+		User? user = await dbContext.Users
+			.FromSqlInterpolated($"SELECT * FROM users.users WHERE id = {userId} FOR UPDATE")
+			.FirstOrDefaultAsync();
 		if (user == null)
 		{
 			throw new InsufficientBalanceException(0, amount);
 		}
 
-		if (amount <= 0 || user.Wallet <= amount)
+		bool paymentAlreadyHandled = await dbContext.OutboxMessages
+			.AnyAsync(message => message.AggregateId == orderId && (message.Topic == "payment.success" || message.Topic == "payment.fail"));
+
+		if (paymentAlreadyHandled)
+		{
+			await transaction.CommitAsync();
+			return;
+		}
+
+		if (user.Wallet < amount)
 		{
 			throw new InsufficientBalanceException(user.Wallet, amount);
 		}
@@ -160,6 +185,33 @@ public class UsersService(AppDbContext dbContext) : UserService.UserServiceBase
 		byte[] payload = AvroMessageSerializer.Serialize(paymentSuccess);
 
 		OutboxMessage outbox = OutboxMessage.Create("payment.success", orderId, orderId, payload);
+		dbContext.OutboxMessages.Add(outbox);
+
+		await dbContext.SaveChangesAsync();
+		await transaction.CommitAsync();
+	}
+
+	public async Task EnqueuePaymentFailedAsync(string orderId, string reason)
+	{
+		await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+		bool paymentAlreadyHandled = await dbContext.OutboxMessages
+			.AnyAsync(message => message.AggregateId == orderId && (message.Topic == "payment.success" || message.Topic == "payment.fail"));
+
+		if (paymentAlreadyHandled)
+		{
+			await transaction.CommitAsync();
+			return;
+		}
+
+		PaymentFailedEvent paymentFailed = new PaymentFailedEvent
+		{
+			order_id = orderId,
+			fail_reason = reason
+		};
+
+		byte[] payload = AvroMessageSerializer.Serialize(paymentFailed);
+		OutboxMessage outbox = OutboxMessage.Create("payment.fail", orderId, orderId, payload);
 		dbContext.OutboxMessages.Add(outbox);
 
 		await dbContext.SaveChangesAsync();

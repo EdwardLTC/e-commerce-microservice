@@ -12,6 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @Service
 class StockConsumer(
@@ -36,14 +37,14 @@ class StockConsumer(
                 .setPrice(event.temporaryPrice)
                 .build()
 
-            kafkaTemplate.send("stock.reduction.success", AvroUtils.serialize(stockReduceSuccessEvent))
+            kafkaTemplate.send("stock.reduction.success", AvroUtils.serialize(stockReduceSuccessEvent)).get(10, TimeUnit.SECONDS)
         } catch (e: IllegalArgumentException) {
             val stockReductionFailedEvent = StockReductionFailedEvent.newBuilder()
                 .setOrderId(event.orderId)
                 .setMessage(e.message ?: "Unknown error")
                 .build()
 
-            kafkaTemplate.send("stock.reduction.fail", AvroUtils.serialize(stockReductionFailedEvent))
+            kafkaTemplate.send("stock.reduction.fail", AvroUtils.serialize(stockReductionFailedEvent)).get(10, TimeUnit.SECONDS)
         } catch (e: Exception) {
             throw e
         }

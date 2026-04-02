@@ -45,11 +45,15 @@ public class KafkaAttributeConsumer(
 				}
 
 				object record = DeserializeAvro(cr.Message.Value, handler.MessageType);
-				handler.Invoke(serviceProvider, record, _consumer, cr);
+				handler.InvokeAsync(serviceProvider, record, _consumer, cr).GetAwaiter().GetResult();
 			}
 			catch (ConsumeException ex)
 			{
 				logger.LogError($"❌ Consume error: {ex.Error.Reason}");
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "❌ Kafka handler execution failed");
 			}
 		}
 	}
@@ -74,7 +78,7 @@ public class KafkaAttributeConsumer(
 
 	record KafkaHandlerInfo(Type DeclaringType, MethodInfo Method, string Topic, Type MessageType)
 	{
-		public void Invoke(IServiceProvider sp, object message, IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> cr)
+		public async Task InvokeAsync(IServiceProvider sp, object message, IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> cr)
 		{
 			object instance = sp.GetService(DeclaringType) ?? Activator.CreateInstance(DeclaringType)!;
 
@@ -88,7 +92,11 @@ public class KafkaAttributeConsumer(
 				_ => throw new InvalidOperationException($"Invalid parameter count for {Method.Name}")
 			};
 
-			Method.Invoke(instance, args);
+			object? result = Method.Invoke(instance, args);
+			if (result is Task task)
+			{
+				await task;
+			}
 		}
 	}
 }

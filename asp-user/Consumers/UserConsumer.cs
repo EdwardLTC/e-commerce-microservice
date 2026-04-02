@@ -1,16 +1,14 @@
 using asp_user.Attributes;
 using asp_user.Exceptions;
 using asp_user.GrpcServiceClients;
-using asp_user.Kafka;
 using asp_user.Services;
 using Com.Ecommerce.Golang.Order;
-using com.example.payment;
 using com.example.stock;
 using Confluent.Kafka;
 
 namespace asp_user.Consumers;
 
-public class UserConsumer(UsersService userService, OrderServiceClient orderServiceClient, KafkaProducerService producer)
+public class UserConsumer(UsersService userService, OrderServiceClient orderServiceClient)
 {
 
 	[KafkaTopic("stock.reduction.success", typeof(StockReductionSuccessEvent))]
@@ -25,14 +23,9 @@ public class UserConsumer(UsersService userService, OrderServiceClient orderServ
 		catch (InsufficientBalanceException e)
 		{
 			Console.WriteLine(e);
-			PaymentFailedEvent paymentFailed = new PaymentFailedEvent
-			{
-				order_id = evt.order_id,
-				fail_reason = e.Message
-			};
-			await producer.ProduceAvroAsync("payment.fail", evt.order_id, paymentFailed);
-			throw;
+			await userService.EnqueuePaymentFailedAsync(evt.order_id, e.Message);
 		}
+
 		consumer.Commit(cr);
 	}
 }

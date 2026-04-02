@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import {
@@ -23,7 +23,7 @@ export class ProductsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  public async getProductById(@Query('id', new ParseUUIDPipe()) id: string) {
+  public async getProductById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.productsService.getProductById(id);
   }
 
@@ -35,31 +35,31 @@ export class ProductsController {
 
   @Post(':id/option-types')
   @HttpCode(HttpStatus.CREATED)
-  public async createOptionType(@Query('id', new ParseUUIDPipe()) productId: string, @Body() data: CreateProductOptionTypeRequest) {
+  public async createOptionType(@Param('id', new ParseUUIDPipe()) productId: string, @Body() data: CreateProductOptionTypeRequest) {
     return this.productsService.createOptionType(productId, data);
   }
 
   @Get(':id/option-types')
   @HttpCode(HttpStatus.OK)
-  public async getOptionTypes(@Query('id', new ParseUUIDPipe()) productId: string) {
+  public async getOptionTypes(@Param('id', new ParseUUIDPipe()) productId: string) {
     return this.productsService.getOptionTypes(productId);
   }
 
   @Post('/option-types/:optionTypeId/option-values')
   @HttpCode(HttpStatus.CREATED)
-  public async createOptionValue(@Query('optionTypeId', new ParseUUIDPipe()) optionTypeId: string, @Body() data: CreateProductOptionValueRequest) {
+  public async createOptionValue(@Param('optionTypeId', new ParseUUIDPipe()) optionTypeId: string, @Body() data: CreateProductOptionValueRequest) {
     return this.productsService.createOptionValue(optionTypeId, data);
   }
 
   @Get('/option-types/:optionTypeId/option-values')
   @HttpCode(HttpStatus.OK)
-  public async getOptionValues(@Query('optionTypeId', new ParseUUIDPipe()) optionTypeId: string) {
+  public async getOptionValues(@Param('optionTypeId', new ParseUUIDPipe()) optionTypeId: string) {
     return this.productsService.getOptionValues(optionTypeId);
   }
 
   @Post(':id/variants')
   @HttpCode(HttpStatus.CREATED)
-  public async createVariant(@Query('id', new ParseUUIDPipe()) productId: string, @Body() data: CreateProductVariantRequest) {
+  public async createVariant(@Param('id', new ParseUUIDPipe()) productId: string, @Body() data: CreateProductVariantRequest) {
     return this.productsService.createVariant(productId, data);
   }
 }

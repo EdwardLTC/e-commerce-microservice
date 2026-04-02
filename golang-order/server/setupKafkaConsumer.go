@@ -7,7 +7,7 @@ import (
 )
 
 func setupKafkaConsumer(handler kafka.Handler) *kafka.Consumer {
-	events := []string{"stock.reduction.fail", "stock.reduction.success"}
+	events := []string{"stock.reduction.fail", "stock.reduction.success", "payment.fail", "payment.success"}
 	consumer, err := kafka.NewKafkaConsumer(os.Getenv("KAFKA_BROKER"), "order-service-group", events, handler)
 
 	if err != nil {

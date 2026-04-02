@@ -48,8 +48,16 @@ builder.Services.AddGrpc(options =>
 builder.Services.AddScoped<ValidationInterceptor>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-	options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-		npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "users")));
+{
+	string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+	if (string.IsNullOrWhiteSpace(connectionString))
+	{
+		throw new InvalidOperationException("ConnectionStrings:DefaultConnection must be provided via configuration or environment variables.");
+	}
+
+	options.UseNpgsql(connectionString,
+		npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "users"));
+});
 
 builder.Services.AddGrpcServices();
 builder.Services.AddAttributedValidators(Assembly.GetExecutingAssembly());

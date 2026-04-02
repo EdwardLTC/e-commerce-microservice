@@ -38,7 +38,7 @@ export class AuthService {
 
     await this.redisClient.sAdd(`user:sessions:${user.id}`, `auth:session:${jti}`);
 
-    await this.redisClient.expire(`user:sessions:${user.id}`, 60 * 60 * 24 * 7 * 1000);
+    await this.redisClient.expire(`user:sessions:${user.id}`, 60 * 60 * 24 * 7);
 
     return {
       access_token: assessToken,
@@ -62,11 +62,16 @@ export class AuthService {
   public async getSession(jti: string) {
     return this.cacheManager.get<{
       jti: string;
+      userId: string;
       status: LoginSessionStatus;
     }>(`auth:session:${jti}`);
   }
 
   public async logout(jit: string) {
+    const session = await this.getSession(jit);
     await this.cacheManager.del(`auth:session:${jit}`);
+    if (session?.userId) {
+      await this.redisClient.sRem(`user:sessions:${session.userId}`, `auth:session:${jit}`);
+    }
   }
 }

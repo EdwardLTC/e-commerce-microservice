@@ -3,7 +3,6 @@ package order
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"golang-order/gen/avro"
 	"golang-order/gen/ent"
 	"golang-order/gen/ent/order"
@@ -62,7 +61,33 @@ func (c ConsumerHandler) HandleMessage(msg *kafka.Message, ack *kafka.Consumer) 
 }
 
 func (c ConsumerHandler) onStockEvent(isSuccess bool, orderID uuid.UUID, errMessage string, msg *kafka.Message, ack *kafka.Consumer) {
-	builder := c.db.Order.UpdateOneID(orderID).Where(order.StatusEQ(order.StatusCreated))
+	currentOrder, err := c.db.Order.Get(context.Background(), orderID)
+	if err != nil {
+		log.Printf("failed to load order %s: %v", orderID, err)
+		return
+	}
+
+	targetStatus := order.StatusInventoryReservedFailed
+	if isSuccess {
+		targetStatus = order.StatusInventoryReserved
+	}
+
+	if currentOrder.Status == targetStatus {
+		if _, err = ack.CommitMessage(msg); err != nil {
+			log.Printf("failed to commit duplicate stock event: %v", err)
+		}
+		return
+	}
+
+	if currentOrder.Status != order.StatusCreated {
+		log.Printf("ignoring stock event for order %s in status %s", orderID, currentOrder.Status)
+		if _, err = ack.CommitMessage(msg); err != nil {
+			log.Printf("failed to commit ignored stock event: %v", err)
+		}
+		return
+	}
+
+	builder := c.db.Order.UpdateOneID(orderID)
 
 	if isSuccess {
 		builder = builder.
@@ -73,23 +98,48 @@ func (c ConsumerHandler) onStockEvent(isSuccess bool, orderID uuid.UUID, errMess
 			SetErrorMessage(errMessage)
 	}
 
-	_, err := builder.Save(context.Background())
+	_, err = builder.Save(context.Background())
 
 	if err != nil {
-		fmt.Printf(err.Error())
+		log.Printf("failed to update stock event status for order %s: %v", orderID, err)
 		return
 	}
 
-	// should put into transaction outbox
 	_, err = ack.CommitMessage(msg)
 	if err != nil {
-		fmt.Printf("failed to commit message: %v", err)
+		log.Printf("failed to commit message: %v", err)
 		return
 	}
 }
 
 func (c ConsumerHandler) onPaymentEvent(isSuccess bool, orderID uuid.UUID, errMessage string, msg *kafka.Message, ack *kafka.Consumer) {
-	builder := c.db.Order.UpdateOneID(orderID).Where(order.StatusEQ(order.StatusInventoryReserved))
+	currentOrder, err := c.db.Order.Get(context.Background(), orderID)
+	if err != nil {
+		log.Printf("failed to load order %s: %v", orderID, err)
+		return
+	}
+
+	targetStatus := order.StatusPaymentFailed
+	if isSuccess {
+		targetStatus = order.StatusPaymentCompleted
+	}
+
+	if currentOrder.Status == targetStatus {
+		if _, err = ack.CommitMessage(msg); err != nil {
+			log.Printf("failed to commit duplicate payment event: %v", err)
+		}
+		return
+	}
+
+	if currentOrder.Status != order.StatusInventoryReserved {
+		log.Printf("ignoring payment event for order %s in status %s", orderID, currentOrder.Status)
+		if _, err = ack.CommitMessage(msg); err != nil {
+			log.Printf("failed to commit ignored payment event: %v", err)
+		}
+		return
+	}
+
+	builder := c.db.Order.UpdateOneID(orderID)
 
 	if isSuccess {
 		builder = builder.
@@ -100,17 +150,16 @@ func (c ConsumerHandler) onPaymentEvent(isSuccess bool, orderID uuid.UUID, errMe
 			SetErrorMessage(errMessage)
 	}
 
-	_, err := builder.Save(context.Background())
+	_, err = builder.Save(context.Background())
 
 	if err != nil {
-		fmt.Printf(err.Error())
+		log.Printf("failed to update payment event status for order %s: %v", orderID, err)
 		return
 	}
 
-	// should put into transaction outbox
 	_, err = ack.CommitMessage(msg)
 	if err != nil {
-		fmt.Printf("failed to commit message: %v", err)
+		log.Printf("failed to commit message: %v", err)
 		return
 	}
 }
