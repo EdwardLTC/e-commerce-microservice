@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,17 +51,32 @@ private data class NavItem(
 )
 
 class BottomNav(private val firstScreen: Tab = HomeScreen()) : Screen {
+
+    companion object {
+        private var lastActiveTabIndex: Int = 0
+    }
+
     @Composable
     override fun Content() {
-        TabNavigator(firstScreen) {
+        val tabs = remember {
+            listOf(HomeScreen(), CartScreen(), ProfileScreen())
+        }
+        val initialTab = remember { tabs.getOrElse(lastActiveTabIndex) { firstScreen } }
+
+        TabNavigator(initialTab) {
             val tabNavigator = LocalTabNavigator.current
-            val isHomeFeed = tabNavigator.current.options.index == 0.toUShort()
+            val currentIndex = tabNavigator.current.options.index
+            val isHomeFeed = currentIndex == 0.toUShort()
+
+            LaunchedEffect(currentIndex) {
+                lastActiveTabIndex = currentIndex.toInt()
+            }
 
             val items = remember {
                 listOf(
-                    NavItem(HomeScreen(), "HOME", Icons.Filled.Home, Icons.Outlined.Home),
-                    NavItem(CartScreen(), "CART", Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
-                    NavItem(ProfileScreen(), "MY PAGE", Icons.Filled.Person, Icons.Outlined.Person),
+                    NavItem(tabs[0], "HOME", Icons.Filled.Home, Icons.Outlined.Home),
+                    NavItem(tabs[1], "CART", Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
+                    NavItem(tabs[2], "MY PAGE", Icons.Filled.Person, Icons.Outlined.Person),
                 )
             }
 
