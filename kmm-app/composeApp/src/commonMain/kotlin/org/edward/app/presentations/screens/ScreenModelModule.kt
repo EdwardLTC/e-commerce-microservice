@@ -6,6 +6,7 @@ import org.edward.app.presentations.screens.auth.register.RegisterScreenModel
 import org.edward.app.presentations.screens.main.cart.CartScreenModel
 import org.edward.app.presentations.screens.main.home.HomeScreenModel
 import org.edward.app.presentations.screens.main.home.detail.ProductDetailScreenModel
+import org.edward.app.presentations.screens.main.product.create.CreateProductScreenModel
 import org.edward.app.presentations.screens.main.profile.ProfileScreenModel
 import org.edward.app.presentations.screens.main.profile.settings.SettingsScreenModel
 import org.koin.dsl.module
@@ -16,6 +17,7 @@ val screenModelModule = module {
     factory { RegisterScreenModel(get(), get()) }
     single { HomeScreenModel(get()) }
     factory { ProductDetailScreenModel(get(), get()) }
+    factory { CreateProductScreenModel(get()) }
     factory { CartScreenModel(get()) }
     factory { ProfileScreenModel(get(), get()) }
     factory { SettingsScreenModel(get()) }

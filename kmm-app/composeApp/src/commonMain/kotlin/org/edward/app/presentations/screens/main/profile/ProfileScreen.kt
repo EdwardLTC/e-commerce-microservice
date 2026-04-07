@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Inventory2
@@ -50,6 +51,7 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import org.edward.app.presentations.navigations.RootAppDestination
 import org.edward.app.presentations.navigations.replaceAll
+import org.edward.app.presentations.screens.main.product.create.CreateProductScreen
 import org.edward.app.presentations.screens.main.profile.settings.SettingsScreen
 
 class ProfileScreen : Tab {
@@ -106,6 +108,9 @@ class ProfileScreen : Tab {
                     MenuItem(Icons.Outlined.FavoriteBorder, "Wishlist"),
                     MenuItem(Icons.Outlined.LocationOn, "Addresses"),
                     MenuItem(Icons.Outlined.CreditCard, "Payment Methods"),
+                    MenuItem(Icons.Outlined.AddBox, "Create Product") {
+                        navigator.parent?.push(CreateProductScreen())
+                    },
                 )
             )
 
