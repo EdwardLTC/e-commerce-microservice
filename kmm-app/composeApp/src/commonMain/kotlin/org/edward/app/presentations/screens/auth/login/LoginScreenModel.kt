@@ -9,53 +9,47 @@ import org.edward.app.data.local.DataStoreRepository
 import org.edward.app.data.remote.auth.AuthRepository
 import org.edward.app.data.remote.auth.LoginRequest
 import org.edward.app.data.utils.AsyncResult
-import org.koin.core.component.KoinComponent
 
 class LoginScreenModel(
     private val dataStoreRepository: DataStoreRepository,
     private val authRepository: AuthRepository,
-) : ScreenModel, KoinComponent {
+) : ScreenModel {
     data class LoginUiState(
-        val email: String = "mor_2314",
-        val password: String = "83r5^_",
+        val email: String = "",
+        val password: String = "",
         val isLoading: Boolean = false,
         val error: String? = null
     )
 
     private val _uiState = MutableStateFlow(LoginUiState())
-
     val uiState: StateFlow<LoginUiState> = _uiState
 
-    fun onEmailChange(newEmail: String) {
-        _uiState.value = _uiState.value.copy(email = newEmail)
+    fun onEmailChange(value: String) {
+        _uiState.value = _uiState.value.copy(email = value, error = null)
     }
 
-    fun onPasswordChange(newPassword: String) {
-        _uiState.value = _uiState.value.copy(password = newPassword)
+    fun onPasswordChange(value: String) {
+        _uiState.value = _uiState.value.copy(password = value, error = null)
     }
 
     fun login(onSuccess: () -> Unit) {
         screenModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            if (_uiState.value.email.isBlank() || _uiState.value.password.isBlank()) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = "Email and password cannot be empty"
-                )
+            val state = _uiState.value
+            if (state.email.isBlank() || state.password.isBlank()) {
+                _uiState.value = state.copy(isLoading = false, error = "Email and password cannot be empty")
                 return@launch
             }
 
-            when (val result =
-                authRepository.login(
-                    LoginRequest(
-                        username = _uiState.value.email,
-                        password = _uiState.value.password
-                    )
-                )) {
+            when (val result = authRepository.login(LoginRequest(email = state.email, password = state.password))) {
                 is AsyncResult.Success -> {
-                    dataStoreRepository.saveAccessToken(result.data.token, 3600)
-                    dataStoreRepository.saveRefreshToken(result.data.token, 86400)
+                    dataStoreRepository.saveAccessToken(result.data.accessToken, 3600 * 24 * 7)
+                    dataStoreRepository.saveRefreshToken(result.data.accessToken, 3600 * 24 * 30)
+                    dataStoreRepository.saveUserEmail(state.email)
+                    dataStoreRepository.saveUserName(
+                        state.email.substringBefore("@").replaceFirstChar { it.uppercase() }
+                    )
                     _uiState.value = _uiState.value.copy(isLoading = false)
                     onSuccess()
                 }
@@ -63,7 +57,7 @@ class LoginScreenModel(
                 is AsyncResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.displayMessage
+                        error = result.displayMessage ?: "Login failed"
                     )
                 }
             }

@@ -11,13 +11,13 @@ sealed interface RootAppDestination {
 fun Navigator.navigateTo(destination: RootAppDestination) {
     when (destination) {
         RootAppDestination.Login -> this.replace(LoginScreen())
-        RootAppDestination.MainNav -> this.replace(FancyDrawerNav())
+        RootAppDestination.MainNav -> this.replace(BottomNav())
     }
 }
 
 fun Navigator.replaceAll(destination: RootAppDestination) {
     when (destination) {
         RootAppDestination.Login -> this.replaceAll(LoginScreen())
-        RootAppDestination.MainNav -> this.replaceAll(FancyDrawerNav())
+        RootAppDestination.MainNav -> this.replaceAll(BottomNav())
     }
 }

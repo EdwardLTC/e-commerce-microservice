@@ -16,11 +16,11 @@ class ProductRepositoryImpl(private val httpClient: HttpClient) : ProductReposit
 
     override suspend fun getProducts(skip: Int, take: Int): AsyncResult<List<Product>> {
         return try {
-            val response: List<Product> = httpClient.get(PRODUCT) {
+            val response: GetProductsResponse = httpClient.get(PRODUCT) {
                 parameter("skip", skip)
                 parameter("take", take)
             }.body()
-            AsyncResult.Success(response)
+            AsyncResult.Success(response.products)
         } catch (e: Exception) {
             AsyncResult.Error(e, displayMessage = e.message)
         }
@@ -30,69 +30,70 @@ class ProductRepositoryImpl(private val httpClient: HttpClient) : ProductReposit
         return try {
             AsyncResult.Success(httpClient.get("$PRODUCT/$id").body<ProductDetail>())
         } catch (e: Exception) {
-            AsyncResult.Error(e)
+            AsyncResult.Error(e, displayMessage = e.message)
         }
     }
 
-    override suspend fun addProduct(product: Product): AsyncResult<Product> {
+    override suspend fun createProduct(request: CreateProductRequest): AsyncResult<CreateProductResponse> {
         return try {
-            AsyncResult.Success(httpClient.post(PRODUCT) { setBody(product) }.body<Product>())
+            AsyncResult.Success(httpClient.post(PRODUCT) { setBody(request) }.body())
         } catch (e: Exception) {
-            AsyncResult.Error(e)
+            AsyncResult.Error(e, displayMessage = e.message)
         }
     }
 
     override suspend fun createOptionType(
         productId: String,
         request: CreateProductOptionTypeRequest
-    ): AsyncResult<OptionType> {
+    ): AsyncResult<String> {
         return try {
-            val path = "$PRODUCT/$productId/option-types"
-            AsyncResult.Success(httpClient.post(path) { setBody(request) }.body())
+            val resp: CreateProductResponse =
+                httpClient.post("$PRODUCT/$productId/option-types") { setBody(request) }.body()
+            AsyncResult.Success(resp.id)
         } catch (e: Exception) {
-            AsyncResult.Error(e)
+            AsyncResult.Error(e, displayMessage = e.message)
         }
     }
 
     override suspend fun getOptionTypes(productId: String): AsyncResult<List<OptionType>> {
         return try {
-            val path = "$PRODUCT/$productId/option-types"
-            AsyncResult.Success(httpClient.get(path).body())
+            AsyncResult.Success(httpClient.get("$PRODUCT/$productId/option-types").body())
         } catch (e: Exception) {
-            AsyncResult.Error(e)
+            AsyncResult.Error(e, displayMessage = e.message)
         }
     }
 
     override suspend fun createOptionValue(
         optionTypeId: String,
         request: CreateProductOptionValueRequest
-    ): AsyncResult<OptionValue> {
+    ): AsyncResult<String> {
         return try {
-            val path = "$PRODUCT/option-types/$optionTypeId/option-values"
-            AsyncResult.Success(httpClient.post(path) { setBody(request) }.body())
+            val resp: CreateProductResponse =
+                httpClient.post("$PRODUCT/option-types/$optionTypeId/option-values") { setBody(request) }.body()
+            AsyncResult.Success(resp.id)
         } catch (e: Exception) {
-            AsyncResult.Error(e)
+            AsyncResult.Error(e, displayMessage = e.message)
         }
     }
 
     override suspend fun getOptionValues(optionTypeId: String): AsyncResult<List<OptionValue>> {
         return try {
-            val path = "$PRODUCT/option-types/$optionTypeId/option-values"
-            AsyncResult.Success(httpClient.get(path).body())
+            AsyncResult.Success(httpClient.get("$PRODUCT/option-types/$optionTypeId/option-values").body())
         } catch (e: Exception) {
-            AsyncResult.Error(e)
+            AsyncResult.Error(e, displayMessage = e.message)
         }
     }
 
     override suspend fun createVariant(
         productId: String,
         request: CreateProductVariantRequest
-    ): AsyncResult<Variant> {
+    ): AsyncResult<String> {
         return try {
-            val path = "$PRODUCT/$productId/variants"
-            AsyncResult.Success(httpClient.post(path) { setBody(request) }.body())
+            val resp: CreateProductResponse =
+                httpClient.post("$PRODUCT/$productId/variants") { setBody(request) }.body()
+            AsyncResult.Success(resp.id)
         } catch (e: Exception) {
-            AsyncResult.Error(e)
+            AsyncResult.Error(e, displayMessage = e.message)
         }
     }
 }

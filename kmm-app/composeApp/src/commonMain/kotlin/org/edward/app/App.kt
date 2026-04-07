@@ -21,13 +21,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import org.edward.app.presentations.navigations.SwipeBackContent
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.edward.app.data.local.DataStoreRepository
 import org.edward.app.di.appModule
-import org.edward.app.presentations.navigations.FancyDrawerNav
+import org.edward.app.presentations.navigations.BottomNav
 import org.edward.app.presentations.screens.auth.login.LoginScreen
 import org.edward.app.presentations.screens.components.KeyboardAwareContainer
 import org.edward.app.presentations.theme.AppTheme
@@ -54,12 +54,11 @@ internal fun App(context: Any? = null) {
             val observer = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME) {
                     coroutineScope.launch {
-                        checkTokenValidity(dataStoreRepository).also {
-                            if (it) {
-                                entry = FancyDrawerNav()
-                            }
-                            isLoading = false
+                        val hasValidToken = checkTokenValidity(dataStoreRepository)
+                        if (hasValidToken) {
+                            entry = BottomNav()
                         }
+                        isLoading = false
                     }
                 }
             }
@@ -76,7 +75,9 @@ internal fun App(context: Any? = null) {
                             LinearProgressIndicator()
                         }
                     } else {
-                        Navigator(entry)
+                        Navigator(entry) { navigator ->
+                            SwipeBackContent(navigator)
+                        }
                     }
                 }
             )
@@ -94,22 +95,12 @@ private suspend fun checkTokenValidity(dataStoreRepository: DataStoreRepository)
         return false
     }
 
-    if (tokenData.accessTokenExpiry <= Clock.System.now().epochSeconds && tokenData.refreshTokenExpiry <= Clock.System.now().epochSeconds) {
+    val now = Clock.System.now().epochSeconds
+    if (tokenData.accessTokenExpiry <= now && tokenData.refreshTokenExpiry <= now) {
         dataStoreRepository.clearToken()
         return false
     }
 
-    if (Clock.System.now().epochSeconds < tokenData.refreshTokenExpiry && tokenData.accessTokenExpiry <= Clock.System.now().epochSeconds) {
-        Napier.i { "Access token is expired, but refresh token is valid. Refreshing access token..." }
-        delay(5000)
-        dataStoreRepository.saveAccessToken("new_access_token_123", 3600 * 24 * 7)
-        dataStoreRepository.saveRefreshToken("new_refresh_token_456", 3600 * 24 * 30)
-        Napier.i { "Access token refreshed successfully." }
-    }
-
     Napier.i { "Token check completed. Token is valid." }
-
     return true
 }
-
-

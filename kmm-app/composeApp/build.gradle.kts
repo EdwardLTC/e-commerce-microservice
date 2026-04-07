@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.android.application)
     alias(libs.plugins.buildConfig)
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("plugin.serialization") version libs.versions.kotlin.get()
 }
 
 kotlin {
@@ -57,6 +57,7 @@ kotlin {
             implementation(libs.voyager.tab.navigator)
             implementation(libs.voyager.screenModel)
             implementation(libs.voyager.koin)
+            implementation(libs.voyager.transitions)
 
             // Koin for Multiplatform
             implementation(libs.koin.core)

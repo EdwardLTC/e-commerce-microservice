@@ -16,196 +16,179 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.koin.koinNavigatorScreenModel
-import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.core.component.KoinComponent
+import org.edward.app.presentations.navigations.RootAppDestination
+import org.edward.app.presentations.navigations.replaceAll
 
-class ProfileScreen : Tab, KoinComponent {
+class ProfileScreen : Tab {
 
     override val options: TabOptions
         @Composable
         get() = TabOptions(
-            index = 1u,
+            index = 2u,
             icon = rememberVectorPainter(Icons.Default.Person),
             title = "Profile",
         )
 
     @OptIn(ExperimentalMaterial3Api::class)
-    @Preview
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = navigator.koinNavigatorScreenModel<ProfileScreenModel>()
+        val profileState by screenModel.uiState.collectAsState()
 
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            CenterAlignedTopAppBar(title = {
-                Text(
-                    "Account",
-                    fontWeight = FontWeight.W600,
-                    fontSize = TextUnit(18.0.toFloat(), TextUnitType.Sp),
+            CenterAlignedTopAppBar(
+                title = { Text("Account", style = MaterialTheme.typography.titleLarge) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                 )
-            })
-            UserInformation()
-            GeneralInformation {
-                screenModel.clearDataStore {
+            )
 
+            UserInformation(
+                name = profileState.userName.ifEmpty { "User" },
+                email = profileState.userEmail.ifEmpty { "Not signed in" }
+            )
+
+            GeneralSection(screenModel) {
+                val rootNav = navigator.parent?.parent
+                if (rootNav != null) {
+                    rootNav.replaceAll(RootAppDestination.Login)
                 }
             }
         }
     }
 
-    @Preview
     @Composable
-    fun UserInformation() {
-
-        val url =
-            "https://plus.unsplash.com/premium_photo-1749669869018-8a33825100f0?q=80&w=988&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-
-        Row(
+    private fun UserInformation(name: String, email: String) {
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
-            if (url.isNotBlank()) {
+            Row(
+                modifier = Modifier.padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Box(
                     Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                ) {
-                    KamelImage(
-                        { asyncPainterResource(url) },
-                        contentDescription = url,
-                        modifier = Modifier.size(80.dp),
-                        alignment = Alignment.Center,
-                        contentScale = ContentScale.Crop,
-                        alpha = DefaultAlpha,
-                        contentAlignment = Alignment.Center,
-                    )
-                }
-            } else {
-                Box(
-                    Modifier.size(80.dp)
-                        .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
+                        .size(72.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            shape = CircleShape
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Person, contentDescription = "Default icon",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.surface
-                    )
-                }
-
-            }
-
-            Spacer(Modifier.width(12.dp))
-
-            Column(
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text("Operator", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    "operator@gmail.com",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-        }
-    }
-
-    @Composable
-    fun GeneralInformation(onLogout: () -> Unit) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .padding(horizontal = 16.dp)
-        ) {
-            Text("General Information", style = MaterialTheme.typography.titleMedium)
-            General()
-            Text(
-                "Delete Account",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.error,
-                fontWeight = FontWeight.W600
-            )
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "Logout",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.error,
-                fontWeight = FontWeight.W600,
-                modifier = Modifier.clickable { onLogout() }
-            )
-
-        }
-    }
-
-    @Preview
-    @Composable
-    fun General() {
-        val screenModel = koinScreenModel<ProfileScreenModel>()
-        val navigator = LocalNavigator.currentOrThrow
-
-        val items = listOf(
-            "Account Information",
-            "Forgot Password",
-            "Change Language",
-            "Settings"
-        )
-
-        Column(modifier = Modifier.fillMaxWidth()) {
-            items.forEachIndexed { index, title ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { screenModel.handleNavigate(index, navigator) }
-                        .padding(vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ChevronRight,
+                        imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        tint = Color.Gray
+                        modifier = Modifier.size(40.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
 
-                // Divider except for the last item
-                if (index != items.lastIndex) {
-                    HorizontalDivider(Modifier, 1.dp, Color(0xFFE0E0E0))
+                Spacer(Modifier.width(16.dp))
+
+                Column(verticalArrangement = Arrangement.Center) {
+                    Text(name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        email,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun GeneralSection(screenModel: ProfileScreenModel, onLogout: () -> Unit) {
+        val navigator = LocalNavigator.currentOrThrow
+        val items = listOf("Account information", "Change password", "Language", "Settings")
+        val outline = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 16.dp, end = 16.dp)
+        ) {
+            Text("Preferences", style = MaterialTheme.typography.titleMedium)
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                elevation = CardDefaults.cardElevation(0.dp)
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 4.dp)) {
+                    items.forEachIndexed { index, title ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { screenModel.handleNavigate(index, navigator) }
+                                .padding(horizontal = 16.dp, vertical = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        if (index != items.lastIndex) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 12.dp),
+                                color = outline
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(28.dp))
+
+            Text(
+                "Log out",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .clickable {
+                        screenModel.logout { onLogout() }
+                    }
+                    .padding(vertical = 8.dp)
+            )
+
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
-

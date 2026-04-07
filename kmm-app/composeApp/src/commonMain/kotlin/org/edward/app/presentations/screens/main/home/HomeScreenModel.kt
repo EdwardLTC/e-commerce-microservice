@@ -8,22 +8,30 @@ import kotlinx.coroutines.launch
 import org.edward.app.data.remote.product.Product
 import org.edward.app.data.remote.product.ProductRepository
 import org.edward.app.data.utils.AsyncResult
-import org.koin.core.component.KoinComponent
 
-class HomeScreenModel(private val productRepository: ProductRepository) :
-    ScreenModel, KoinComponent {
+class HomeScreenModel(private val productRepository: ProductRepository) : ScreenModel {
 
     companion object {
-        data class UiState(
-            val loading: Boolean = true,
-            val products: List<Product> = emptyList(),
-            val error: String? = null,
-            val isRefreshing: Boolean = false
-        )
+        private const val PAGE_SIZE = 10
     }
+
+    data class UiState(
+        val loading: Boolean = true,
+        val products: List<Product> = emptyList(),
+        val error: String? = null,
+        val isLoadingMore: Boolean = false,
+        val hasMore: Boolean = true,
+    )
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState
+
+    var lastViewedPage: Int = 0
+        private set
+
+    fun saveCurrentPage(page: Int) {
+        lastViewedPage = page
+    }
 
     init {
         loadProducts()
@@ -31,31 +39,46 @@ class HomeScreenModel(private val productRepository: ProductRepository) :
 
     fun loadProducts() {
         screenModelScope.launch {
-            _uiState.value = _uiState.value.copy(loading = true, error = null)
-
-            when (val result = productRepository.getProducts()) {
+            _uiState.value = UiState(loading = true)
+            when (val result = productRepository.getProducts(skip = 0, take = PAGE_SIZE)) {
                 is AsyncResult.Success -> {
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.value = UiState(
                         loading = false,
-                        products = result.data
+                        products = result.data,
+                        hasMore = result.data.size >= PAGE_SIZE,
                     )
                 }
-
                 is AsyncResult.Error -> {
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.value = UiState(
                         loading = false,
-                        error = result.exception?.message ?: "Unknown error"
+                        error = result.displayMessage ?: "Failed to load products",
                     )
                 }
             }
         }
     }
 
-    fun onPullToRefreshTrigger() {
-        _uiState.value = _uiState.value.copy(isRefreshing = true)
+    fun loadMore() {
+        val state = _uiState.value
+        if (state.isLoadingMore || !state.hasMore) return
+
+        _uiState.value = state.copy(isLoadingMore = true)
+
         screenModelScope.launch {
-            loadProducts()
-            _uiState.value = _uiState.value.copy(isRefreshing = false)
+            when (val result = productRepository.getProducts(skip = state.products.size, take = PAGE_SIZE)) {
+                is AsyncResult.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoadingMore = false,
+                        products = _uiState.value.products + result.data,
+                        hasMore = result.data.size >= PAGE_SIZE,
+                    )
+                }
+                is AsyncResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoadingMore = false,
+                    )
+                }
+            }
         }
     }
 }
