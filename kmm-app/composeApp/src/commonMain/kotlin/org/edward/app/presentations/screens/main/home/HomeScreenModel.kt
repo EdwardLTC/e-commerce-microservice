@@ -8,7 +8,9 @@ import kotlinx.coroutines.launch
 import org.edward.app.data.remote.product.Product
 import org.edward.app.data.remote.product.ProductRepository
 import org.edward.app.data.utils.AsyncResult
+import org.koin.core.annotation.Single
 
+@Single
 class HomeScreenModel(private val productRepository: ProductRepository) : ScreenModel {
 
     companion object {

@@ -10,6 +10,10 @@
 **/coverage
 **/.env
 
+# Elixir
+**/_build
+**/deps
+
 #ASP.NET Core
 **/bin
 **/mono_crash.*

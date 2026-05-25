@@ -1,33 +1,65 @@
 ﻿services:
-  nest-api-gateway-auth:
-    image: nest-api-gateway-auth
-    build:
-      context: .
-      dockerfile: nest-api-gateway-auth/Dockerfile
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
     ports:
-      - "3000:3000"
-    depends_on:
-      - redis
-      - asp-user
-      - spring-boot-product
-        
-  asp-user:
-    image: asp-user
-    build:
-      context: .
-      dockerfile: asp-user/Dockerfile
-    platform: linux/amd64
-    ports:
-        - "5232:5232"
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,INTERNAL://kafka:29092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
 
-  spring-boot-product:
-    image: spring-boot-product
-    build:
-      context: .
-      dockerfile: spring-boot-product/Dockerfile
+  chat-db:
+    image: postgres:17-alpine
+    container_name: chat-db
+    environment:
+      POSTGRES_USER: chat
+      POSTGRES_PASSWORD: chat
+      POSTGRES_DB: chat_messages
     ports:
-      - "2003:2003"
-    
+      - "5434:5432"
+    volumes:
+      - chat-db:/var/lib/postgresql/data
+
+  phoenix-chat:
+    build:
+      context: ./chat/phoenix-chat
+    container_name: phoenix-chat
+    restart: unless-stopped
+    environment:
+      PORT: 4001
+      KAFKA_BROKERS: kafka:29092
+      CHAT_MESSAGES_TOPIC: chat.messages.v1
+      SECRET_KEY_BASE: development-secret-key-base-for-chat-realtime-service-in-compose
+    ports:
+      - "4001:4001"
+    depends_on:
+      - kafka
+
+  chat-message-writer:
+    build:
+      context: ./chat/message-writer
+    container_name: chat-message-writer
+    restart: unless-stopped
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      CHAT_MESSAGES_TOPIC: chat.messages.v1
+      CHAT_MESSAGES_GROUP_ID: chat-message-writer
+      DATABASE_URL: postgres://chat:chat@chat-db:5432/chat_messages?sslmode=disable
+    depends_on:
+      - kafka
+      - chat-db
+      
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -39,4 +71,6 @@
     
 volumes:
   cache:
+    driver: local
+  chat-db:
     driver: local

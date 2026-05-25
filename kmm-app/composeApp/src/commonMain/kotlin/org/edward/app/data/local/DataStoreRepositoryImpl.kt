@@ -9,10 +9,12 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Single
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
+@Single(binds = [DataStoreRepository::class])
 class DataStoreRepositoryImpl(
     private val dataStore: DataStore<Preferences>
 ) : DataStoreRepository {

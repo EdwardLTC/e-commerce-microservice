@@ -36,7 +36,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.kafka:spring-kafka:3.0.10")
+    implementation("org.springframework.kafka:spring-kafka:3.3.0")
 
     // --- Database ---
     implementation("org.flywaydb:flyway-core")
@@ -119,9 +119,6 @@ avro {
     stringType.set("String")
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
 
 tasks.generateAvroJava {
     source("../.avro")
@@ -129,6 +126,7 @@ tasks.generateAvroJava {
 
 sourceSets {
     main {
+        java.srcDir(layout.buildDirectory.dir("generated-main-avro-java"))
         proto {
             srcDir("../.proto")
         }

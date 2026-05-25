@@ -16,23 +16,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
-import org.edward.app.presentations.navigations.SwipeBackContent
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.edward.app.data.local.DataStoreRepository
 import org.edward.app.di.appModule
 import org.edward.app.presentations.navigations.BottomNav
+import org.edward.app.presentations.navigations.SwipeBackContent
 import org.edward.app.presentations.screens.auth.login.LoginScreen
 import org.edward.app.presentations.screens.components.KeyboardAwareContainer
 import org.edward.app.presentations.theme.AppTheme
 import org.edward.app.shared.initLogger
 import org.koin.compose.KoinApplication
+import org.koin.dsl.koinConfiguration
 import org.koin.mp.KoinPlatform.getKoin
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -40,49 +41,50 @@ import kotlin.time.ExperimentalTime
 @Composable
 internal fun App(context: Any? = null) {
     initLogger()
-    KoinApplication(application = { modules(appModule(context)) }) {
+    KoinApplication(
+        configuration = koinConfiguration(declaration = { modules(appModule(context)) }),
+        content = {
+            val dataStoreRepository: DataStoreRepository = getKoin().get<DataStoreRepository>()
+            val isDarkState by dataStoreRepository.isDarkTheme().collectAsState(initial = false)
+            var isLoading by remember { mutableStateOf(true) }
+            var entry: Screen by remember { mutableStateOf(LoginScreen()) }
 
-        val dataStoreRepository: DataStoreRepository = getKoin().get<DataStoreRepository>()
-        val isDarkState by dataStoreRepository.isDarkTheme().collectAsState(initial = false)
-        var isLoading by remember { mutableStateOf(true) }
-        var entry: Screen by remember { mutableStateOf(LoginScreen()) }
+            val lifecycleOwner = LocalLifecycleOwner.current
+            val coroutineScope = rememberCoroutineScope()
 
-        val lifecycleOwner = LocalLifecycleOwner.current
-        val coroutineScope = rememberCoroutineScope()
-
-        DisposableEffect(lifecycleOwner) {
-            val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_RESUME) {
-                    coroutineScope.launch {
-                        val hasValidToken = checkTokenValidity(dataStoreRepository)
-                        if (hasValidToken) {
-                            entry = BottomNav()
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) {
+                        coroutineScope.launch {
+                            val hasValidToken = checkTokenValidity(dataStoreRepository)
+                            if (hasValidToken) {
+                                entry = BottomNav()
+                            }
+                            isLoading = false
                         }
-                        isLoading = false
                     }
                 }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
             }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-        }
 
-        AppTheme(isDarkState) {
-            KeyboardAwareContainer(
-                modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars),
-                content = {
-                    if (isLoading) {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            LinearProgressIndicator()
-                        }
-                    } else {
-                        Navigator(entry) { navigator ->
-                            SwipeBackContent(navigator)
+            AppTheme(isDarkState) {
+                KeyboardAwareContainer(
+                    modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars),
+                    content = {
+                        if (isLoading) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                LinearProgressIndicator()
+                            }
+                        } else {
+                            Navigator(entry) { navigator ->
+                                SwipeBackContent(navigator)
+                            }
                         }
                     }
-                }
-            )
-        }
-    }
+                )
+            }
+        })
 }
 
 @OptIn(ExperimentalTime::class)

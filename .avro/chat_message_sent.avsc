@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "ChatMessageSent",
+  "namespace": "com.example.chat",
+  "fields": [
+    { "name": "message_id", "type": "string" },
+    { "name": "conversation_id", "type": "string" },
+    { "name": "sender_id", "type": "string" },
+    { "name": "receiver_id", "type": "string" },
+    { "name": "body", "type": "string" },
+    { "name": "sent_at", "type": "string" }
+  ]
+}

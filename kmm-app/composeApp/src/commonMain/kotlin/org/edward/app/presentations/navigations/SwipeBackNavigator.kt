@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
@@ -81,6 +82,7 @@ fun SwipeBackContent(navigator: Navigator) {
             modifier = Modifier
                 .fillMaxSize()
                 .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                .background(MaterialTheme.colorScheme.background)
                 .then(
                     if (isSwiping) {
                         Modifier.drawWithContent {

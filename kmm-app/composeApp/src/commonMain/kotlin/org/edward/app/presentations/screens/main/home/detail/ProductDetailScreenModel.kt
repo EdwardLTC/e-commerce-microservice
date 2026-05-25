@@ -11,7 +11,9 @@ import org.edward.app.data.remote.product.ProductDetail
 import org.edward.app.data.remote.product.ProductRepository
 import org.edward.app.data.remote.product.Variant
 import org.edward.app.data.utils.AsyncResult
+import org.koin.core.annotation.Factory
 
+@Factory
 class ProductDetailScreenModel(
     private val productRepository: ProductRepository,
     private val cartRepository: CartRepository,

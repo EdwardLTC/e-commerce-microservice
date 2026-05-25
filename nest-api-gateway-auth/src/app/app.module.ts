@@ -7,9 +7,10 @@ import { GlobalExceptionsFilter } from '../exceptions/global-exceptions.filter';
 import { AuthModule } from '../auth/auth.module';
 import { AuthGuard } from '../auth/auth.guard';
 import { ProductsModule } from '../products/products.module';
+import { OrdersModule } from '../orders/orders.module';
 
 @Module({
-  imports: [EnvironmentsModule, UsersModule, AuthModule, ProductsModule],
+  imports: [EnvironmentsModule, UsersModule, AuthModule, ProductsModule, OrdersModule],
   providers: [
     {
       provide: APP_INTERCEPTOR,

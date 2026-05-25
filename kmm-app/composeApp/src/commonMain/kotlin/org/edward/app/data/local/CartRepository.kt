@@ -3,6 +3,7 @@ package org.edward.app.data.local
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import org.koin.core.annotation.Single
 
 data class CartItem(
     val variantId: String,
@@ -16,6 +17,7 @@ data class CartItem(
     val totalPrice: Double get() = price * quantity
 }
 
+@Single
 class CartRepository {
     private val _items = MutableStateFlow<List<CartItem>>(emptyList())
     val items: StateFlow<List<CartItem>> = _items

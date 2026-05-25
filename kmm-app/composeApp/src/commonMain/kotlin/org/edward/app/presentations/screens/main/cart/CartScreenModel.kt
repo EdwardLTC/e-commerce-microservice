@@ -4,7 +4,9 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import kotlinx.coroutines.flow.StateFlow
 import org.edward.app.data.local.CartItem
 import org.edward.app.data.local.CartRepository
+import org.koin.core.annotation.Factory
 
+@Factory
 class CartScreenModel(
     private val cartRepository: CartRepository,
 ) : ScreenModel {

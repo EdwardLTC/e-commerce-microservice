@@ -17,8 +17,10 @@ import java.util.*
 
 @Repository
 @Transactional
-class StockRepository {
-    fun reserveStock(request: List<ReserveStock>, orderId: String): UUID {
+class StockRepository(
+    private val kafkaOutboxRepository: KafkaOutboxRepository,
+) {
+    fun reserveStock(request: List<ReserveStock>, orderId: String, successEventPayload: ByteArray): UUID {
         if (request.isEmpty()) {
             throw IllegalArgumentException("Reserve stock request cannot be empty")
         }
@@ -63,6 +65,8 @@ class StockRepository {
                 }
             }
 
+            kafkaOutboxRepository.enqueue(STOCK_REDUCTION_SUCCESS_TOPIC, successEventPayload, orderId)
+
             return@transaction reversalId
         }
     }
@@ -105,5 +109,9 @@ class StockRepository {
 
             return@transaction items.size
         }
+    }
+
+    companion object {
+        private const val STOCK_REDUCTION_SUCCESS_TOPIC = "stock.reduction.success"
     }
 }

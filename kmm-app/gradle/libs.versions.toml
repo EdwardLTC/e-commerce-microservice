@@ -1,21 +1,22 @@
 [versions]
 
-kamelImage = "1.0.7"
-kotlin = "2.2.10"
-compose = "1.9.0-beta03"
-agp = "9.0.1"
-androidx-activityCompose = "1.10.1"
+kamelImage = "1.0.9"
+kotlin = "2.3.20"
+compose = "1.10.3"
+agp = "9.1.1"
+androidx-activityCompose = "1.13.0"
 androidx-uiTest = "1.9.0"
 materialIconsExtended = "1.7.3"
-openaiClient = "4.0.1"
+openaiClient = "4.1.0"
 voyager = "1.1.0-beta03"
 napier = "2.7.1"
-buildConfig = "6.0.7"
-ktor = "3.2.3"
+buildConfig = "6.0.9"
+ktor = "3.4.2"
 kotlinx-datetime = "0.7.1"
-koin = "4.1.0"
-dataStore = "1.1.7"
-atomicfu = "0.29.0"
+koin = "4.2.1"
+koin-plugin = "1.0.0-RC1"
+dataStore = "1.2.1"
+atomicfu = "0.32.1"
 
 [libraries]
 
@@ -40,6 +41,7 @@ ktor-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor"
 #Koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin" }
 
 #Voyager
 openai-client = { module = "com.aallam.openai:openai-client", version.ref = "openaiClient" }
@@ -52,6 +54,7 @@ voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", vers
 
 # DataStore
 dataStore = { module = "androidx.datastore:datastore", version.ref = "dataStore" }
+dataStore-core = { module = "androidx.datastore:datastore-core", version.ref = "dataStore" }
 dataStore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "dataStore" }
 dataStore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "dataStore" }
 
@@ -62,3 +65,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
+koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-plugin" }

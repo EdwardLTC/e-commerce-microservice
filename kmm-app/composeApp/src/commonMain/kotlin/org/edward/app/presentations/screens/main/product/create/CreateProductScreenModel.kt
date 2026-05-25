@@ -11,7 +11,9 @@ import org.edward.app.data.remote.product.CreateProductRequest
 import org.edward.app.data.remote.product.CreateProductVariantRequest
 import org.edward.app.data.remote.product.ProductRepository
 import org.edward.app.data.utils.AsyncResult
+import org.koin.core.annotation.Factory
 
+@Factory
 class CreateProductScreenModel(
     private val productRepository: ProductRepository,
 ) : ScreenModel {

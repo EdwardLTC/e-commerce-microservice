@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.edward.app.data.local.DataStoreRepository
+import org.koin.core.annotation.Factory
 
+@Factory
 class SettingsScreenModel(private val dataStoreRepository: DataStoreRepository) : ScreenModel {
 
     private val _isDarkTheme = MutableStateFlow(false)

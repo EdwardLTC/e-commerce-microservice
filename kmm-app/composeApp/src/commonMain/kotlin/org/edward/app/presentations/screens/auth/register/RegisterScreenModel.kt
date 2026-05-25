@@ -10,7 +10,9 @@ import org.edward.app.data.remote.auth.AuthRepository
 import org.edward.app.data.remote.auth.LoginRequest
 import org.edward.app.data.remote.auth.RegisterRequest
 import org.edward.app.data.utils.AsyncResult
+import org.koin.core.annotation.Factory
 
+@Factory
 class RegisterScreenModel(
     private val dataStoreRepository: DataStoreRepository,
     private val authRepository: AuthRepository,

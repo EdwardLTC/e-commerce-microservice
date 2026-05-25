@@ -6,6 +6,7 @@ import {
   CreateProductRequest,
   CreateProductVariantRequest,
   GetProductsRequest,
+  GetVariantsByIdsRequest,
 } from './products.model';
 import { lastValueFrom } from 'rxjs';
 import { com } from '../generated/.proto/Product';
@@ -33,6 +34,10 @@ export class ProductsService {
 
   public async getProductById(id: string) {
     return lastValueFrom(this.productClient.getProductDetail({ id: stringValue(id) }));
+  }
+
+  public async getVariantsByIds(data: GetVariantsByIdsRequest) {
+    return lastValueFrom(this.variantClient.getVariantsByIds({ ids: data.ids }));
   }
 
   public async createProduct(data: CreateProductRequest, sellerId: string) {

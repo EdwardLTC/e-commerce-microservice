@@ -13,6 +13,7 @@ export class EnvironmentsService {
   public readonly microservice: MicroserviceConfig = {
     userServiceURL: this.configService.get<string>('USER_SERVICE_URL'),
     productServiceURL: this.configService.get<string>('PRODUCT_SERVICE_URL'),
+    orderServiceURL: this.configService.get<string>('ORDER_SERVICE_URL'),
   };
   public readonly redis: RedisConfig = {
     url: this.configService.get<string>('REDIS_CONNECTION'),

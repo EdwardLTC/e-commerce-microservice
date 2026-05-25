@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.edward.app.data.local.DataStoreRepository
 import org.edward.app.data.remote.auth.AuthRepository
+import org.koin.core.annotation.Factory
 
+@Factory
 class ProfileScreenModel(
     private val dataStoreRepository: DataStoreRepository,
     private val authRepository: AuthRepository,

@@ -38,6 +38,17 @@ This project implements a microservice architecture pattern with multiple servic
 - **Database:** PostgreSQL
 - **Responsibilities:** Manages user profiles, preferences, and user-related operations
 
+### Chat Realtime Service
+
+- **Technology:** Phoenix (Elixir)
+- **Responsibilities:** Handles websocket connections, delivers chat messages to receivers immediately, and publishes message events to Kafka for asynchronous persistence.
+
+### Chat Message Writer
+
+- **Technology:** Golang
+- **Database:** PostgreSQL
+- **Responsibilities:** Consumes `chat.messages.v1` Kafka events and writes chat messages to the chat database.
+
 ## Communication Patterns
 
 ### Synchronous Communication
@@ -77,6 +88,8 @@ The system implements the Saga pattern with choreography-based coordination to m
 | Order Service | Golang | Order management |
 | Product Service | Spring Boot | Product catalog |
 | User Service | ASP.NET Core | User management |
+| Chat Realtime Service | Phoenix / Elixir | Websocket chat delivery |
+| Chat Message Writer | Golang | Async chat persistence |
 | Cache | Redis | Authentication & sessions |
 | Database | PostgreSQL | Persistent storage |
 | Message Broker | Apache Kafka | Event streaming & async messaging |
@@ -178,6 +191,18 @@ sequenceDiagram
 | payment-events | payment.completed       | User Service | Order Service |
 | payment-events | payment.fail            | User Service | Product Service, Order Service |
 | order-events | order.completed         | Order Service | Analytics services |
+| chat.messages.v1 | message.sent           | Chat Realtime Service | Chat Message Writer |
+
+## Chat Message Flow
+
+1. Client connects to Phoenix websocket at `ws://localhost:4001/socket/websocket?user_id=<user-id>`.
+2. Client joins its personal channel topic `users:<user-id>`.
+3. Sender pushes `message:send` with `conversation_id`, `receiver_id`, and `body`.
+4. Phoenix sends `message:new` to `users:<receiver-id>` immediately.
+5. Phoenix publishes the same message as Avro to Kafka topic `chat.messages.v1` using schema `.avro/chat_message_sent.avsc`.
+6. `chat-message-writer` consumes the Kafka event and inserts it into PostgreSQL table `chat_messages`.
+
+The writer is idempotent by `message_id`, so Kafka retries or consumer restarts do not duplicate stored messages.
 
 ### Saga State Management
 
