@@ -2,6 +2,7 @@ defmodule ChatRealtimeWeb.UserSocket do
   use Phoenix.Socket
 
   channel("users:*", ChatRealtimeWeb.UserChannel)
+  channel("rooms:*", ChatRealtimeWeb.UserChannel)
 
   @impl true
   def connect(%{"user_id" => user_id}, socket, _connect_info) when is_binary(user_id) do

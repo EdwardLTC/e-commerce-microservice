@@ -15,4 +15,6 @@ config :logger, :console,
 
 config :phoenix, :json_library, Jason
 
-import_config "#{config_env()}.exs"
+if File.exists?("#{__DIR__}/#{config_env()}.exs") do
+  import_config "#{config_env()}.exs"
+end
