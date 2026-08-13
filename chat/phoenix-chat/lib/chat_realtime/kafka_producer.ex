@@ -1,4 +1,3 @@
-
 defmodule ChatRealtime.KafkaProducer do
   use GenServer
 
@@ -8,15 +7,18 @@ defmodule ChatRealtime.KafkaProducer do
 
   @client_id :chat_realtime_kafka_client
 
+  @spec start_link(any()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  @spec publish_message(ChatRealtime.Message.message()) :: :ok | {:error, term()}
   def publish_message(message) do
     GenServer.call(__MODULE__, {:publish_message, message}, 5_000)
   end
 
   @impl true
+  @spec init(any()) :: {:ok, %{topic: any()}} | {:stop, any()}
   def init(_opts) do
     kafka_config = Application.fetch_env!(:chat_realtime, :kafka)
 
@@ -33,10 +35,7 @@ defmodule ChatRealtime.KafkaProducer do
            auto_start_producers: true
          ) do
       :ok ->
-        Logger.info(
-          "Kafka producer started. brokers=#{inspect(brokers)}, topic=#{topic}"
-        )
-
+        Logger.info("Kafka producer started. brokers=#{inspect(brokers)}, topic=#{topic}")
         {:ok, %{topic: topic}}
 
       {:error, {:already_started, _pid}} ->
@@ -49,44 +48,45 @@ defmodule ChatRealtime.KafkaProducer do
   end
 
   @impl true
-  def handle_call(
-        {:publish_message, message},
-        _from,
-        %{topic: topic} = state
-      ) do
+  @spec handle_call({:publish_message, ChatRealtime.Message.message()}, GenServer.from(), %{
+          topic: String.t()
+        }) :: {:reply, :ok | {:error, term()}, %{topic: String.t()}}
+  def handle_call({:publish_message, message}, _from, %{topic: topic} = state) do
     payload = ChatMessageSent.encode(message)
 
-    room_id =
-      Map.get(message, :room_id) ||
-        Map.get(message, "room_id")
+    key = message.room_id
 
-    if is_nil(room_id) do
-      {:reply, {:error, :missing_room_id}, state}
-    else
-      key = to_string(room_id)
+    case :brod.get_partitions_count(@client_id, topic) do
+      {:ok, partition_count} when partition_count > 0 ->
+        partition = :erlang.phash2(key, partition_count)
 
-      case :brod.produce_sync(
-             @client_id,
-             topic,
-             -1,
-             key,
-             payload
-           ) do
-        :ok ->
-          Logger.debug(
-            "Kafka message published topic=#{topic} room_id=#{key}"
-          )
+        case :brod.produce_sync(
+               @client_id,
+               topic,
+               partition,
+               key,
+               payload
+             ) do
+          :ok ->
+            Logger.debug("Kafka message published topic=#{topic} room_id=#{key}")
+            {:reply, :ok, state}
 
-          {:reply, :ok, state}
+          {:error, reason} ->
+            Logger.error(
+              "Failed to publish Kafka message " <>
+                "topic=#{topic} room_id=#{key} reason=#{inspect(reason)}"
+            )
 
-        {:error, reason} ->
-          Logger.error(
-            "Failed to publish Kafka message " <>
-              "topic=#{topic} room_id=#{key} reason=#{inspect(reason)}"
-          )
+            {:reply, {:error, reason}, state}
+        end
 
-          {:reply, {:error, reason}, state}
-      end
+      {:error, reason} ->
+        Logger.error(
+          "Failed to get Kafka partition count " <>
+            "topic=#{topic} reason=#{inspect(reason)}"
+        )
+
+        {:reply, {:error, reason}, state}
     end
   end
 

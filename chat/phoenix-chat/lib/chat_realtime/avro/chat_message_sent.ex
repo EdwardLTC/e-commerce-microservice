@@ -5,6 +5,7 @@ defmodule ChatRealtime.Avro.ChatMessageSent do
 
   @fields [:message_id, :room_id, :sender_id, :body, :sent_at]
 
+  @spec encode(map()) :: binary()
   def encode(message) when is_map(message) do
     @fields
     |> Enum.map(fn field -> encode_string(Map.fetch!(message, field)) end)

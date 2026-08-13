@@ -61,7 +61,7 @@ defmodule ChatRealtimeWeb.UserChannel do
 
         with {:ok, message} <- Message.build(payload),
              :ok <- deliver(message),
-             :ok <- KafkaProducer.publish(message) do
+             :ok <- KafkaProducer.publish_message(message) do
           {:reply, {:ok, %{message: message, persistence: "queued"}}, socket}
         else
           {:error, reason} ->
