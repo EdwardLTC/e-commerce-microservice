@@ -19,12 +19,12 @@ defmodule ChatRealtime.Avro.ChatMessageSent do
   defp encode_long(value) when is_integer(value) and value >= 0 do
     value
     |> Kernel.*(2)
-    |> encode_varint()
+    |> encode_variant()
   end
 
-  defp encode_varint(value) when value < 0x80, do: <<value>>
+  defp encode_variant(value) when value < 0x80, do: <<value>>
 
-  defp encode_varint(value) do
-    <<bor(band(value, 0x7F), 0x80)>> <> encode_varint(value >>> 7)
+  defp encode_variant(value) do
+    <<bor(band(value, 0x7F), 0x80)>> <> encode_variant(value >>> 7)
   end
 end

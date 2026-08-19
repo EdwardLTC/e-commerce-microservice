@@ -1,4 +1,7 @@
 defmodule ChatRealtime.KafkaProducer do
+  @moduledoc """
+  A GenServer that acts as a Kafka producer for publishing chat messages to a Kafka topic.
+  """
   use GenServer
 
   require Logger
@@ -53,43 +56,24 @@ defmodule ChatRealtime.KafkaProducer do
         }) :: {:reply, :ok | {:error, term()}, %{topic: String.t()}}
   def handle_call({:publish_message, message}, _from, %{topic: topic} = state) do
     payload = ChatMessageSent.encode(message)
-
     key = message.room_id
 
-    case :brod.get_partitions_count(@client_id, topic) do
-      {:ok, partition_count} when partition_count > 0 ->
-        partition = :erlang.phash2(key, partition_count)
-
-        case :brod.produce_sync(
-               @client_id,
-               topic,
-               partition,
-               key,
-               payload
-             ) do
-          :ok ->
-            Logger.debug("Kafka message published topic=#{topic} room_id=#{key}")
-            {:reply, :ok, state}
-
-          {:error, reason} ->
-            Logger.error(
-              "Failed to publish Kafka message " <>
-                "topic=#{topic} room_id=#{key} reason=#{inspect(reason)}"
-            )
-
-            {:reply, {:error, reason}, state}
-        end
+    case :brod.produce_sync(@client_id, topic, :hash, key, payload) do
+      :ok ->
+        Logger.debug("Kafka message published topic=#{topic} room_id=#{key}")
+        {:reply, :ok, state}
 
       {:error, reason} ->
         Logger.error(
-          "Failed to get Kafka partition count " <>
-            "topic=#{topic} reason=#{inspect(reason)}"
+          "Failed to publish Kafka message " <>
+            "topic=#{topic} room_id=#{key} reason=#{inspect(reason)}"
         )
 
         {:reply, {:error, reason}, state}
     end
   end
 
+  @spec parse_brokers(String.t()) :: [{charlist(), integer()}]
   defp parse_brokers(brokers) do
     brokers
     |> String.split(",", trim: true)

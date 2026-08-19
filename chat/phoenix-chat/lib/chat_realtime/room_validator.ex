@@ -20,10 +20,12 @@ defmodule ChatRealtime.RoomValidator do
 
   defp request_json(path, payload) do
     base = Application.get_env(:chat_realtime, :message_writer_validator_url, "http://localhost:8080")
+
     url = base <> path
     body = Jason.encode!(payload)
 
-    case Finch.build(:post, url, [{"content-type", "application/json"}], body) |> Finch.request(ChatRealtime.Finch, receive_timeout: @timeout) do
+    case Finch.build(:post, url, [{"content-type", "application/json"}], body)
+         |> Finch.request(ChatRealtime.Finch, receive_timeout: @timeout) do
       {:ok, %Finch.Response{status: 200, body: resp}} ->
         Jason.decode(resp)
 
@@ -38,4 +40,3 @@ defmodule ChatRealtime.RoomValidator do
     end
   end
 end
-

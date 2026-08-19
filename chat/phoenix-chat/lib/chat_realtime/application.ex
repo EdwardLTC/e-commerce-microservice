@@ -1,4 +1,8 @@
 defmodule ChatRealtime.Application do
+  @moduledoc """
+	The ChatRealtime application module is responsible for starting and supervising the application's processes. It defines the
+	supervision tree, which includes the PubSub system, Finch HTTP client, Kafka producer, and the Phoenix endpoint. This module ensures that all necessary components are started and monitored for fault tolerance.
+	"""
   use Application
 
   @impl true

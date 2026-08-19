@@ -9,7 +9,7 @@ config :chat_realtime, ChatRealtimeWeb.Endpoint,
   secret_key_base: "development-secret-key-base-for-chat-realtime-service"
 
 config :chat_realtime, :kafka,
-  brokers: System.get_env("KAFKA_BROKERS", "192.168.64.3:9092"),
+  brokers: System.get_env("KAFKA_BROKERS", "localhost:9092"),
   topic: System.get_env("CHAT_MESSAGES_TOPIC", "chat.messages.v1")
 
 config :phoenix, :plug_init_mode, :runtime

@@ -1,4 +1,8 @@
 defmodule ChatRealtime.Message do
+  @moduledoc """
+  A module for building and validating chat messages.
+  It provides functions to construct a message from given attributes, ensuring that required fields are present and valid. It also generates a unique message ID and timestamp for each message.
+  """
   import Bitwise
 
   @required_fields ~w(room_id sender_id body)a
@@ -59,7 +63,7 @@ defmodule ChatRealtime.Message do
   defp normalize(attrs) do
     %{
       message_id: get(attrs, :message_id),
-      room_id: get(attrs, :conversation_id) || get(attrs, :room_id),
+      room_id: get(attrs, :room_id),
       sender_id: get(attrs, :sender_id),
       body: get(attrs, :body)
     }

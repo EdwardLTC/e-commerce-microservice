@@ -29,7 +29,9 @@ defmodule ChatRealtime.MixProject do
       {:bandit, "~> 1.8"},
       {:finch, "~> 0.16"},
       {:jason, "~> 1.4"},
-      {:brod, "~> 3.18"}
+      {:brod, "~> 4.6"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+			{:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]
   end
 end

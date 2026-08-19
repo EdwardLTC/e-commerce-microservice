@@ -1,4 +1,9 @@
 defmodule ChatRealtimeWeb.UserChannel do
+  @moduledoc """
+  A Phoenix channel for handling user and room interactions in a chat application.
+  This channel allows users to join their own user-specific topics and room-specific topics.
+  It also handles sending messages to rooms and broadcasting them to all participants.
+  """
   use Phoenix.Channel
 
   alias ChatRealtime.KafkaProducer
