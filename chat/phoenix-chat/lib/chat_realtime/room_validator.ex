@@ -19,7 +19,8 @@ defmodule ChatRealtime.RoomValidator do
   end
 
   defp request_json(path, payload) do
-    base = Application.get_env(:chat_realtime, :message_writer_validator_url, "http://localhost:8080")
+    base =
+      Application.get_env(:chat_realtime, :message_writer_validator_url, "http://localhost:8080")
 
     url = base <> path
     body = Jason.encode!(payload)

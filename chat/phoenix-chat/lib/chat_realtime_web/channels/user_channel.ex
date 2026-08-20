@@ -1,14 +1,22 @@
 defmodule ChatRealtimeWeb.UserChannel do
   @moduledoc """
-  A Phoenix channel for handling user and room interactions in a chat application.
-  This channel allows users to join their own user-specific topics and room-specific topics.
-  It also handles sending messages to rooms and broadcasting them to all participants.
+  Channel xử lý cả kênh cá nhân "users:<id>" (notification riêng) và
+  kênh room "rooms:<id>" (chat 1-1 hoặc group).
   """
   use Phoenix.Channel
 
-  alias ChatRealtime.KafkaProducer
-  alias ChatRealtime.Message
-  alias ChatRealtimeWeb.Endpoint
+  alias ChatRealtime.{
+    BlockCache,
+    KafkaProducer,
+    MembershipCache,
+    Message,
+    RoomValidator,
+    Presence
+  }
+
+  alias ChatRealtimeWeb.{Endpoint}
+
+  # ---------- JOIN ----------
 
   @impl true
   def join("users:" <> user_id, _payload, socket) do
@@ -21,37 +29,40 @@ defmodule ChatRealtimeWeb.UserChannel do
 
   @impl true
   def join("rooms:" <> room_id, _payload, socket) do
-    # Validate room with message-writer service before allowing the join.
-    # temporarily disabled for testing, but should be re-enabled in production.
+		after_join(room_id, socket)
+#    user_id = socket.assigns.user_id
+#
+#    if MembershipCache.member?(room_id, user_id) do
+#      after_join(room_id, socket)
+#    else
+#      # cache miss -> fallback validate qua service, rồi populate lại cache
+#      case RoomValidator.validate_room(room_id, user_id) do
+#        {:ok, member_ids} ->
+#          MembershipCache.put_members(room_id, member_ids)
+#          after_join(room_id, socket)
+#
+#        {:error, _reason} ->
+#          {:error, %{reason: "forbidden"}}
+#      end
+#    end
+  end
 
-    # case ChatRealtime.RoomValidator.validate_room(room_id, socket.assigns.user_id) do
-    #   {:ok, validated_room_id} ->
-    #     {:ok, assign(socket, :room_id, validated_room_id)}
-
-    #   {:error, _reason} ->
-    #     {:error, %{reason: "forbidden"}}
-    # end
-
-    {:ok, assign(socket, :room_id, room_id)}
+  defp after_join(room_id, socket) do
+    socket = assign(socket, :room_id, room_id)
+    send(self(), :track_presence)
+    {:ok, socket}
   end
 
   @impl true
-  def handle_in("room:open", %{"peer_user_id" => peer_user_id}, socket) do
-    # Validate room with message-writer service before allowing the join.
-    # temporarily disabled for testing, but should be re-enabled in production.
-    # case ChatRealtime.RoomValidator.resolve_room(socket.assigns.user_id, peer_user_id) do
-    #   {:ok, %{"room_id" => room_id}} ->
-    #     {:reply, {:ok, %{room_id: room_id, topic: "rooms:#{room_id}"}}, socket}
+  def handle_info(:track_presence, socket) do
+    {:ok, _} =
+      Presence.track(socket, socket.assigns.user_id, %{online_at: System.system_time(:second)})
 
-    #   {:ok, %{"error" => reason}} ->
-    #     {:reply, {:error, %{reason: reason}}, socket}
-
-    #   {:error, reason} ->
-    #     {:reply, {:error, %{reason: inspect(reason)}}, socket}
-    # end
-
-    {:reply, {:ok, %{room_id: "test-room-id", topic: "rooms:test-room-id"}}, socket}
+    push(socket, "presence_state", Presence.list(socket))
+    {:noreply, socket}
   end
+
+  # ---------- SEND MESSAGE ----------
 
   @impl true
   def handle_in("message:send", payload, socket) do
@@ -60,13 +71,15 @@ defmodule ChatRealtimeWeb.UserChannel do
         {:reply, {:error, %{reason: "room_not_joined"}}, socket}
 
       room_id ->
-        payload = Map.put(payload, "sender_id", socket.assigns.user_id)
-        # ensure the room_id is present on the payload
-        payload = Map.put_new(payload, "room_id", room_id)
+        sender_id = socket.assigns.user_id
+        payload = payload |> Map.put("sender_id", sender_id) |> Map.put_new("room_id", room_id)
 
-        with {:ok, message} <- Message.build(payload),
-             :ok <- deliver(message),
-             :ok <- KafkaProducer.publish_message(message) do
+        with :ok <- check_not_blocked(room_id, sender_id),
+             {:ok, message} <- Message.build(payload),
+             :ok <- deliver(message, socket),
+						 {:ok, encoded} <- ChatRealtime.AvroEncoder.encode(message),
+             :ok <- KafkaProducer.publish_message(encoded, room_id) do
+          notify_recipients(message, socket)
           {:reply, {:ok, %{message: message, persistence: "queued"}}, socket}
         else
           {:error, reason} ->
@@ -75,7 +88,59 @@ defmodule ChatRealtimeWeb.UserChannel do
     end
   end
 
-  defp deliver(message) do
-    Endpoint.broadcast("rooms:#{message.room_id}", "message:new", %{message: message})
+  @impl true
+  def handle_in("typing:start", _payload, socket) do
+    broadcast_from(socket, "typing:diff", %{user_id: socket.assigns.user_id, typing: true})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("typing:stop", _payload, socket) do
+    broadcast_from(socket, "typing:diff", %{user_id: socket.assigns.user_id, typing: false})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("message:read", %{"message_id" => message_id}, socket) do
+    broadcast_from(socket, "message:read", %{
+      user_id: socket.assigns.user_id,
+      message_id: message_id
+    })
+
+    {:noreply, socket}
+  end
+
+  # ---------- INTERNAL ----------
+
+  @spec check_not_blocked(String.t(), String.t()) :: :ok | {:error, :blocked}
+  defp check_not_blocked(room_id, sender_id) do
+    room_id
+    |> MembershipCache.members_of()
+    |> Enum.reject(&(&1 == sender_id))
+    |> Enum.any?(&BlockCache.blocked?(sender_id, &1))
+    |> if(do: {:error, :blocked}, else: :ok)
+  end
+
+  @spec deliver(Message.message(), Phoenix.Socket.t()) :: :ok
+  defp deliver(message, socket) do
+    broadcast_from(socket, "message:new", %{message: message})
+  end
+
+  # Notify riêng qua kênh cá nhân "users:<id>" cho các thành viên khác trong room -
+  # để client tự động join "rooms:<id>" nếu chưa join (case chat lần đầu, room mới).
+  @spec notify_recipients(Message.message(), Phoenix.Socket.t()) :: :ok
+  defp notify_recipients(message, _socket) do
+    message.room_id
+    |> MembershipCache.members_of()
+    |> Enum.reject(&(&1 == message.sender_id))
+    |> Enum.each(fn recipient_id ->
+      Endpoint.broadcast("users:#{recipient_id}", "room:invite", %{
+        room_id: message.room_id,
+        from: message.sender_id,
+        preview: message.body
+      })
+    end)
+
+    :ok
   end
 end

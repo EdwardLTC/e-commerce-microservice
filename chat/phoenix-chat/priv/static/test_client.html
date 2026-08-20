@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Chat Realtime — Test Client</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #0f1115;
+            color: #e6e6e6;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { font-size: 18px; color: #9fb4ff; margin: 0 0 16px; }
+        .panel {
+            background: #171a21;
+            border: 1px solid #262b36;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        input, button {
+            background: #0f1115;
+            border: 1px solid #333a47;
+            color: #e6e6e6;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 13px;
+        }
+        input { flex: 1; min-width: 120px; }
+        button {
+            background: #3a5cf5;
+            border-color: #3a5cf5;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        button:hover { background: #5271ff; }
+        button.secondary { background: #262b36; border-color: #333a47; }
+        button.secondary:hover { background: #333a47; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .status { font-size: 12px; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+        .status.online { background: #143a24; color: #4ade80; }
+        .status.offline { background: #3a1414; color: #f87171; }
+        #log {
+            background: #0a0b0e;
+            border: 1px solid #262b36;
+            border-radius: 8px;
+            padding: 10px;
+            height: 380px;
+            overflow-y: auto;
+            font-family: "SF Mono", Menlo, monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .msg-in { color: #7dd3fc; }
+        .msg-out { color: #86efac; }
+        .msg-sys { color: #94a3b8; }
+        .msg-err { color: #f87171; }
+        .msg-recv { color: #fbbf24; }
+        .tag { opacity: 0.6; margin-right: 6px; }
+        small { color: #6b7280; }
+    </style>
+</head>
+<body>
+
+<h1>🐘 Chat Realtime — Test Client</h1>
+
+<div class="panel">
+    <div class="row">
+        <input id="wsUrl" value="" placeholder="WebSocket URL" />
+        <input id="userId" value="" placeholder="user_id" style="max-width:160px" />
+        <button id="connectBtn" onclick="toggleConnection()">Connect</button>
+        <span id="connStatus" class="status offline">offline</span>
+    </div>
+    <small>Sửa URL nếu backend chạy port khác. Đang gửi param <code>?user_id=&lt;userId&gt;</code> theo UserSocket hiện tại (auth thật thì thêm field token khi bật lại issuer verify).</small>
+</div>
+
+<div class="panel">
+    <div class="row">
+        <input id="roomId" class="requires-conn" value="room_abc" placeholder="room_id" style="max-width:200px" disabled />
+        <button class="requires-conn" onclick="joinRoom()" disabled>Join rooms:&lt;room_id&gt;</button>
+    </div>
+    <div class="row">
+        <input id="msgContent" class="requires-conn" placeholder="Nội dung tin nhắn..."
+               oninput="handleTypingInput()"
+               onkeydown="if(event.key==='Enter') sendMessage()" disabled />
+        <button class="requires-conn" onclick="sendMessage()" disabled>Gửi</button>
+    </div>
+    <small id="typingIndicator" style="display:block; min-height: 16px; color: #6b7280;"></small>
+</div>
+
+<div class="panel">
+    <div class="row">
+        <button class="secondary" onclick="clearLog()">Clear log</button>
+    </div>
+    <div id="log"></div>
+</div>
+
+<script>
+    let ws = null;
+    let ref = 0;
+    let joinRefs = {}; // topic -> join_ref
+
+    // Nếu file được serve từ chính Phoenix (http://host:port/test_client.html),
+    // tự suy ra ws URL cùng host/port. Nếu mở file:// (standalone) thì fallback localhost:4001.
+    (function initWsUrl() {
+      const field = document.getElementById('wsUrl');
+      if (location.protocol.startsWith('http')) {
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+        field.value = `${proto}://${location.host}/socket/websocket`;
+      } else {
+        field.value = 'ws://localhost:4001/socket/websocket';
+      }
+      const userIdField = document.getElementById('userId');
+
+        if (!userIdField.value) {
+            userIdField.value = 'user_' + Math.floor(Math.random() * 1000);
+        }
+    })();
+
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+    }
+
+    function nextRef() { return String(++ref); }
+
+    function log(cls, tag, text) {
+      const el = document.getElementById('log');
+      const line = document.createElement('div');
+      line.className = cls;
+      const time = new Date().toLocaleTimeString();
+      line.innerHTML = `<span class="tag">${time}</span><span class="tag">[${tag}]</span>${escapeHtml(text)}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    }
+
+    function setStatus(online) {
+      const statusEl = document.getElementById('connStatus');
+      statusEl.textContent = online ? 'online' : 'offline';
+      statusEl.className = 'status ' + (online ? 'online' : 'offline');
+
+      const connectBtn = document.getElementById('connectBtn');
+      connectBtn.textContent = online ? 'Disconnect' : 'Connect';
+      connectBtn.className = online ? 'secondary' : '';
+
+      document.getElementById('wsUrl').disabled = online;
+      document.getElementById('userId').disabled = online;
+
+      document.querySelectorAll('.requires-conn').forEach(el => {
+        el.disabled = !online;
+      });
+    }
+
+    function toggleConnection() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      } else {
+        connectSocket();
+      }
+    }
+
+    function connectSocket() {
+      const baseUrl = document.getElementById('wsUrl').value;
+      const userId = document.getElementById('userId').value;
+      const url = `${baseUrl}?user_id=${encodeURIComponent(userId)}&vsn=2.0.0`;
+
+      ws = new WebSocket(url);
+
+      ws.onopen = () => {
+        setStatus(true);
+        log('msg-sys', 'socket', `Connected as ${userId}`);
+        joinUserChannel();
+      };
+
+      ws.onclose = () => {
+        setStatus(false);
+        joinRefs = {};
+        log('msg-sys', 'socket', 'Disconnected');
+      };
+
+      ws.onerror = (e) => {
+        log('msg-err', 'error', 'WebSocket error — check URL/port/CORS, xem console (F12) để biết chi tiết');
+      };
+
+      ws.onmessage = (event) => {
+        const [joinRef, msgRef, topic, evt, payload] = JSON.parse(event.data);
+        handleIncoming(topic, evt, payload);
+      };
+    }
+
+    function push(topic, event, payload) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log('msg-err', 'error', 'Chưa connect socket');
+        return;
+      }
+      const joinRef = joinRefs[topic] ?? null;
+      const r = nextRef();
+      const frame = [joinRef, r, topic, event, payload];
+      ws.send(JSON.stringify(frame));
+      log('msg-out', `→ ${event}`, `${topic} :: ${JSON.stringify(payload)}`);
+    }
+
+    function joinUserChannel() {
+      const userId = document.getElementById('userId').value;
+      const topic = `users:${userId}`;
+      const r = nextRef();
+      joinRefs[topic] = r;
+      ws.send(JSON.stringify([r, r, topic, "phx_join", {}]));
+      log('msg-out', 'join', topic);
+    }
+
+    function joinRoom() {
+      const roomId = document.getElementById('roomId').value;
+      const topic = `rooms:${roomId}`;
+      const r = nextRef();
+      joinRefs[topic] = r;
+      ws.send(JSON.stringify([r, r, topic, "phx_join", {}]));
+      log('msg-out', 'join', topic);
+    }
+
+    function sendTyping(isStart) {
+      const roomId = document.getElementById('roomId').value;
+      push(`rooms:${roomId}`, isStart ? "typing:start" : "typing:stop", {});
+    }
+
+    function sendMessage() {
+      const roomId = document.getElementById('roomId').value;
+      const content = document.getElementById('msgContent').value;
+      if (!content) return;
+      stopTypingNow();
+      push(`rooms:${roomId}`, "message:send", { content });
+      document.getElementById('msgContent').value = '';
+    }
+
+    let isTyping = false;
+    let typingTimer = null;
+    const TYPING_IDLE_MS = 1500; // ngừng gõ bao lâu thì tự bắn typing:stop
+
+    function handleTypingInput() {
+      if (!isTyping) {
+        isTyping = true;
+        sendTyping(true);
+      }
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        isTyping = false;
+        sendTyping(false);
+      }, TYPING_IDLE_MS);
+    }
+
+    function stopTypingNow() {
+      clearTimeout(typingTimer);
+      if (isTyping) {
+        isTyping = false;
+        sendTyping(false);
+      }
+    }
+
+    function handleIncoming(topic, evt, payload) {
+      if (evt === "phx_reply") {
+        const cls = payload.status === "ok" ? 'msg-in' : 'msg-err';
+        log(cls, `reply:${payload.status}`, `${topic} :: ${JSON.stringify(payload.response)}`);
+        return;
+      }
+      if (evt === "message:new") {
+        log('msg-recv', 'message:new', `${topic} :: ${JSON.stringify(payload)}`);
+        return;
+      }
+      if (evt === "room:invite") {
+        log('msg-recv', 'room:invite', JSON.stringify(payload));
+        return;
+      }
+      if (evt === "presence_state" || evt === "presence_diff") {
+        log('msg-sys', evt, JSON.stringify(payload));
+        return;
+      }
+      if (evt === "typing:diff") {
+        const indicator = document.getElementById('typingIndicator');
+        if (payload.typing) {
+          indicator.textContent = `${payload.user_id} đang gõ...`;
+          clearTimeout(indicator._clearTimer);
+          indicator._clearTimer = setTimeout(() => { indicator.textContent = ''; }, TYPING_IDLE_MS + 500);
+        } else {
+          indicator.textContent = '';
+        }
+        log('msg-sys', 'typing:diff', JSON.stringify(payload));
+        return;
+      }
+      log('msg-in', evt, `${topic} :: ${JSON.stringify(payload)}`);
+    }
+</script>
+
+</body>
+</html>

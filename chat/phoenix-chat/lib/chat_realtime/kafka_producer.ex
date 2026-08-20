@@ -15,9 +15,9 @@ defmodule ChatRealtime.KafkaProducer do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  @spec publish_message(ChatRealtime.Message.message()) :: :ok | {:error, term()}
-  def publish_message(message) do
-    GenServer.call(__MODULE__, {:publish_message, message}, 5_000)
+  @spec publish_message(binary(), String.t()) :: :ok | {:error, term()}
+  def publish_message(message, key) do
+    GenServer.call(__MODULE__, {:publish_message, message, key}, 5_000)
   end
 
   @impl true
@@ -51,14 +51,9 @@ defmodule ChatRealtime.KafkaProducer do
   end
 
   @impl true
-  @spec handle_call({:publish_message, ChatRealtime.Message.message()}, GenServer.from(), %{
-          topic: String.t()
-        }) :: {:reply, :ok | {:error, term()}, %{topic: String.t()}}
-  def handle_call({:publish_message, message}, _from, %{topic: topic} = state) do
-    payload = ChatMessageSent.encode(message)
-    key = message.room_id
-
-    case :brod.produce_sync(@client_id, topic, :hash, key, payload) do
+  @spec handle_call({:publish_message, binary(), String.t()}, GenServer.from(), %{topic: String.t()}) :: {:reply, :ok | {:error, term()}, %{topic: String.t()}}
+  def handle_call({:publish_message, message, key}, _from, %{topic: topic} = state) do
+    case :brod.produce_sync(@client_id, topic, :hash, key, message) do
       :ok ->
         Logger.debug("Kafka message published topic=#{topic} room_id=#{key}")
         {:reply, :ok, state}

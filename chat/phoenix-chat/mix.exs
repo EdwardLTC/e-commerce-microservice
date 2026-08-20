@@ -25,13 +25,14 @@ defmodule ChatRealtime.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.8.0"},
-      {:plug_cowboy, "~> 2.7"},
       {:bandit, "~> 1.8"},
       {:finch, "~> 0.16"},
       {:jason, "~> 1.4"},
       {:brod, "~> 4.6"},
+      {:uniq, "~> 0.6"},
+			{:avrora, "~> 0.29"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-			{:dialyxir, "~> 1.4", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]
   end
 end

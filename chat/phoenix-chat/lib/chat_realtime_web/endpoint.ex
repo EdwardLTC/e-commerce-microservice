@@ -6,6 +6,13 @@ defmodule ChatRealtimeWeb.Endpoint do
     longpoll: false
   )
 
+  plug(Plug.Static,
+    at: "/",
+    from: :chat_realtime,
+    gzip: false,
+    only: ~w(test_client.html)
+  )
+
   plug(Plug.RequestId)
   plug(Plug.Telemetry, event_prefix: [:phoenix, :endpoint])
   plug(Plug.Parsers, parsers: [:json], json_decoder: Phoenix.json_library())
