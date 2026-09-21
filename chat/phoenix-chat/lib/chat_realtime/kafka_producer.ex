@@ -51,7 +51,9 @@ defmodule ChatRealtime.KafkaProducer do
   end
 
   @impl true
-  @spec handle_call({:publish_message, binary(), String.t()}, GenServer.from(), %{topic: String.t()}) :: {:reply, :ok | {:error, term()}, %{topic: String.t()}}
+  @spec handle_call({:publish_message, binary(), String.t()}, GenServer.from(), %{
+          topic: String.t()
+        }) :: {:reply, :ok | {:error, term()}, %{topic: String.t()}}
   def handle_call({:publish_message, message, key}, _from, %{topic: topic} = state) do
     case :brod.produce_sync(@client_id, topic, :hash, key, message) do
       :ok ->

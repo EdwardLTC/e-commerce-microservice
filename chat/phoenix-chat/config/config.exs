@@ -17,8 +17,8 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :avrora,
-			 registry_url: nil,
-			 schemas_path: "priv/schemas"
+  registry_url: nil,
+  schemas_path: "priv/schemas"
 
 if File.exists?("#{__DIR__}/#{config_env()}.exs") do
   import_config "#{config_env()}.exs"

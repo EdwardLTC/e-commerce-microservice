@@ -29,22 +29,22 @@ defmodule ChatRealtimeWeb.UserChannel do
 
   @impl true
   def join("rooms:" <> room_id, _payload, socket) do
-		after_join(room_id, socket)
-#    user_id = socket.assigns.user_id
-#
-#    if MembershipCache.member?(room_id, user_id) do
-#      after_join(room_id, socket)
-#    else
-#      # cache miss -> fallback validate qua service, rồi populate lại cache
-#      case RoomValidator.validate_room(room_id, user_id) do
-#        {:ok, member_ids} ->
-#          MembershipCache.put_members(room_id, member_ids)
-#          after_join(room_id, socket)
-#
-#        {:error, _reason} ->
-#          {:error, %{reason: "forbidden"}}
-#      end
-#    end
+    after_join(room_id, socket)
+    #    user_id = socket.assigns.user_id
+    #
+    #    if MembershipCache.member?(room_id, user_id) do
+    #      after_join(room_id, socket)
+    #    else
+    #      # cache miss -> fallback validate qua service, rồi populate lại cache
+    #      case RoomValidator.validate_room(room_id, user_id) do
+    #        {:ok, member_ids} ->
+    #          MembershipCache.put_members(room_id, member_ids)
+    #          after_join(room_id, socket)
+    #
+    #        {:error, _reason} ->
+    #          {:error, %{reason: "forbidden"}}
+    #      end
+    #    end
   end
 
   defp after_join(room_id, socket) do
@@ -77,7 +77,7 @@ defmodule ChatRealtimeWeb.UserChannel do
         with :ok <- check_not_blocked(room_id, sender_id),
              {:ok, message} <- Message.build(payload),
              :ok <- deliver(message, socket),
-						 {:ok, encoded} <- ChatRealtime.AvroEncoder.encode(message),
+             {:ok, encoded} <- ChatRealtime.AvroEncoder.encode(message),
              :ok <- KafkaProducer.publish_message(encoded, room_id) do
           notify_recipients(message, socket)
           {:reply, {:ok, %{message: message, persistence: "queued"}}, socket}

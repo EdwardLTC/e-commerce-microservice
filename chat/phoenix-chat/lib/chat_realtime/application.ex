@@ -13,7 +13,7 @@ defmodule ChatRealtime.Application do
       ChatRealtime.KafkaProducer,
       ChatRealtime.MembershipCache,
       ChatRealtime.Presence,
-														Avrora,
+      Avrora,
       ChatRealtimeWeb.Endpoint
     ]
 

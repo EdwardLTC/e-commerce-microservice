@@ -30,7 +30,7 @@ defmodule ChatRealtime.MixProject do
       {:jason, "~> 1.4"},
       {:brod, "~> 4.6"},
       {:uniq, "~> 0.6"},
-			{:avrora, "~> 0.29"},
+      {:avrora, "~> 0.29"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]

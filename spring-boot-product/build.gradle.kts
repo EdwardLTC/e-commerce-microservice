@@ -29,7 +29,7 @@ repositories {
     maven { url = uri("https://packages.confluent.io/maven/") }
 }
 
-extra["exposedVersion"] = "1.0.0"
+extra["exposedVersion"] = "1.5.0"
 
 dependencies {
     // --- Spring Boot ---
