@@ -27,7 +27,31 @@ class KafkaOutboxRepository {
         val messageKey: String?,
         val payload: ByteArray,
         val attempts: Int,
-    )
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as OutboxMessage
+
+            if (attempts != other.attempts) return false
+            if (id != other.id) return false
+            if (topic != other.topic) return false
+            if (messageKey != other.messageKey) return false
+            if (!payload.contentEquals(other.payload)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = attempts
+            result = 31 * result + id.hashCode()
+            result = 31 * result + topic.hashCode()
+            result = 31 * result + messageKey.hashCode()
+            result = 31 * result + payload.contentHashCode()
+            return result
+        }
+    }
 
     fun enqueue(topic: String, payload: ByteArray, messageKey: String? = null): UUID {
         return transaction {

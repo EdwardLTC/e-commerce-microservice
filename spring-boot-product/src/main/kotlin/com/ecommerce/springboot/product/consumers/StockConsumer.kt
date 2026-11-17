@@ -18,12 +18,6 @@ class StockConsumer(
     private val stockRepository: StockRepository,
     private val kafkaOutboxRepository: KafkaOutboxRepository,
 ) {
-
-    companion object {
-        val TOPIC_ORDER_CREATED = "order.created"
-        val TOPIC_PAYMENT_FAILED = "payment.fail"
-    }
-
     @KafkaListener(topics = ["order.created"], groupId = "stock-consumer-group")
     fun onOrderCreated(payload: ByteArray, ack: Acknowledgment) {
         val event = AvroUtils.deserialize(payload, OrderCreatedEvent.getClassSchema(), OrderCreatedEvent::class.java)

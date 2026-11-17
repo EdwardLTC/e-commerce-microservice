@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -47,11 +48,14 @@ func Start(ctx context.Context, addr string, store *db.Store) error {
 		<-ctx.Done()
 		ctxShut, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		srv.Shutdown(ctxShut)
+		err := srv.Shutdown(ctxShut)
+		if err != nil {
+			return
+		}
 	}()
 
 	log.Printf("validator: starting HTTP server on %s", addr)
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil

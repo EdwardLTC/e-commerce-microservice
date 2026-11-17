@@ -1,0 +1,5 @@
+[languages.go]
+goroot = "/Users/edward/sdk/go1.25.1"
+
+[spelling]
+projectWords = ["ent"]

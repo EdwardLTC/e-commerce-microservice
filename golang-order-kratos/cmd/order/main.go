@@ -51,14 +51,14 @@ func main() {
 
 	producer, err := data.NewKafkaProducer(cfg.Kafka.Broker)
 	if err != nil {
-		logger.Fatalf("failed to create kafka producer: %v", err)
+		logger.Fatalf("failed to create Kafka producer: %v", err)
 	}
 	defer producer.Close()
 
 	dispatcher := worker.NewOutboxDispatcher(orderRepo, producer, cfg.Worker.OutboxInterval, cfg.Worker.OutboxBatch, baseLogger)
 	consumer, err := worker.NewOrderEventConsumer(cfg.Kafka.Broker, cfg.Kafka.ConsumerGroup, cfg.Worker.Topics, usecase, baseLogger)
 	if err != nil {
-		logger.Fatalf("failed to create kafka consumer: %v", err)
+		logger.Fatalf("failed to create Kafka consumer: %v", err)
 	}
 
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())

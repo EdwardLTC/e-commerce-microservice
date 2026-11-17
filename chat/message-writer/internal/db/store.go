@@ -11,11 +11,11 @@ import (
 )
 
 type Message struct {
-	MessageID      string    `json:"message_id"`
-	RoomID         string    `json:"room_id"`
-	SenderID       string    `json:"sender_id"`
-	Body           string    `json:"body"`
-	SentAt         time.Time `json:"sent_at"`
+	MessageID string    `json:"message_id"`
+	RoomID    string    `json:"room_id"`
+	SenderID  string    `json:"sender_id"`
+	Body      string    `json:"body"`
+	SentAt    time.Time `json:"sent_at"`
 }
 
 type Room struct {
@@ -102,7 +102,7 @@ func New(ctx context.Context, contactPoints []string, keyspace string) (*Store, 
 		return nil, errors.New("at least one Cassandra contact point is required")
 	}
 	if strings.TrimSpace(keyspace) == "" {
-		return nil, errors.New("Cassandra keyspace is required")
+		return nil, errors.New("cassandra keyspace is required")
 	}
 
 	cluster := gocql.NewCluster(normalized...)
@@ -158,7 +158,7 @@ func (s *Store) ResolveRoom(ctx context.Context, userID, peerUserID string) (Roo
 		}
 		return room, false, nil
 	}
-	if err != gocql.ErrNotFound {
+	if !errors.Is(err, gocql.ErrNotFound) {
 		return Room{}, false, err
 	}
 
@@ -189,7 +189,7 @@ func (s *Store) ResolveRoom(ctx context.Context, userID, peerUserID string) (Roo
 func (s *Store) ValidateRoom(ctx context.Context, roomID, userID string) (bool, error) {
 	room, err := s.getRoomByID(ctx, roomID)
 	if err != nil {
-		if err == gocql.ErrNotFound {
+		if errors.Is(err, gocql.ErrNotFound) {
 			return false, nil
 		}
 		return false, err
@@ -259,4 +259,3 @@ func normalizeRoomParticipants(userID, peerUserID string) (string, string, strin
 
 	return userA, userB, userA + ":" + userB, nil
 }
-

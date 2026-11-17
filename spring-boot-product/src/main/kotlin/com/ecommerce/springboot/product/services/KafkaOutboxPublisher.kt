@@ -14,7 +14,7 @@ class KafkaOutboxPublisher(
 ) {
     private val logger = LoggerFactory.getLogger(KafkaOutboxPublisher::class.java)
 
-    @Scheduled(fixedDelayString = "\${app.kafka-outbox.poll-delay-ms:5000}")
+    @Scheduled(fixedDelayString = $$"${app.kafka-outbox.poll-delay-ms:5000}")
     fun publishPendingMessages() {
         outboxRepository.requeueStaleProcessing()
 
