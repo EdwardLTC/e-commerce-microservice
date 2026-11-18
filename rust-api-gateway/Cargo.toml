@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Web framework
-axum = { version = "0.7", features = ["macros"] }
+axum = { version = "0.8", features = ["macros"] }
 tower = "0.5"
 
 # Async runtime
@@ -17,15 +17,16 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 # gRPC client (tonic)
-tonic = "0.12"
-prost = "0.13"
-prost-types = "0.13"
+tonic = "0.14"
+prost = "0.14"
+prost-types = "0.14"
+tonic-prost = "0.14"
 
 # JWT
-jsonwebtoken = "9"
+jsonwebtoken = "12"
 
 # Redis
-redis = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "1.8", features = ["tokio-comp", "connection-manager"] }
 
 # UUID
 uuid = { version = "1", features = ["v4", "serde"] }
@@ -41,4 +42,4 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 [build-dependencies]
-tonic-build = "0.12"
+tonic-prost-build = "0.14"

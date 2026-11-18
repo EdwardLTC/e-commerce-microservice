@@ -141,7 +141,8 @@ fn create_token(state: &AppState, user_id: &str, email: &str) -> (String, String
     let token = encode(
         &Header::default(),
         &claims,
-        &EncodingKey::from_secret(state.config.jwt_secret.as_bytes()),
+        &EncodingKey::from_secret(state.config.jwt_secret.as_bytes())
+            .expect("Failed to create JWT encoding key"),
     )
     .expect("Failed to create JWT token");
 

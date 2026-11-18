@@ -1,4 +1,4 @@
-use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use redis::AsyncCommands;
 use tracing::debug;
 
@@ -7,17 +7,17 @@ use crate::state::{AppState, AuthClaims, LoginSession};
 
 /// Validate the Authorization header and return AuthClaims.
 /// Called directly by each protected handler.
-pub async fn validate_auth(
-    state: &AppState,
-    token: &str,
-) -> Result<AuthClaims, AppError> {
+pub async fn validate_auth(state: &AppState, token: &str) -> Result<AuthClaims, AppError> {
     // Verify JWT token
     let mut validation = Validation::default();
     validation.algorithms = vec![Algorithm::HS256];
 
     let claims = decode::<AuthClaims>(
         token,
-        &DecodingKey::from_secret(state.config.jwt_secret.as_bytes()),
+        &DecodingKey::from_secret(state.config.jwt_secret.as_bytes()).map_err(|e| {
+            debug!("Failed to create JWT decoding key: {}", e);
+            AppError::Unauthorized("Invalid JWT configuration".to_string())
+        })?,
         &validation,
     )
     .map_err(|e| {
@@ -29,9 +29,7 @@ pub async fn validate_auth(
     // Check session in Redis
     let session = get_session(state, &claims.jti).await?;
 
-    let session = session.ok_or_else(|| {
-        AppError::Unauthorized("Session not found".to_string())
-    })?;
+    let session = session.ok_or_else(|| AppError::Unauthorized("Session not found".to_string()))?;
 
     if session.status != "active" {
         return Err(AppError::Unauthorized("Session is not active".to_string()));
@@ -40,10 +38,7 @@ pub async fn validate_auth(
     Ok(claims)
 }
 
-async fn get_session(
-    state: &AppState,
-    jti: &str,
-) -> Result<Option<LoginSession>, AppError> {
+async fn get_session(state: &AppState, jti: &str) -> Result<Option<LoginSession>, AppError> {
     let mut conn = state
         .redis_client
         .get_multiplexed_async_connection()
@@ -65,4 +60,3 @@ async fn get_session(
         None => Ok(None),
     }
 }
-

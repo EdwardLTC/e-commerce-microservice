@@ -22,7 +22,7 @@ fn main() {
     fs::create_dir_all("src/proto/order").unwrap();
 
     // Generate User service stubs
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .build_client(true)
         .build_server(false)
         .out_dir("src/proto/user")
@@ -30,7 +30,7 @@ fn main() {
         .expect("Failed to compile User proto");
 
     // Generate Product service stubs
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .build_client(true)
         .build_server(false)
         .out_dir("src/proto/product")
@@ -38,7 +38,7 @@ fn main() {
         .expect("Failed to compile Product proto");
 
     // Generate Order service stubs
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .build_client(true)
         .build_server(false)
         .out_dir("src/proto/order")
