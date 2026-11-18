@@ -4,11 +4,15 @@ use serde::Serialize;
 use std::fmt;
 use tonic::Status as TonicStatus;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct ErrorResponse {
+    /// HTTP status code
     pub status_code: u16,
+    /// ISO 8601 timestamp
     pub timestamp: String,
+    /// Error message
     pub message: String,
+    /// Optional error cause details
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cause: Option<serde_json::Value>,
 }

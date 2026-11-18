@@ -6,13 +6,25 @@ use crate::error::AppError;
 use crate::middleware::validate_auth;
 use crate::state::{AppState, get_current_token};
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
 pub struct UserProfileResponse {
+    /// User ID
     pub id: String,
+    /// User display name
     pub name: String,
+    /// User email address
     pub email: String,
 }
 
+#[utoipa::path(
+    get,
+    path = "/users/me",
+    tag = "Users",
+    responses(
+        (status = 200, description = "Current user profile", body = UserProfileResponse),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_current_user(
     State(state): State<AppState>,
 ) -> Result<(StatusCode, Json<UserProfileResponse>), AppError> {
@@ -34,6 +46,18 @@ pub async fn get_current_user(
     ))
 }
 
+#[utoipa::path(
+    get,
+    path = "/users/:id",
+    tag = "Users",
+    params(
+        ("id" = String, Path, description = "User ID"),
+    ),
+    responses(
+        (status = 200, description = "User profile", body = UserProfileResponse),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_user_by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,

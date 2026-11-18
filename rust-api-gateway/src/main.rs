@@ -6,6 +6,7 @@ mod middleware;
 mod orders;
 mod products;
 mod state;
+mod swagger;
 mod users;
 
 use std::net::SocketAddr;
@@ -14,13 +15,15 @@ use axum::middleware::from_fn;
 use axum::routing::get;
 use axum::Json;
 use axum::Router;
-use tracing::info;
+use tracing::{info, warn};
+use utoipa::OpenApi;
 
 use crate::config::AppConfig;
 use crate::grpc::order_client::OrdersClient;
 use crate::grpc::product_client::ProductsClient;
 use crate::grpc::user_client::UsersClient;
 use crate::state::AppState;
+use crate::swagger::docs::ApiDocs;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -35,34 +38,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let config = AppConfig::from_env();
     info!("Starting API Gateway on port {}", config.port);
 
-    // Initialize Redis client
-    let redis_client = redis::Client::open(config.redis_url.clone())
-        .map_err(|e| format!("Failed to create Redis client: {}", e))?;
+    // Initialize Redis client (lazy - no connection test at startup)
+    let redis_client = match redis::Client::open(config.redis_url.clone()) {
+        Ok(client) => {
+            info!("Redis client configured (connection will be established lazily)");
+            client
+        }
+        Err(e) => {
+            warn!(
+                "Failed to create Redis client: {}. Redis features will be unavailable.",
+                e
+            );
+            // Create a dummy client that will fail gracefully on use
+            redis::Client::open("redis://localhost:6379")
+                .expect("fallback Redis client creation should not fail")
+        }
+    };
 
-    // Test Redis connection
-    redis_client
-        .get_multiplexed_async_connection()
-        .await
-        .map_err(|e| format!("Failed to connect to Redis: {}", e))?;
-    info!("Connected to Redis");
-
-    // Initialize gRPC clients
-    let user_client = UsersClient::new(&config).await.map_err(|e| {
-        info!("Warning: Could not connect to user service: {}", e);
-        e
-    })?;
-
-    let product_client = ProductsClient::new(&config).await.map_err(|e| {
-        info!("Warning: Could not connect to product service: {}", e);
-        e
-    })?;
-
-    let order_client = OrdersClient::new(&config).await.map_err(|e| {
-        info!("Warning: Could not connect to order service: {}", e);
-        e
-    })?;
-
-    info!("All gRPC clients initialized");
+    // Initialize gRPC clients (lazy - no connection at startup)
+    let user_client = UsersClient::new(&config);
+    let product_client = ProductsClient::new(&config);
+    let order_client = OrdersClient::new(&config);
+    info!("gRPC clients configured (connections will be established lazily)");
 
     // Create shared state
     let app_state = AppState::new(
@@ -77,6 +74,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let app = Router::new()
         // Health check
         .route("/health", get(health_check))
+        // Swagger UI
+        .merge(
+            utoipa_swagger_ui::SwaggerUi::new("/swagger-ui")
+                .url("/api-docs/openapi.json", ApiDocs::openapi()),
+        )
         // Merge module routers
         .merge(auth::router())
         .merge(users::router())
@@ -90,6 +92,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Start server
     let addr = SocketAddr::from(([0, 0, 0, 0], app_state.config.port));
     info!("API Gateway listening on http://{}", addr);
+    info!(
+        "Swagger UI available at http://localhost:{}/swagger-ui",
+        app_state.config.port
+    );
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
@@ -114,7 +120,15 @@ async fn extract_bearer_token(
     next.run(req).await
 }
 
-async fn health_check() -> (axum::http::StatusCode, Json<serde_json::Value>) {
+#[utoipa::path(
+    get,
+    path = "/health",
+    tag = "Health",
+    responses(
+        (status = 200, description = "Service is healthy"),
+    ),
+)]
+pub async fn health_check() -> (axum::http::StatusCode, Json<serde_json::Value>) {
     (
         axum::http::StatusCode::OK,
         Json(serde_json::json!({

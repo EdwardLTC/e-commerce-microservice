@@ -6,10 +6,12 @@ use crate::error::AppError;
 use crate::middleware::validate_auth;
 use crate::state::{AppState, get_current_token};
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema, utoipa::IntoParams)]
 pub struct GetProductsQuery {
+    /// Number of items to skip
     #[serde(default)]
     pub skip: i32,
+    /// Number of items to take
     #[serde(default = "default_take")]
     pub take: i32,
 }
@@ -18,52 +20,78 @@ fn default_take() -> i32 {
     10
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema, utoipa::IntoParams)]
 pub struct GetVariantsQuery {
+    /// List of variant IDs
     pub ids: Vec<String>,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreateProductRequest {
+    /// Product name
     pub name: String,
+    /// Product description
     pub description: String,
+    /// Product brand
     pub brand: String,
+    /// Media URLs for the product
     #[serde(default)]
     pub media_urls: Vec<String>,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreateOptionTypeRequest {
+    /// Option type name
     pub name: String,
+    /// Display order
     #[serde(default)]
     pub display_order: Option<i32>,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreateOptionValueRequest {
+    /// Option value
     pub value: String,
+    /// Media URL for the option value
     #[serde(default)]
     pub media_url: Option<String>,
+    /// Display order
     #[serde(default)]
     pub display_order: Option<i32>,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreateVariantRequest {
+    /// Stock keeping unit
     pub sku: String,
+    /// Variant price
     pub price: f64,
+    /// Stock quantity
     pub stock: i32,
+    /// Media URL for the variant
     #[serde(default)]
     pub media_url: Option<String>,
+    /// Selected option value IDs
     #[serde(default)]
     pub options: Vec<String>,
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
 pub struct ResourceCreatedResponse {
+    /// ID of the created resource
     pub id: String,
 }
 
+#[utoipa::path(
+    get,
+    path = "/products",
+    tag = "Products",
+    params(GetProductsQuery),
+    responses(
+        (status = 200, description = "List of products"),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_products(
     State(state): State<AppState>,
     Query(query): Query<GetProductsQuery>,
@@ -94,6 +122,18 @@ pub async fn get_products(
     Ok((StatusCode::OK, Json(json_products)))
 }
 
+#[utoipa::path(
+    get,
+    path = "/products/:id",
+    tag = "Products",
+    params(
+        ("id" = String, Path, description = "Product ID"),
+    ),
+    responses(
+        (status = 200, description = "Product detail"),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_product_by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,
@@ -148,6 +188,16 @@ pub async fn get_product_by_id(
     Ok((StatusCode::OK, Json(json)))
 }
 
+#[utoipa::path(
+    get,
+    path = "/products/variants",
+    tag = "Products",
+    params(GetVariantsQuery),
+    responses(
+        (status = 200, description = "List of variants"),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_variants_by_ids(
     State(state): State<AppState>,
     Query(query): Query<GetVariantsQuery>,
@@ -174,6 +224,16 @@ pub async fn get_variants_by_ids(
     Ok((StatusCode::OK, Json(json_variants)))
 }
 
+#[utoipa::path(
+    post,
+    path = "/products",
+    tag = "Products",
+    request_body = CreateProductRequest,
+    responses(
+        (status = 201, description = "Product created", body = ResourceCreatedResponse),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn create_product(
     State(state): State<AppState>,
     Json(req_body): Json<CreateProductRequest>,
@@ -197,6 +257,19 @@ pub async fn create_product(
     ))
 }
 
+#[utoipa::path(
+    post,
+    path = "/products/:id/option-types",
+    tag = "Products",
+    params(
+        ("id" = String, Path, description = "Product ID"),
+    ),
+    request_body = CreateOptionTypeRequest,
+    responses(
+        (status = 201, description = "Option type created", body = ResourceCreatedResponse),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn create_option_type(
     State(state): State<AppState>,
     Path(product_id): Path<String>,
@@ -213,6 +286,18 @@ pub async fn create_option_type(
     ))
 }
 
+#[utoipa::path(
+    get,
+    path = "/products/:id/option-types",
+    tag = "Products",
+    params(
+        ("id" = String, Path, description = "Product ID"),
+    ),
+    responses(
+        (status = 200, description = "List of option types"),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_option_types(
     State(state): State<AppState>,
     Path(product_id): Path<String>,
@@ -244,6 +329,19 @@ pub async fn get_option_types(
     Ok((StatusCode::OK, Json(json)))
 }
 
+#[utoipa::path(
+    post,
+    path = "/products/option-types/:optionTypeId/option-values",
+    tag = "Products",
+    params(
+        ("optionTypeId" = String, Path, description = "Option Type ID"),
+    ),
+    request_body = CreateOptionValueRequest,
+    responses(
+        (status = 201, description = "Option value created", body = ResourceCreatedResponse),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn create_option_value(
     State(state): State<AppState>,
     Path(option_type_id): Path<String>,
@@ -265,6 +363,18 @@ pub async fn create_option_value(
     ))
 }
 
+#[utoipa::path(
+    get,
+    path = "/products/option-types/:optionTypeId/option-values",
+    tag = "Products",
+    params(
+        ("optionTypeId" = String, Path, description = "Option Type ID"),
+    ),
+    responses(
+        (status = 200, description = "List of option values"),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_option_values(
     State(state): State<AppState>,
     Path(option_type_id): Path<String>,
@@ -289,6 +399,19 @@ pub async fn get_option_values(
     Ok((StatusCode::OK, Json(json)))
 }
 
+#[utoipa::path(
+    post,
+    path = "/products/:id/variants",
+    tag = "Products",
+    params(
+        ("id" = String, Path, description = "Product ID"),
+    ),
+    request_body = CreateVariantRequest,
+    responses(
+        (status = 201, description = "Variant created", body = ResourceCreatedResponse),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn create_variant(
     State(state): State<AppState>,
     Path(product_id): Path<String>,

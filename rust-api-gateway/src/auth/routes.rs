@@ -12,39 +12,60 @@ use crate::state::{get_current_token, AppState, AuthClaims, LoginSession};
 
 // Request/Response DTOs
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct LoginRequest {
+    /// User email address
     pub email: String,
+    /// User password
     pub password: String,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct RegisterRequest {
+    /// User email address
     pub email: String,
+    /// User password
     pub password: String,
+    /// User display name
     pub name: String,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct ChangePasswordRequest {
+    /// Current password
     pub old_password: String,
+    /// New password to set
     pub new_password: String,
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
 pub struct AuthTokenResponse {
+    /// JWT access token
     pub access_token: String,
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
 pub struct UserProfileResponse {
+    /// User ID
     pub id: String,
+    /// User display name
     pub name: String,
+    /// User email address
     pub email: String,
 }
 
 // Handlers
 
+#[utoipa::path(
+    post,
+    path = "/auth/login",
+    tag = "Auth",
+    request_body = LoginRequest,
+    responses(
+        (status = 200, description = "Login successful", body = AuthTokenResponse),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn login(
     State(state): State<AppState>,
     Json(login_req): Json<LoginRequest>,
@@ -68,6 +89,16 @@ pub async fn login(
     ))
 }
 
+#[utoipa::path(
+    post,
+    path = "/auth/register",
+    tag = "Auth",
+    request_body = RegisterRequest,
+    responses(
+        (status = 201, description = "User registered successfully", body = UserProfileResponse),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn register(
     State(state): State<AppState>,
     Json(register_req): Json<RegisterRequest>,
@@ -92,6 +123,15 @@ pub async fn register(
     ))
 }
 
+#[utoipa::path(
+    post,
+    path = "/auth/logout",
+    tag = "Auth",
+    responses(
+        (status = 200, description = "Logout successful"),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn logout(State(state): State<AppState>) -> Result<StatusCode, AppError> {
     let token =
         get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
@@ -100,6 +140,16 @@ pub async fn logout(State(state): State<AppState>) -> Result<StatusCode, AppErro
     Ok(StatusCode::OK)
 }
 
+#[utoipa::path(
+    post,
+    path = "/auth/change-password",
+    tag = "Auth",
+    request_body = ChangePasswordRequest,
+    responses(
+        (status = 200, description = "Password changed successfully"),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn change_password(
     State(state): State<AppState>,
     Json(change_req): Json<ChangePasswordRequest>,

@@ -5,29 +5,40 @@ use axum::Json;
 use crate::error::AppError;
 use crate::state::AppState;
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreateOrderItemRequest {
+    /// Product variant ID
     pub variant_id: String,
+    /// Quantity ordered
     pub quantity: i32,
+    /// Unit price
     pub unit_price: f64,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreateOrderRequest {
+    /// Customer user ID
     pub customer_id: String,
+    /// Order items
     pub items: Vec<CreateOrderItemRequest>,
+    /// Shipping address
     pub shipping_address: String,
+    /// Billing address
     pub billing_address: String,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema, utoipa::IntoParams)]
 pub struct GetOrdersQuery {
+    /// Page number
     #[serde(default = "default_page")]
     pub page: i32,
+    /// Page size
     #[serde(default = "default_page_size")]
     pub page_size: i32,
+    /// Filter by customer ID
     #[serde(default)]
     pub customer_id: Option<String>,
+    /// Filter by creation date
     #[serde(default)]
     pub created_after: Option<String>,
 }
@@ -40,12 +51,24 @@ fn default_page_size() -> i32 {
     20
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
 pub struct CreateOrderResponse {
+    /// Order ID
     pub id: String,
+    /// Order status
     pub status: i32,
 }
 
+#[utoipa::path(
+    post,
+    path = "/orders",
+    tag = "Orders",
+    request_body = CreateOrderRequest,
+    responses(
+        (status = 201, description = "Order created", body = CreateOrderResponse),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn create_order(
     State(state): State<AppState>,
     Json(req): Json<CreateOrderRequest>,
@@ -60,8 +83,14 @@ pub async fn create_order(
         })
         .collect();
 
-    let response = state.order_client
-        .create_order(&req.customer_id, items, &req.shipping_address, &req.billing_address)
+    let response = state
+        .order_client
+        .create_order(
+            &req.customer_id,
+            items,
+            &req.shipping_address,
+            &req.billing_address,
+        )
         .await
         .map_err(|e| AppError::Internal(format!("Order service error: {}", e)))?;
 
@@ -74,11 +103,24 @@ pub async fn create_order(
     ))
 }
 
+#[utoipa::path(
+    get,
+    path = "/orders/:id",
+    tag = "Orders",
+    params(
+        ("id" = String, Path, description = "Order ID"),
+    ),
+    responses(
+        (status = 200, description = "Order detail"),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_order(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    let order = state.order_client
+    let order = state
+        .order_client
         .get_order(&id)
         .await
         .map_err(|e| AppError::Internal(format!("Order service error: {}", e)))?;
@@ -117,12 +159,28 @@ pub async fn get_order(
     Ok((StatusCode::OK, Json(json)))
 }
 
+#[utoipa::path(
+    get,
+    path = "/orders",
+    tag = "Orders",
+    params(GetOrdersQuery),
+    responses(
+        (status = 200, description = "List of orders"),
+        (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
+    ),
+)]
 pub async fn get_orders(
     State(state): State<AppState>,
     Query(query): Query<GetOrdersQuery>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    let response = state.order_client
-        .get_orders(query.page, query.page_size, query.customer_id, query.created_after)
+    let response = state
+        .order_client
+        .get_orders(
+            query.page,
+            query.page_size,
+            query.customer_id,
+            query.created_after,
+        )
         .await
         .map_err(|e| AppError::Internal(format!("Order service error: {}", e)))?;
 

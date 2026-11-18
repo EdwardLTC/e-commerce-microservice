@@ -8,6 +8,10 @@ edition = "2021"
 axum = { version = "0.8", features = ["macros"] }
 tower = "0.5"
 
+# OpenAPI / Swagger
+utoipa = { version = "5", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "9", features = ["axum"] }
+
 # Async runtime
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7"
