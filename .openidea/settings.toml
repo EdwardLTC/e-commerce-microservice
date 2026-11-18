@@ -1,0 +1,5 @@
+[spelling]
+projectWords = ["acks", "appsettings"]
+
+[languages.go]
+goroot = "/Users/edward/sdk/go1.25.1"

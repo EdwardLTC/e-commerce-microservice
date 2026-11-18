@@ -22,7 +22,7 @@ Expected environment variables:
 - `APP_PORT` default `2002`
 - `DATABASE_URL`
 - `PRODUCT_SERVICE_URL`
-- `KAFKA_BROKER`
+- `KAFKA_BROKER` default `127.0.0.1:9092`
 - `KAFKA_CONSUMER_GROUP` default `order-service-group`
 - `OUTBOX_INTERVAL` default `5s`
 - `OUTBOX_BATCH` default `20`

@@ -13,5 +13,5 @@ if [ -z "$GO_CMD" ]; then
   exit 1
 fi
 
-cd "$ROOT_DIR/golang-order"
-"$GO_CMD" run .
+cd "$ROOT_DIR/golang-order-kratos"
+KAFKA_BROKER="127.0.0.1:9092" "$GO_CMD" run ./cmd/order

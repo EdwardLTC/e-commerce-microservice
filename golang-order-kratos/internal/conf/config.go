@@ -52,7 +52,7 @@ func FromEnv() Bootstrap {
 			ProductServiceURL: os.Getenv("PRODUCT_SERVICE_URL"),
 		},
 		Kafka: Kafka{
-			Broker:        os.Getenv("KAFKA_BROKER"),
+			Broker:        getEnv("KAFKA_BROKER", "127.0.0.1:9092"),
 			ConsumerGroup: getEnv("KAFKA_CONSUMER_GROUP", "order-service-group"),
 		},
 		Worker: Worker{

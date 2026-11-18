@@ -9,14 +9,6 @@ source "$SCRIPT_DIR/common.sh"
 
 require_command nohup
 require_command bash
-
-if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-  echo "Starting Redis..."
-  bash "$SCRIPT_DIR/infra.sh"
-else
-  echo "Skipping Redis startup because docker compose is unavailable."
-fi
-
 require_command dotnet
 require_command npm
 
@@ -40,15 +32,13 @@ else
 fi
 
 start_background "user-service" "$ROOT_DIR/asp-user" dotnet run
-start_background "order-service" "$ROOT_DIR/golang-order" "$GO_CMD" run .
+start_background "order-service" "$ROOT_DIR/golang-order-kratos" env KAFKA_BROKER="127.0.0.1:9092" "$GO_CMD" run ./cmd/order
 
 if [ -n "$JAVA_HOME_19" ]; then
   start_background "product-service" "$ROOT_DIR/spring-boot-product" env JAVA_HOME="$JAVA_HOME_19" PATH="$JAVA_HOME_19/bin:$PATH" "$GRADLE_CMD" bootRun --no-daemon
 else
   start_background "product-service" "$ROOT_DIR/spring-boot-product" "$GRADLE_CMD" bootRun --no-daemon
 fi
-
-start_background "api-gateway" "$ROOT_DIR/nest-api-gateway-auth" npm run start:dev
 
 cat <<EOF
 All backend services were started in the background.
@@ -57,7 +47,6 @@ Logs:
   $LOG_DIR/user-service.log
   $LOG_DIR/order-service.log
   $LOG_DIR/product-service.log
-  $LOG_DIR/api-gateway.log
 
 PIDs:
   $PID_DIR
