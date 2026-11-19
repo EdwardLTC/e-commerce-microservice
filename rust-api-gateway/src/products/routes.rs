@@ -3,9 +3,9 @@ use axum::http::StatusCode;
 use axum::Json;
 
 use crate::error::AppError;
-use crate::middleware::validate_auth;
+use crate::middleware::AuthenticatedUser;
 use crate::products::dto::*;
-use crate::state::{get_current_token, AppState};
+use crate::state::AppState;
 
 #[utoipa::path(
     get,
@@ -19,13 +19,13 @@ use crate::state::{get_current_token, AppState};
 )]
 pub async fn get_products(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Query(query): Query<GetProductsQuery>,
 ) -> Result<(StatusCode, Json<Vec<serde_json::Value>>), AppError> {
     let products = state
         .product_client
         .get_products(query.skip, query.take)
-        .await
-        .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
+        .await?;
 
     // Convert prost messages to JSON
     let json_products: Vec<serde_json::Value> = products
@@ -62,13 +62,10 @@ pub async fn get_products(
 )]
 pub async fn get_product_by_id(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Path(id): Path<String>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    let detail = state
-        .product_client
-        .get_product_detail(&id)
-        .await
-        .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
+    let detail = state.product_client.get_product_detail(&id).await?;
 
     let json = serde_json::json!({
         "id": detail.id,
@@ -164,11 +161,9 @@ pub async fn get_variants_by_ids(
 )]
 pub async fn create_product(
     State(state): State<AppState>,
+    AuthenticatedUser(claims): AuthenticatedUser,
     Json(req_body): Json<CreateProductRequest>,
 ) -> Result<(StatusCode, Json<ResourceCreatedResponse>), AppError> {
-    let token =
-        get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
-    let claims = validate_auth(&state, &token).await?;
     let response = state
         .product_client
         .create_product(
@@ -178,8 +173,7 @@ pub async fn create_product(
             &req_body.brand,
             req_body.media_urls,
         )
-        .await
-        .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
+        .await?;
 
     Ok((
         StatusCode::CREATED,
@@ -197,19 +191,20 @@ pub async fn create_product(
     request_body = CreateOptionTypeRequest,
     responses(
         (status = 201, description = "Option type created", body = ResourceCreatedResponse),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
         (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
     ),
 )]
 pub async fn create_option_type(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Path(product_id): Path<String>,
     Json(req): Json<CreateOptionTypeRequest>,
 ) -> Result<(StatusCode, Json<ResourceCreatedResponse>), AppError> {
     let response = state
         .product_client
         .create_option_type(&product_id, &req.name, req.display_order)
-        .await
-        .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
+        .await?;
 
     Ok((
         StatusCode::CREATED,
@@ -231,13 +226,10 @@ pub async fn create_option_type(
 )]
 pub async fn get_option_types(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Path(product_id): Path<String>,
 ) -> Result<(StatusCode, Json<Vec<serde_json::Value>>), AppError> {
-    let option_types = state
-        .product_client
-        .get_option_types(&product_id)
-        .await
-        .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
+    let option_types = state.product_client.get_option_types(&product_id).await?;
 
     let json: Vec<serde_json::Value> = option_types
         .iter()
@@ -271,11 +263,13 @@ pub async fn get_option_types(
     request_body = CreateOptionValueRequest,
     responses(
         (status = 201, description = "Option value created", body = ResourceCreatedResponse),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
         (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
     ),
 )]
 pub async fn create_option_value(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Path(option_type_id): Path<String>,
     Json(req): Json<CreateOptionValueRequest>,
 ) -> Result<(StatusCode, Json<ResourceCreatedResponse>), AppError> {
@@ -287,8 +281,7 @@ pub async fn create_option_value(
             req.media_url,
             req.display_order,
         )
-        .await
-        .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
+        .await?;
 
     Ok((
         StatusCode::CREATED,
@@ -310,13 +303,13 @@ pub async fn create_option_value(
 )]
 pub async fn get_option_values(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Path(option_type_id): Path<String>,
 ) -> Result<(StatusCode, Json<Vec<serde_json::Value>>), AppError> {
     let option_values = state
         .product_client
         .get_option_values(&option_type_id)
-        .await
-        .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
+        .await?;
 
     let json: Vec<serde_json::Value> = option_values
         .iter()
@@ -343,11 +336,13 @@ pub async fn get_option_values(
     request_body = CreateVariantRequest,
     responses(
         (status = 201, description = "Variant created", body = ResourceCreatedResponse),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
         (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
     ),
 )]
 pub async fn create_variant(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Path(product_id): Path<String>,
     Json(req): Json<CreateVariantRequest>,
 ) -> Result<(StatusCode, Json<ResourceCreatedResponse>), AppError> {
@@ -361,8 +356,7 @@ pub async fn create_variant(
             req.media_url,
             req.options,
         )
-        .await
-        .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
+        .await?;
 
     Ok((
         StatusCode::CREATED,

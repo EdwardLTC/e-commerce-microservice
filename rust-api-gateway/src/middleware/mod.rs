@@ -1,13 +1,31 @@
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use redis::AsyncCommands;
 use tracing::debug;
 
 use crate::error::AppError;
-use crate::state::{AppState, AuthClaims, LoginSession};
+use crate::state::{get_current_token, AppState, AuthClaims, LoginSession};
 
-/// Validate the Authorization header and return AuthClaims.
-/// Called directly by each protected handler.
-pub async fn validate_auth(state: &AppState, token: &str) -> Result<AuthClaims, AppError> {
+#[derive(Debug, Clone)]
+pub struct AuthenticatedUser(pub AuthClaims);
+
+impl FromRequestParts<AppState> for AuthenticatedUser {
+    type Rejection = AppError;
+
+    async fn from_request_parts(
+        _parts: &mut Parts,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let token = get_current_token()
+            .ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
+
+        let claims = validate_auth_inner(state, &token).await?;
+        Ok(AuthenticatedUser(claims))
+    }
+}
+
+async fn validate_auth_inner(state: &AppState, token: &str) -> Result<AuthClaims, AppError> {
     // Verify JWT token
     let mut validation = Validation::default();
     validation.algorithms = vec![Algorithm::HS256];
@@ -36,6 +54,11 @@ pub async fn validate_auth(state: &AppState, token: &str) -> Result<AuthClaims, 
     }
 
     Ok(claims)
+}
+
+#[allow(dead_code)]
+pub async fn validate_auth(state: &AppState, token: &str) -> Result<AuthClaims, AppError> {
+    validate_auth_inner(state, token).await
 }
 
 async fn get_session(state: &AppState, jit: &str) -> Result<Option<LoginSession>, AppError> {

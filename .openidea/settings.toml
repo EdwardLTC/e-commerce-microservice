@@ -2,7 +2,7 @@
 projectWords = ["acks", "appsettings"]
 
 [languages.go]
-goroot = "/Users/edward/sdk/go1.25.1"
+goroot = "/Users/edward/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.4.darwin-arm64"
 
 [database]
 resolutionScopes = [{ dataSource = "93fff93a-ef52-41e2-ba8b-4b2721d8563f", path = "", schema = "" }]

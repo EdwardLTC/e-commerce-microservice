@@ -18,8 +18,6 @@ pub struct CreateOrderItemRequest {
 
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreateOrderRequest {
-    /// Customer user ID
-    pub customer_id: String,
     /// Order items
     pub items: Vec<CreateOrderItemRequest>,
     /// Shipping address
@@ -36,9 +34,6 @@ pub struct GetOrdersQuery {
     /// Page size
     #[serde(default = "default_page_size")]
     pub page_size: i32,
-    /// Filter by customer ID
-    #[serde(default)]
-    pub customer_id: Option<String>,
     /// Filter by creation date
     #[serde(default)]
     pub created_after: Option<String>,

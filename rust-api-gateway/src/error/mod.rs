@@ -44,8 +44,6 @@ impl ErrorResponse {
 #[derive(Debug)]
 pub enum AppError {
     Unauthorized(String),
-    // NotFound(String),
-    // BadRequest(String),
     Internal(String),
     ServiceUnavailable(String),
     GrpcError { code: u32, details: String },
@@ -55,8 +53,6 @@ impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             AppError::Unauthorized(msg) => write!(f, "Unauthorized: {}", msg),
-            // AppError::NotFound(msg) => write!(f, "Not Found: {}", msg),
-            // AppError::BadRequest(msg) => write!(f, "Bad Request: {}", msg),
             AppError::Internal(msg) => write!(f, "Internal Error: {}", msg),
             AppError::ServiceUnavailable(msg) => write!(f, "Service Unavailable: {}", msg),
             AppError::GrpcError { code, details } => {
@@ -70,9 +66,17 @@ impl std::error::Error for AppError {}
 
 impl From<TonicStatus> for AppError {
     fn from(status: TonicStatus) -> Self {
-        AppError::GrpcError {
-            code: status.code() as u32,
-            details: String::from_utf8_lossy(status.details()).to_string(),
+        let code = status.code() as u32;
+        let details = status.message().to_string();
+
+        match status.code() {
+            tonic::Code::Unavailable => AppError::ServiceUnavailable(details),
+
+            tonic::Code::Internal => AppError::Internal(details),
+
+            tonic::Code::Unauthenticated => AppError::Unauthorized(details),
+
+            _ => AppError::GrpcError { code, details },
         }
     }
 }
@@ -81,8 +85,6 @@ impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let (status, message, cause) = match &self {
             AppError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg.clone(), None),
-            // AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone(), None),
-            // AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone(), None),
             AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.clone(), None),
             AppError::ServiceUnavailable(msg) => {
                 (StatusCode::SERVICE_UNAVAILABLE, msg.clone(), None)

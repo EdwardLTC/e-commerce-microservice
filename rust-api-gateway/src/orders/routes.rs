@@ -3,6 +3,7 @@ use axum::http::StatusCode;
 use axum::Json;
 
 use crate::error::AppError;
+use crate::middleware::AuthenticatedUser;
 use crate::orders::dto::*;
 use crate::state::AppState;
 
@@ -13,11 +14,13 @@ use crate::state::AppState;
     request_body = CreateOrderRequest,
     responses(
         (status = 201, description = "Order created", body = CreateOrderResponse),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
         (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
     ),
 )]
 pub async fn create_order(
     State(state): State<AppState>,
+    AuthenticatedUser(claims): AuthenticatedUser,
     Json(req): Json<CreateOrderRequest>,
 ) -> Result<(StatusCode, Json<CreateOrderResponse>), AppError> {
     let items: Vec<crate::grpc::order_client::order::OrderItemRequest> = req
@@ -33,13 +36,12 @@ pub async fn create_order(
     let response = state
         .order_client
         .create_order(
-            &req.customer_id,
+            &claims.id,
             items,
             &req.shipping_address,
             &req.billing_address,
         )
-        .await
-        .map_err(|e| AppError::Internal(format!("Order service error: {}", e)))?;
+        .await?;
 
     Ok((
         StatusCode::CREATED,
@@ -59,18 +61,16 @@ pub async fn create_order(
     ),
     responses(
         (status = 200, description = "Order detail"),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
         (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
     ),
 )]
 pub async fn get_order(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Path(id): Path<String>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    let order = state
-        .order_client
-        .get_order(&id)
-        .await
-        .map_err(|e| AppError::Internal(format!("Order service error: {}", e)))?;
+    let order = state.order_client.get_order(&id).await?;
 
     let json = serde_json::json!({
         "id": order.id,
@@ -113,11 +113,13 @@ pub async fn get_order(
     params(GetOrdersQuery),
     responses(
         (status = 200, description = "List of orders"),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
         (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
     ),
 )]
 pub async fn get_orders(
     State(state): State<AppState>,
+    AuthenticatedUser(claims): AuthenticatedUser,
     Query(query): Query<GetOrdersQuery>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
     let response = state
@@ -125,11 +127,10 @@ pub async fn get_orders(
         .get_orders(
             query.page,
             query.page_size,
-            query.customer_id,
+            Some(claims.id.clone()),
             query.created_after,
         )
-        .await
-        .map_err(|e| AppError::Internal(format!("Order service error: {}", e)))?;
+        .await?;
 
     let json = serde_json::json!({
         "orders": response.orders.iter().map(|order| {

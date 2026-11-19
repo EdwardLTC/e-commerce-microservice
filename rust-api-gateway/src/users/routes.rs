@@ -3,8 +3,8 @@ use axum::http::StatusCode;
 use axum::Json;
 
 use crate::error::AppError;
-use crate::middleware::validate_auth;
-use crate::state::{get_current_token, AppState};
+use crate::middleware::AuthenticatedUser;
+use crate::state::AppState;
 use crate::users::dto::*;
 
 #[utoipa::path(
@@ -18,10 +18,8 @@ use crate::users::dto::*;
 )]
 pub async fn get_current_user(
     State(state): State<AppState>,
+    AuthenticatedUser(claims): AuthenticatedUser,
 ) -> Result<(StatusCode, Json<UserProfileResponse>), AppError> {
-    let token =
-        get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
-    let claims = validate_auth(&state, &token).await?;
     let user = state
         .user_client
         .get_user_by_id(&claims.id)
@@ -47,11 +45,13 @@ pub async fn get_current_user(
     ),
     responses(
         (status = 200, description = "User profile", body = UserProfileResponse),
+        (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
         (status = 500, description = "Internal server error", body = crate::error::ErrorResponse),
     ),
 )]
 pub async fn get_user_by_id(
     State(state): State<AppState>,
+    _auth: AuthenticatedUser,
     Path(id): Path<String>,
 ) -> Result<(StatusCode, Json<UserProfileResponse>), AppError> {
     let user = state

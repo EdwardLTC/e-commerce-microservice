@@ -3,10 +3,10 @@ use std::sync::RwLock;
 
 use prost_types::Timestamp;
 use tonic::transport::Channel;
-use tracing::warn;
 
 use crate::config::AppConfig;
 use crate::error::AppError;
+use crate::grpc_call_with_retry;
 
 // Re-export generated types
 pub mod order {
@@ -78,71 +78,34 @@ impl OrdersClient {
         shipping_address: &str,
         billing_address: &str,
     ) -> Result<order::CreateOrderResponse, AppError> {
-        let customer_id = customer_id.to_string();
-        let shipping_address = shipping_address.to_string();
-        let billing_address = billing_address.to_string();
-
         let request = order::CreateOrderRequest {
-            customer_id: customer_id.clone(),
-            items: items.clone(),
-            shipping_address: shipping_address.clone(),
-            billing_address: billing_address.clone(),
+            customer_id: customer_id.to_string(),
+            items,
+            shipping_address: shipping_address.to_string(),
+            billing_address: billing_address.to_string(),
         };
 
-        let mut client = self.get_client().await?;
-        match client.create_order(tonic::Request::new(request)).await {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Order service call failed, attempting reconnection: {}", status);
-                    client = self.connect().await?;
-                    let request = order::CreateOrderRequest {
-                        customer_id,
-                        items,
-                        shipping_address,
-                        billing_address,
-                    };
-                    let resp = client
-                        .create_order(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut client = self.get_client().await?,
+            client.create_order(tonic::Request::new(request.clone())).await,
+            client = self.connect().await?,
+            "Order"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn get_order(&self, id: &str) -> Result<order::Order, AppError> {
-        let id = id.to_string();
-
         let request = order::GetOrderRequest {
-            id: id.clone(),
+            id: id.to_string(),
         };
 
-        let mut client = self.get_client().await?;
-        match client.get_order(tonic::Request::new(request)).await {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Order service call failed, attempting reconnection: {}", status);
-                    client = self.connect().await?;
-                    let request = order::GetOrderRequest { id };
-                    let resp = client
-                        .get_order(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut client = self.get_client().await?,
+            client.get_order(tonic::Request::new(request.clone())).await,
+            client = self.connect().await?,
+            "Order"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn get_orders(
@@ -167,43 +130,15 @@ impl OrdersClient {
             page_size,
             customer_id: customer_id.clone().unwrap_or_default(),
             status: 0,
-            created_after: created_after_ts.clone(),
+            created_after: created_after_ts,
         };
 
-        let mut client = self.get_client().await?;
-        match client.get_orders(tonic::Request::new(request)).await {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Order service call failed, attempting reconnection: {}", status);
-                    client = self.connect().await?;
-                    let created_after_ts = created_after
-                        .as_ref()
-                        .and_then(|s| {
-                            let dt = chrono::DateTime::parse_from_rfc3339(s).ok()?;
-                            Some(Timestamp {
-                                seconds: dt.timestamp(),
-                                nanos: dt.timestamp_subsec_nanos() as i32,
-                            })
-                        });
-                    let request = order::ListOrdersRequest {
-                        page,
-                        page_size,
-                        customer_id: customer_id.unwrap_or_default(),
-                        status: 0,
-                        created_after: created_after_ts,
-                    };
-                    let resp = client
-                        .get_orders(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut client = self.get_client().await?,
+            client.get_orders(tonic::Request::new(request.clone())).await,
+            client = self.connect().await?,
+            "Order"
+        })
+        .map(|resp| resp.into_inner())
     }
 }

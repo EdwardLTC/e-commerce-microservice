@@ -2,10 +2,10 @@ use std::sync::Arc;
 use std::sync::RwLock;
 
 use tonic::transport::Channel;
-use tracing::warn;
 
 use crate::config::AppConfig;
 use crate::error::AppError;
+use crate::grpc_call_with_retry;
 
 // Re-export generated types
 pub mod user {
@@ -73,43 +73,18 @@ impl UsersClient {
         email: &str,
         password: &str,
     ) -> Result<user::UserProfile, AppError> {
-        let email = email.to_string();
-        let password = password.to_string();
-
         let request = user::GetUserByEmailAndPasswordRequest {
-            email: Some(email.clone()),
-            password: Some(password.clone()),
+            email: Some(email.to_string()),
+            password: Some(password.to_string()),
         };
 
-        let mut client = self.get_client().await?;
-        match client
-            .get_user_by_email_and_password(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!(
-                        "User service call failed, attempting reconnection: {}",
-                        status
-                    );
-                    client = self.connect().await?;
-                    let request = user::GetUserByEmailAndPasswordRequest {
-                        email: Some(email),
-                        password: Some(password),
-                    };
-                    let resp = client
-                        .get_user_by_email_and_password(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut client = self.get_client().await?,
+            client.get_user_by_email_and_password(tonic::Request::new(request.clone())).await,
+            client = self.connect().await?,
+            "User"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn create_user(
@@ -118,75 +93,33 @@ impl UsersClient {
         password: &str,
         name: &str,
     ) -> Result<user::UserProfile, AppError> {
-        let email = email.to_string();
-        let password = password.to_string();
-        let name = name.to_string();
-
         let request = user::CreateUserRequest {
-            name: Some(name.clone()),
-            email: Some(email.clone()),
-            password: Some(password.clone()),
+            name: Some(name.to_string()),
+            email: Some(email.to_string()),
+            password: Some(password.to_string()),
         };
 
-        let mut client = self.get_client().await?;
-        match client.create_user(tonic::Request::new(request)).await {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!(
-                        "User service call failed, attempting reconnection: {}",
-                        status
-                    );
-                    client = self.connect().await?;
-                    let request = user::CreateUserRequest {
-                        name: Some(name),
-                        email: Some(email),
-                        password: Some(password),
-                    };
-                    let resp = client
-                        .create_user(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut client = self.get_client().await?,
+            client.create_user(tonic::Request::new(request.clone())).await,
+            client = self.connect().await?,
+            "User"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn get_user_by_id(&self, id: &str) -> Result<user::UserProfile, AppError> {
-        let id = id.to_string();
-
         let request = user::GetUserByIdRequest {
-            id: Some(id.clone()),
+            id: Some(id.to_string()),
         };
 
-        let mut client = self.get_client().await?;
-        match client.get_user_by_id(tonic::Request::new(request)).await {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!(
-                        "User service call failed, attempting reconnection: {}",
-                        status
-                    );
-                    client = self.connect().await?;
-                    let request = user::GetUserByIdRequest { id: Some(id) };
-                    let resp = client
-                        .get_user_by_id(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut client = self.get_client().await?,
+            client.get_user_by_id(tonic::Request::new(request.clone())).await,
+            client = self.connect().await?,
+            "User"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn change_password(
@@ -195,42 +128,18 @@ impl UsersClient {
         old_password: &str,
         new_password: &str,
     ) -> Result<user::UserProfile, AppError> {
-        let id = id.to_string();
-        let old_password = old_password.to_string();
-        let new_password = new_password.to_string();
-
         let request = user::ChangePasswordRequest {
-            id: Some(id.clone()),
-            old_password: Some(old_password.clone()),
-            new_password: Some(new_password.clone()),
+            id: Some(id.to_string()),
+            old_password: Some(old_password.to_string()),
+            new_password: Some(new_password.to_string()),
         };
 
-        let mut client = self.get_client().await?;
-        match client.change_password(tonic::Request::new(request)).await {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!(
-                        "User service call failed, attempting reconnection: {}",
-                        status
-                    );
-                    client = self.connect().await?;
-                    let request = user::ChangePasswordRequest {
-                        id: Some(id),
-                        old_password: Some(old_password),
-                        new_password: Some(new_password),
-                    };
-                    let resp = client
-                        .change_password(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut client = self.get_client().await?,
+            client.change_password(tonic::Request::new(request.clone())).await,
+            client = self.connect().await?,
+            "User"
+        })
+        .map(|resp| resp.into_inner())
     }
 }

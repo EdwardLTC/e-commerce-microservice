@@ -2,10 +2,10 @@ use std::sync::Arc;
 use std::sync::RwLock;
 
 use tonic::transport::Channel;
-use tracing::warn;
 
 use crate::config::AppConfig;
 use crate::error::AppError;
+use crate::grpc_call_with_retry;
 
 // Re-export generated types
 pub mod product {
@@ -37,7 +37,10 @@ impl ProductsClient {
         // Try to reuse existing clients
         {
             let guard = self.inner.read().map_err(|e| {
-                AppError::Internal(format!("Failed to acquire read lock on product client: {}", e))
+                AppError::Internal(format!(
+                    "Failed to acquire read lock on product client: {}",
+                    e
+                ))
             })?;
             if let Some(ref clients) = *guard {
                 return Ok(clients.clone());
@@ -54,10 +57,14 @@ impl ProductsClient {
             .map_err(|e| AppError::Internal(format!("Invalid product service URL: {}", e)))?
             .connect()
             .await
-            .map_err(|e| AppError::ServiceUnavailable(format!("Cannot connect to product service: {}", e)))?;
+            .map_err(|e| {
+                AppError::ServiceUnavailable(format!("Cannot connect to product service: {}", e))
+            })?;
 
-        let product_client = product::product_service_client::ProductServiceClient::new(connector.clone());
-        let option_client = product::option_service_client::OptionServiceClient::new(connector.clone());
+        let product_client =
+            product::product_service_client::ProductServiceClient::new(connector.clone());
+        let option_client =
+            product::option_service_client::OptionServiceClient::new(connector.clone());
         let variant_client = product::variant_service_client::VariantServiceClient::new(connector);
 
         let clients = InnerClients {
@@ -69,7 +76,10 @@ impl ProductsClient {
         // Store the new clients
         {
             let mut guard = self.inner.write().map_err(|e| {
-                AppError::Internal(format!("Failed to acquire write lock on product client: {}", e))
+                AppError::Internal(format!(
+                    "Failed to acquire write lock on product client: {}",
+                    e
+                ))
             })?;
             *guard = Some(clients.clone());
         }
@@ -87,65 +97,30 @@ impl ProductsClient {
             take: Some(take),
         };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .product_client
-            .get_products(tonic::Request::new(request.clone()))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner().products),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let resp = clients
-                        .product_client
-                        .get_products(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner().products)
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.product_client.get_products(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner().products)
     }
 
-    pub async fn get_product_detail(&self, id: &str) -> Result<product::GetProductDetailResponse, AppError> {
-        let id = id.to_string();
+    pub async fn get_product_detail(
+        &self,
+        id: &str,
+    ) -> Result<product::GetProductDetailResponse, AppError> {
         let request = product::GetProductDetailRequest {
-            id: Some(id.clone()),
+            id: Some(id.to_string()),
         };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .product_client
-            .get_product_detail(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let request = product::GetProductDetailRequest {
-                        id: Some(id),
-                    };
-                    let resp = clients
-                        .product_client
-                        .get_product_detail(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.product_client.get_product_detail(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn create_product(
@@ -156,88 +131,38 @@ impl ProductsClient {
         brand: &str,
         media_urls: Vec<String>,
     ) -> Result<product::CreateProductResponse, AppError> {
-        let name = name.to_string();
-        let seller_id = seller_id.to_string();
-        let description = description.to_string();
-        let brand = brand.to_string();
-
         let request = product::CreateProductRequest {
-            name: Some(name.clone()),
-            seller_id: Some(seller_id.clone()),
-            description: Some(description.clone()),
-            brand: Some(brand.clone()),
-            media_urls: media_urls.clone(),
+            name: Some(name.to_string()),
+            seller_id: Some(seller_id.to_string()),
+            description: Some(description.to_string()),
+            brand: Some(brand.to_string()),
+            media_urls,
         };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .product_client
-            .create_product(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let request = product::CreateProductRequest {
-                        name: Some(name),
-                        seller_id: Some(seller_id),
-                        description: Some(description),
-                        brand: Some(brand),
-                        media_urls,
-                    };
-                    let resp = clients
-                        .product_client
-                        .create_product(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.product_client.create_product(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn get_option_types(
         &self,
         product_id: &str,
     ) -> Result<Vec<product::OptionType>, AppError> {
-        let product_id = product_id.to_string();
         let request = product::GetOptionTypesRequest {
-            product_id: Some(product_id.clone()),
+            product_id: Some(product_id.to_string()),
         };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .option_client
-            .get_option_types(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner().option_types),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let request = product::GetOptionTypesRequest {
-                        product_id: Some(product_id),
-                    };
-                    let resp = clients
-                        .option_client
-                        .get_option_types(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner().option_types)
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.option_client.get_option_types(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner().option_types)
     }
 
     pub async fn create_option_type(
@@ -246,82 +171,36 @@ impl ProductsClient {
         name: &str,
         display_order: Option<i32>,
     ) -> Result<product::CreateOptionTypeResponse, AppError> {
-        let product_id = product_id.to_string();
-        let name = name.to_string();
-
         let request = product::CreateOptionTypeRequest {
-            product_id: Some(product_id.clone()),
-            name: Some(name.clone()),
+            product_id: Some(product_id.to_string()),
+            name: Some(name.to_string()),
             display_order,
         };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .option_client
-            .create_option_type(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let request = product::CreateOptionTypeRequest {
-                        product_id: Some(product_id),
-                        name: Some(name),
-                        display_order,
-                    };
-                    let resp = clients
-                        .option_client
-                        .create_option_type(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.option_client.create_option_type(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn get_option_values(
         &self,
         option_type_id: &str,
     ) -> Result<Vec<product::OptionValue>, AppError> {
-        let option_type_id = option_type_id.to_string();
         let request = product::GetOptionValuesRequest {
-            option_type_id: Some(option_type_id.clone()),
+            option_type_id: Some(option_type_id.to_string()),
         };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .option_client
-            .get_option_values(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner().option_values),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let request = product::GetOptionValuesRequest {
-                        option_type_id: Some(option_type_id),
-                    };
-                    let resp = clients
-                        .option_client
-                        .get_option_values(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner().option_values)
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.option_client.get_option_values(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner().option_values)
     }
 
     pub async fn create_option_value(
@@ -331,47 +210,20 @@ impl ProductsClient {
         media_url: Option<String>,
         display_order: Option<i32>,
     ) -> Result<product::CreateOptionValueResponse, AppError> {
-        let option_type_id = option_type_id.to_string();
-        let value = value.to_string();
-        let media_url = media_url.clone();
-
         let request = product::CreateOptionValueRequest {
-            option_type_id: Some(option_type_id.clone()),
-            value: Some(value.clone()),
-            media_url: media_url.clone(),
+            option_type_id: Some(option_type_id.to_string()),
+            value: Some(value.to_string()),
+            media_url,
             display_order,
         };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .option_client
-            .create_option_value(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let request = product::CreateOptionValueRequest {
-                        option_type_id: Some(option_type_id),
-                        value: Some(value),
-                        media_url,
-                        display_order,
-                    };
-                    let resp = clients
-                        .option_client
-                        .create_option_value(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.option_client.create_option_value(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn create_variant(
@@ -383,84 +235,36 @@ impl ProductsClient {
         media_url: Option<String>,
         options: Vec<String>,
     ) -> Result<product::CreateVariantResponse, AppError> {
-        let product_id = product_id.to_string();
-        let sku = sku.to_string();
-
         let request = product::CreateVariantRequest {
-            product_id: Some(product_id.clone()),
-            sku: Some(sku.clone()),
+            product_id: Some(product_id.to_string()),
+            sku: Some(sku.to_string()),
             price: Some(price),
             stock: Some(stock),
-            media_url: media_url.clone(),
-            options: options.clone(),
+            media_url,
+            options,
         };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .variant_client
-            .create_variant(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner()),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let request = product::CreateVariantRequest {
-                        product_id: Some(product_id),
-                        sku: Some(sku),
-                        price: Some(price),
-                        stock: Some(stock),
-                        media_url,
-                        options,
-                    };
-                    let resp = clients
-                        .variant_client
-                        .create_variant(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner())
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.variant_client.create_variant(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner())
     }
 
     pub async fn get_variants_by_ids(
         &self,
         ids: Vec<String>,
     ) -> Result<Vec<product::get_variants_response::Variant>, AppError> {
-        let request = product::GetVariantByIdsRequest {
-            ids: ids.clone(),
-        };
+        let request = product::GetVariantByIdsRequest { ids };
 
-        let mut clients = self.get_clients().await?;
-        match clients
-            .variant_client
-            .get_variants_by_ids(tonic::Request::new(request))
-            .await
-        {
-            Ok(resp) => Ok(resp.into_inner().variants),
-            Err(status) => {
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Internal
-                {
-                    warn!("Product service call failed, attempting reconnection: {}", status);
-                    clients = self.connect().await?;
-                    let request = product::GetVariantByIdsRequest { ids };
-                    let resp = clients
-                        .variant_client
-                        .get_variants_by_ids(tonic::Request::new(request))
-                        .await
-                        .map_err(AppError::from)?;
-                    Ok(resp.into_inner().variants)
-                } else {
-                    Err(AppError::from(status))
-                }
-            }
-        }
+        grpc_call_with_retry!({
+            let mut clients = self.get_clients().await?,
+            clients.variant_client.get_variants_by_ids(tonic::Request::new(request.clone())).await,
+            clients = self.connect().await?,
+            "Product"
+        })
+        .map(|resp| resp.into_inner().variants)
     }
 }

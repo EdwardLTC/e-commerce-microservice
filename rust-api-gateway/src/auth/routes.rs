@@ -1,5 +1,7 @@
-use axum::extract::State;
-use axum::http::StatusCode;
+use std::net::SocketAddr;
+
+use axum::extract::{ConnectInfo, State};
+use axum::http::{HeaderMap, StatusCode};
 use axum::Json;
 use chrono::Utc;
 use jsonwebtoken::{encode, EncodingKey, Header};
@@ -8,8 +10,8 @@ use uuid::Uuid;
 
 use crate::auth::dto::*;
 use crate::error::AppError;
-use crate::middleware::validate_auth;
-use crate::state::{get_current_token, AppState, AuthClaims, LoginSession};
+use crate::middleware::AuthenticatedUser;
+use crate::state::{AppState, AuthClaims, LoginSession};
 
 #[utoipa::path(
     post,
@@ -22,19 +24,32 @@ use crate::state::{get_current_token, AppState, AuthClaims, LoginSession};
     ),
 )]
 pub async fn login(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
     State(state): State<AppState>,
     Json(login_req): Json<LoginRequest>,
 ) -> Result<(StatusCode, Json<AuthTokenResponse>), AppError> {
     let user = state
         .user_client
         .get_user_by_email_and_password(&login_req.email, &login_req.password)
-        .await
-        .map_err(|e| AppError::Internal(format!("User service error: {}", e)))?;
+        .await?;
 
     let (token, jti) = create_token(&state, &user.id, &user.email);
 
+    let str_ip = &addr.ip().to_string();
+
+    let ip = headers
+        .get("x-real-ip")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or(str_ip);
+
+    let user_agent = headers
+        .get("user-agent")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("unknown");
+
     // Store session in Redis
-    store_session(&state, &jti, &user.id, "", "").await?;
+    store_session(&state, &jti, &user.id, &ip, &user_agent).await?;
 
     Ok((
         StatusCode::OK,
@@ -65,8 +80,7 @@ pub async fn register(
             &register_req.password,
             &register_req.name,
         )
-        .await
-        .map_err(|e| AppError::Internal(format!("User service error: {}", e)))?;
+        .await?;
 
     Ok((
         StatusCode::CREATED,
@@ -87,10 +101,10 @@ pub async fn register(
         (status = 401, description = "Unauthorized", body = crate::error::ErrorResponse),
     ),
 )]
-pub async fn logout(State(state): State<AppState>) -> Result<StatusCode, AppError> {
-    let token =
-        get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
-    let claims = validate_auth(&state, &token).await?;
+pub async fn logout(
+    State(state): State<AppState>,
+    AuthenticatedUser(claims): AuthenticatedUser,
+) -> Result<StatusCode, AppError> {
     delete_session(&state, &claims.jit).await?;
     Ok(StatusCode::OK)
 }
@@ -107,11 +121,9 @@ pub async fn logout(State(state): State<AppState>) -> Result<StatusCode, AppErro
 )]
 pub async fn change_password(
     State(state): State<AppState>,
+    AuthenticatedUser(claims): AuthenticatedUser,
     Json(change_req): Json<ChangePasswordRequest>,
 ) -> Result<StatusCode, AppError> {
-    let token =
-        get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
-    let claims = validate_auth(&state, &token).await?;
     state
         .user_client
         .change_password(
@@ -119,8 +131,7 @@ pub async fn change_password(
             &change_req.old_password,
             &change_req.new_password,
         )
-        .await
-        .map_err(|e| AppError::Internal(format!("User service error: {}", e)))?;
+        .await?;
 
     invalidate_user_sessions(&state, &claims.id).await?;
 
