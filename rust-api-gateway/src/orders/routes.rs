@@ -3,61 +3,8 @@ use axum::http::StatusCode;
 use axum::Json;
 
 use crate::error::AppError;
+use crate::orders::dto::*;
 use crate::state::AppState;
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct CreateOrderItemRequest {
-    /// Product variant ID
-    pub variant_id: String,
-    /// Quantity ordered
-    pub quantity: i32,
-    /// Unit price
-    pub unit_price: f64,
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct CreateOrderRequest {
-    /// Customer user ID
-    pub customer_id: String,
-    /// Order items
-    pub items: Vec<CreateOrderItemRequest>,
-    /// Shipping address
-    pub shipping_address: String,
-    /// Billing address
-    pub billing_address: String,
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema, utoipa::IntoParams)]
-pub struct GetOrdersQuery {
-    /// Page number
-    #[serde(default = "default_page")]
-    pub page: i32,
-    /// Page size
-    #[serde(default = "default_page_size")]
-    pub page_size: i32,
-    /// Filter by customer ID
-    #[serde(default)]
-    pub customer_id: Option<String>,
-    /// Filter by creation date
-    #[serde(default)]
-    pub created_after: Option<String>,
-}
-
-fn default_page() -> i32 {
-    1
-}
-
-fn default_page_size() -> i32 {
-    20
-}
-
-#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
-pub struct CreateOrderResponse {
-    /// Order ID
-    pub id: String,
-    /// Order status
-    pub status: i32,
-}
 
 #[utoipa::path(
     post,

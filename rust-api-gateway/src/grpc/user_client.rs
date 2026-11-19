@@ -48,14 +48,19 @@ impl UsersClient {
             .map_err(|e| AppError::Internal(format!("Invalid user service URL: {}", e)))?
             .connect()
             .await
-            .map_err(|e| AppError::ServiceUnavailable(format!("Cannot connect to user service: {}", e)))?;
+            .map_err(|e| {
+                AppError::ServiceUnavailable(format!("Cannot connect to user service: {}", e))
+            })?;
 
         let client = user::user_service_client::UserServiceClient::new(connector);
 
         // Store the new client
         {
             let mut guard = self.inner.write().map_err(|e| {
-                AppError::Internal(format!("Failed to acquire write lock on user client: {}", e))
+                AppError::Internal(format!(
+                    "Failed to acquire write lock on user client: {}",
+                    e
+                ))
             })?;
             *guard = Some(client.clone());
         }
@@ -86,7 +91,10 @@ impl UsersClient {
                 if status.code() == tonic::Code::Unavailable
                     || status.code() == tonic::Code::Internal
                 {
-                    warn!("User service call failed, attempting reconnection: {}", status);
+                    warn!(
+                        "User service call failed, attempting reconnection: {}",
+                        status
+                    );
                     client = self.connect().await?;
                     let request = user::GetUserByEmailAndPasswordRequest {
                         email: Some(email),
@@ -127,7 +135,10 @@ impl UsersClient {
                 if status.code() == tonic::Code::Unavailable
                     || status.code() == tonic::Code::Internal
                 {
-                    warn!("User service call failed, attempting reconnection: {}", status);
+                    warn!(
+                        "User service call failed, attempting reconnection: {}",
+                        status
+                    );
                     client = self.connect().await?;
                     let request = user::CreateUserRequest {
                         name: Some(name),
@@ -160,11 +171,12 @@ impl UsersClient {
                 if status.code() == tonic::Code::Unavailable
                     || status.code() == tonic::Code::Internal
                 {
-                    warn!("User service call failed, attempting reconnection: {}", status);
+                    warn!(
+                        "User service call failed, attempting reconnection: {}",
+                        status
+                    );
                     client = self.connect().await?;
-                    let request = user::GetUserByIdRequest {
-                        id: Some(id),
-                    };
+                    let request = user::GetUserByIdRequest { id: Some(id) };
                     let resp = client
                         .get_user_by_id(tonic::Request::new(request))
                         .await
@@ -200,7 +212,10 @@ impl UsersClient {
                 if status.code() == tonic::Code::Unavailable
                     || status.code() == tonic::Code::Internal
                 {
-                    warn!("User service call failed, attempting reconnection: {}", status);
+                    warn!(
+                        "User service call failed, attempting reconnection: {}",
+                        status
+                    );
                     client = self.connect().await?;
                     let request = user::ChangePasswordRequest {
                         id: Some(id),

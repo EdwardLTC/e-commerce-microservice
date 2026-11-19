@@ -4,83 +4,8 @@ use axum::Json;
 
 use crate::error::AppError;
 use crate::middleware::validate_auth;
-use crate::state::{AppState, get_current_token};
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema, utoipa::IntoParams)]
-pub struct GetProductsQuery {
-    /// Number of items to skip
-    #[serde(default)]
-    pub skip: i32,
-    /// Number of items to take
-    #[serde(default = "default_take")]
-    pub take: i32,
-}
-
-fn default_take() -> i32 {
-    10
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema, utoipa::IntoParams)]
-pub struct GetVariantsQuery {
-    /// List of variant IDs
-    pub ids: Vec<String>,
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct CreateProductRequest {
-    /// Product name
-    pub name: String,
-    /// Product description
-    pub description: String,
-    /// Product brand
-    pub brand: String,
-    /// Media URLs for the product
-    #[serde(default)]
-    pub media_urls: Vec<String>,
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct CreateOptionTypeRequest {
-    /// Option type name
-    pub name: String,
-    /// Display order
-    #[serde(default)]
-    pub display_order: Option<i32>,
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct CreateOptionValueRequest {
-    /// Option value
-    pub value: String,
-    /// Media URL for the option value
-    #[serde(default)]
-    pub media_url: Option<String>,
-    /// Display order
-    #[serde(default)]
-    pub display_order: Option<i32>,
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct CreateVariantRequest {
-    /// Stock keeping unit
-    pub sku: String,
-    /// Variant price
-    pub price: f64,
-    /// Stock quantity
-    pub stock: i32,
-    /// Media URL for the variant
-    #[serde(default)]
-    pub media_url: Option<String>,
-    /// Selected option value IDs
-    #[serde(default)]
-    pub options: Vec<String>,
-}
-
-#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
-pub struct ResourceCreatedResponse {
-    /// ID of the created resource
-    pub id: String,
-}
+use crate::products::dto::*;
+use crate::state::{get_current_token, AppState};
 
 #[utoipa::path(
     get,
@@ -96,7 +21,8 @@ pub async fn get_products(
     State(state): State<AppState>,
     Query(query): Query<GetProductsQuery>,
 ) -> Result<(StatusCode, Json<Vec<serde_json::Value>>), AppError> {
-    let products = state.product_client
+    let products = state
+        .product_client
         .get_products(query.skip, query.take)
         .await
         .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
@@ -138,7 +64,8 @@ pub async fn get_product_by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    let detail = state.product_client
+    let detail = state
+        .product_client
         .get_product_detail(&id)
         .await
         .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
@@ -202,7 +129,8 @@ pub async fn get_variants_by_ids(
     State(state): State<AppState>,
     Query(query): Query<GetVariantsQuery>,
 ) -> Result<(StatusCode, Json<Vec<serde_json::Value>>), AppError> {
-    let variants = state.product_client
+    let variants = state
+        .product_client
         .get_variants_by_ids(query.ids)
         .await
         .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
@@ -238,9 +166,11 @@ pub async fn create_product(
     State(state): State<AppState>,
     Json(req_body): Json<CreateProductRequest>,
 ) -> Result<(StatusCode, Json<ResourceCreatedResponse>), AppError> {
-    let token = get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
+    let token =
+        get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
     let claims = validate_auth(&state, &token).await?;
-    let response = state.product_client
+    let response = state
+        .product_client
         .create_product(
             &req_body.name,
             &claims.id,
@@ -275,7 +205,8 @@ pub async fn create_option_type(
     Path(product_id): Path<String>,
     Json(req): Json<CreateOptionTypeRequest>,
 ) -> Result<(StatusCode, Json<ResourceCreatedResponse>), AppError> {
-    let response = state.product_client
+    let response = state
+        .product_client
         .create_option_type(&product_id, &req.name, req.display_order)
         .await
         .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
@@ -302,7 +233,8 @@ pub async fn get_option_types(
     State(state): State<AppState>,
     Path(product_id): Path<String>,
 ) -> Result<(StatusCode, Json<Vec<serde_json::Value>>), AppError> {
-    let option_types = state.product_client
+    let option_types = state
+        .product_client
         .get_option_types(&product_id)
         .await
         .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
@@ -347,7 +279,8 @@ pub async fn create_option_value(
     Path(option_type_id): Path<String>,
     Json(req): Json<CreateOptionValueRequest>,
 ) -> Result<(StatusCode, Json<ResourceCreatedResponse>), AppError> {
-    let response = state.product_client
+    let response = state
+        .product_client
         .create_option_value(
             &option_type_id,
             &req.value,
@@ -379,7 +312,8 @@ pub async fn get_option_values(
     State(state): State<AppState>,
     Path(option_type_id): Path<String>,
 ) -> Result<(StatusCode, Json<Vec<serde_json::Value>>), AppError> {
-    let option_values = state.product_client
+    let option_values = state
+        .product_client
         .get_option_values(&option_type_id)
         .await
         .map_err(|e| AppError::Internal(format!("Product service error: {}", e)))?;
@@ -417,7 +351,8 @@ pub async fn create_variant(
     Path(product_id): Path<String>,
     Json(req): Json<CreateVariantRequest>,
 ) -> Result<(StatusCode, Json<ResourceCreatedResponse>), AppError> {
-    let response = state.product_client
+    let response = state
+        .product_client
         .create_variant(
             &product_id,
             &req.sku,

@@ -1,3 +1,4 @@
+pub mod dto;
 pub mod routes;
 
 use axum::routing::{get, post};
@@ -7,7 +8,10 @@ use crate::state::AppState;
 
 pub fn router() -> Router<AppState> {
     Router::new()
-        .route("/products", get(routes::get_products).post(routes::create_product))
+        .route(
+            "/products",
+            get(routes::get_products).post(routes::create_product),
+        )
         .route("/products/{id}", get(routes::get_product_by_id))
         .route("/products/variants", get(routes::get_variants_by_ids))
         .route(

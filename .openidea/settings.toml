@@ -3,3 +3,6 @@ projectWords = ["acks", "appsettings"]
 
 [languages.go]
 goroot = "/Users/edward/sdk/go1.25.1"
+
+[database]
+resolutionScopes = [{ dataSource = "93fff93a-ef52-41e2-ba8b-4b2721d8563f", path = "", schema = "" }]

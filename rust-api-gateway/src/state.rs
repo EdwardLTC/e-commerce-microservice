@@ -19,9 +19,7 @@ pub fn set_current_token(token: String) {
 }
 
 pub fn get_current_token() -> Option<String> {
-    CURRENT_TOKEN.with(|cell| {
-        cell.borrow().clone()
-    })
+    CURRENT_TOKEN.with(|cell| cell.borrow().clone())
 }
 
 // Shared application state passed to all handlers
@@ -57,14 +55,14 @@ impl AppState {
 pub struct AuthClaims {
     pub id: String,
     pub email: String,
-    pub jti: String,
+    pub jit: String,
     pub exp: usize,
 }
 
 // Login session stored in Redis
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LoginSession {
-    pub jti: String,
+    pub jit: String,
     pub user_id: String,
     pub status: String,
     pub ip: String,

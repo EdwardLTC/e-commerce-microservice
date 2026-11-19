@@ -4,17 +4,8 @@ use axum::Json;
 
 use crate::error::AppError;
 use crate::middleware::validate_auth;
-use crate::state::{AppState, get_current_token};
-
-#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
-pub struct UserProfileResponse {
-    /// User ID
-    pub id: String,
-    /// User display name
-    pub name: String,
-    /// User email address
-    pub email: String,
-}
+use crate::state::{get_current_token, AppState};
+use crate::users::dto::*;
 
 #[utoipa::path(
     get,
@@ -28,7 +19,8 @@ pub struct UserProfileResponse {
 pub async fn get_current_user(
     State(state): State<AppState>,
 ) -> Result<(StatusCode, Json<UserProfileResponse>), AppError> {
-    let token = get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
+    let token =
+        get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
     let claims = validate_auth(&state, &token).await?;
     let user = state
         .user_client

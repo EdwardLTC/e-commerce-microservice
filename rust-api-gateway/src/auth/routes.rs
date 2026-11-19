@@ -6,55 +6,10 @@ use jsonwebtoken::{encode, EncodingKey, Header};
 use redis::AsyncCommands;
 use uuid::Uuid;
 
+use crate::auth::dto::*;
 use crate::error::AppError;
 use crate::middleware::validate_auth;
 use crate::state::{get_current_token, AppState, AuthClaims, LoginSession};
-
-// Request/Response DTOs
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct LoginRequest {
-    /// User email address
-    pub email: String,
-    /// User password
-    pub password: String,
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct RegisterRequest {
-    /// User email address
-    pub email: String,
-    /// User password
-    pub password: String,
-    /// User display name
-    pub name: String,
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-pub struct ChangePasswordRequest {
-    /// Current password
-    pub old_password: String,
-    /// New password to set
-    pub new_password: String,
-}
-
-#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
-pub struct AuthTokenResponse {
-    /// JWT access token
-    pub access_token: String,
-}
-
-#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
-pub struct UserProfileResponse {
-    /// User ID
-    pub id: String,
-    /// User display name
-    pub name: String,
-    /// User email address
-    pub email: String,
-}
-
-// Handlers
 
 #[utoipa::path(
     post,
@@ -136,7 +91,7 @@ pub async fn logout(State(state): State<AppState>) -> Result<StatusCode, AppErro
     let token =
         get_current_token().ok_or_else(|| AppError::Unauthorized("Missing token".to_string()))?;
     let claims = validate_auth(&state, &token).await?;
-    delete_session(&state, &claims.jti).await?;
+    delete_session(&state, &claims.jit).await?;
     Ok(StatusCode::OK)
 }
 
@@ -175,7 +130,7 @@ pub async fn change_password(
 // JWT helpers
 
 fn create_token(state: &AppState, user_id: &str, email: &str) -> (String, String) {
-    let jti = Uuid::new_v4().to_string();
+    let jit = Uuid::new_v4().to_string();
     let exp = Utc::now()
         .checked_add_days(chrono::Days::new(7))
         .unwrap()
@@ -184,7 +139,7 @@ fn create_token(state: &AppState, user_id: &str, email: &str) -> (String, String
     let claims = AuthClaims {
         id: user_id.to_string(),
         email: email.to_string(),
-        jti: jti.clone(),
+        jit: jit.clone(),
         exp,
     };
 
@@ -196,14 +151,14 @@ fn create_token(state: &AppState, user_id: &str, email: &str) -> (String, String
     )
     .expect("Failed to create JWT token");
 
-    (token, jti)
+    (token, jit)
 }
 
 // Redis session helpers
 
 async fn store_session(
     state: &AppState,
-    jti: &str,
+    jit: &str,
     user_id: &str,
     ip: &str,
     user_agent: &str,
@@ -215,7 +170,7 @@ async fn store_session(
         .map_err(|e| AppError::Internal(format!("Redis connection error: {}", e)))?;
 
     let session = LoginSession {
-        jti: jti.to_string(),
+        jit: jit.to_string(),
         user_id: user_id.to_string(),
         status: "active".to_string(),
         ip: ip.to_string(),
@@ -227,7 +182,7 @@ async fn store_session(
             .to_rfc3339(),
     };
 
-    let session_key = format!("auth:session:{}", jti);
+    let session_key = format!("auth:session:{}", jit);
     let session_ttl = 60 * 60 * 24 * 7; // 7 days
 
     let session_json = serde_json::to_string(&session).unwrap();
@@ -250,15 +205,15 @@ async fn store_session(
     Ok(())
 }
 
-async fn delete_session(state: &AppState, jti: &str) -> Result<(), AppError> {
-    let session = get_session(state, jti).await?;
+async fn delete_session(state: &AppState, jit: &str) -> Result<(), AppError> {
+    let session = get_session(state, jit).await?;
     let mut conn = state
         .redis_client
         .get_multiplexed_async_connection()
         .await
         .map_err(|e| AppError::Internal(format!("Redis connection error: {}", e)))?;
 
-    let session_key = format!("auth:session:{}", jti);
+    let session_key = format!("auth:session:{}", jit);
     let _: () = conn
         .del(&session_key)
         .await

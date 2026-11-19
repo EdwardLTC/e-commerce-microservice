@@ -27,7 +27,7 @@ pub async fn validate_auth(state: &AppState, token: &str) -> Result<AuthClaims, 
     .claims;
 
     // Check session in Redis
-    let session = get_session(state, &claims.jti).await?;
+    let session = get_session(state, &claims.jit).await?;
 
     let session = session.ok_or_else(|| AppError::Unauthorized("Session not found".to_string()))?;
 
@@ -38,14 +38,14 @@ pub async fn validate_auth(state: &AppState, token: &str) -> Result<AuthClaims, 
     Ok(claims)
 }
 
-async fn get_session(state: &AppState, jti: &str) -> Result<Option<LoginSession>, AppError> {
+async fn get_session(state: &AppState, jit: &str) -> Result<Option<LoginSession>, AppError> {
     let mut conn = state
         .redis_client
         .get_multiplexed_async_connection()
         .await
         .map_err(|e| AppError::Internal(format!("Redis connection error: {}", e)))?;
 
-    let session_key = format!("auth:session:{}", jti);
+    let session_key = format!("auth:session:{}", jit);
     let session_json: Option<String> = conn
         .get(&session_key)
         .await

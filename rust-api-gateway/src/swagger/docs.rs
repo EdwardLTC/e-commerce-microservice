@@ -1,22 +1,24 @@
 use utoipa::OpenApi;
 
-use crate::auth::routes::{
+use crate::auth::dto::{
     AuthTokenResponse, ChangePasswordRequest, LoginRequest, RegisterRequest, UserProfileResponse,
 };
-use crate::orders::routes::{
+use crate::orders::dto::{
     CreateOrderItemRequest, CreateOrderRequest, CreateOrderResponse, GetOrdersQuery,
 };
-use crate::products::routes::{
+use crate::products::dto::{
     CreateOptionTypeRequest, CreateOptionValueRequest, CreateProductRequest, CreateVariantRequest,
     GetProductsQuery, GetVariantsQuery, ResourceCreatedResponse,
 };
 
 #[derive(OpenApi)]
 #[openapi(
-    info(title = "E-Commerce API Gateway",
+    info(
+        title = "E-Commerce API Gateway",
         description = "API Gateway for the e-commerce microservice system. Provides unified access to auth, user, product, and order services.",
         version = "0.1.0",
-        contact(name = "API Support", email = "support@example.com")),
+        contact(name = "API Support", email = "support@example.com")
+    ),
     paths(
         crate::auth::routes::login,
         crate::auth::routes::register,
